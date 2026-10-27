@@ -6,13 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "remotion:studio": "npx remotion studio src/remotion/index.js",
+    "remotion:render": "npx remotion render src/remotion/index.js WateringGrassReel out/watering-grass-reel.mp4"
   },
   "dependencies": {
+    "@remotion/cli": "^4.0.242",
     "framer-motion": "^11.11.17",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.242"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
