@@ -64,11 +64,11 @@ export default function App() {
         className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-3 p-2.5 ink-panel border border-neutral-800 bg-[#0e1014]/90 backdrop-blur-md"
       >
         {[
-          { href: '#hero', label: 'PROLOGUE // Storm' },
-          { href: '#fracture', label: 'ACT I // The Fracture' },
-          { href: '#protest-cycle', label: 'ACT II // Protest Scroll' },
-          { href: '#budget-imbalance', label: 'ACT III // The Scale' },
-          { href: '#conclusion', label: 'ACT IV // Reckoning' },
+          { href: '#hero', label: 'Watering Grass in a Thunderstorm' },
+          { href: '#fracture', label: 'The Geriatric Disconnect' },
+          { href: '#protest-cycle', label: 'The Protest Loop' },
+          { href: '#budget-imbalance', label: 'The Misplaced Priorities' },
+          { href: '#conclusion', label: 'Conclusion' },
         ].map((chapter) => (
           <a
             key={chapter.href}

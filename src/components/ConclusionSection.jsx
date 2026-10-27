@@ -78,7 +78,7 @@ export default function ConclusionSection({ data, meta }) {
         const formReveal = invLerp(0.64, 0.75, progress);
 
         return (
-          <div className="relative w-full h-full flex flex-col justify-between py-6 sm:py-8 px-6 sm:px-10 bg-[#08090a] overflow-hidden">
+          <div className="relative w-full h-full flex flex-col justify-between py-3 sm:py-8 px-4 sm:px-10 bg-[#08090a] overflow-hidden">
             {/* Dramatic Sumi-e Finale Background Image — Starts at Brightest, Dims as Words Appear */}
             {!bgError && (
               <div
@@ -107,8 +107,8 @@ export default function ConclusionSection({ data, meta }) {
             {/* Main Center Finale Stage */}
             <div className="relative z-10 max-w-4xl mx-auto w-full my-auto">
               {/* Word-by-Word Scroll Typewriter Statement */}
-              <blockquote className="mb-8 min-h-[160px] sm:min-h-[200px]">
-                <p className="font-serif text-xl sm:text-3xl md:text-4xl font-bold leading-[1.2] tracking-tight mb-5">
+              <blockquote className="mb-3 sm:mb-8 min-h-[88px] sm:min-h-[190px]">
+                <p className="font-serif text-base sm:text-3xl md:text-4xl font-bold leading-snug sm:leading-[1.2] tracking-tight mb-2 sm:mb-5">
                   {leadWords.map((word, idx) => {
                     const isVisible = idx < revealedCount;
                     const isCursor =
@@ -126,14 +126,14 @@ export default function ConclusionSection({ data, meta }) {
                           {word}{' '}
                         </span>
                         {isCursor && (
-                          <span className="inline-block w-3 h-7 sm:h-9 bg-[#dc2626] align-middle animate-pulse ml-0.5" />
+                          <span className="inline-block w-2.5 sm:w-3 h-5 sm:h-9 bg-[#dc2626] align-middle animate-pulse ml-0.5" />
                         )}
                       </React.Fragment>
                     );
                   })}
                 </p>
 
-                <p className="font-serif text-xl sm:text-3xl md:text-4xl font-bold leading-[1.2] tracking-tight">
+                <p className="font-serif text-base sm:text-3xl md:text-4xl font-bold leading-snug sm:leading-[1.2] tracking-tight">
                   {punchWords.map((word, idx) => {
                     const globalIdx = leadWords.length + idx;
                     const isVisible = globalIdx < revealedCount;
@@ -150,7 +150,7 @@ export default function ConclusionSection({ data, meta }) {
                           {word}{' '}
                         </span>
                         {isCursor && (
-                          <span className="inline-block w-3 h-7 sm:h-9 bg-[#d97706] align-middle animate-pulse ml-0.5" />
+                          <span className="inline-block w-2.5 sm:w-3 h-5 sm:h-9 bg-[#d97706] align-middle animate-pulse ml-0.5" />
                         )}
                       </React.Fragment>
                     );
@@ -165,19 +165,19 @@ export default function ConclusionSection({ data, meta }) {
                   transform: `translateY(${(1 - formReveal) * 28}px)`,
                   pointerEvents: formReveal > 0.3 ? 'auto' : 'none',
                 }}
-                className="ink-panel border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-5 sm:p-7 will-change-transform"
+                className="ink-panel border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3.5 sm:p-7 will-change-transform"
               >
                 <div className="max-w-2xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#08090a] border border-neutral-700 text-[#d97706] font-mono text-xs uppercase tracking-widest mb-2.5">
-                    <Mail className="w-3.5 h-3.5 text-[#dc2626]" />
+                  <div className="inline-flex items-center gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-[#08090a] border border-neutral-700 text-[#d97706] font-mono text-[10px] sm:text-xs uppercase tracking-widest mb-1.5 sm:mb-2.5">
+                    <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#dc2626]" />
                     <span>{meta.publication}</span>
                   </div>
 
-                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#e6e4dd] mb-1">
+                  <h3 className="font-serif text-base sm:text-2xl font-bold text-[#e6e4dd] mb-0.5 sm:mb-1">
                     {data.substack.heading}
                   </h3>
 
-                  <p className="text-xs sm:text-sm text-[#e6e4dd]/75 leading-relaxed mb-3 font-sans">
+                  <p className="text-xs sm:text-sm text-[#e6e4dd]/75 leading-snug sm:leading-relaxed mb-2.5 sm:mb-3 font-sans">
                     {data.substack.description}
                   </p>
 
@@ -188,7 +188,7 @@ export default function ConclusionSection({ data, meta }) {
                     onSubmit={handleSubmit}
                     className="w-full"
                   >
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-row gap-2 sm:gap-3">
                       <input
                         id="substack-email"
                         name="email"
@@ -204,23 +204,23 @@ export default function ConclusionSection({ data, meta }) {
                         aria-label="Email Address"
                         aria-invalid={Boolean(errorMessage)}
                         aria-describedby="substack-feedback"
-                        className="flex-1 min-h-[44px] px-4 py-2 text-sm bg-[#08090a] border border-neutral-700 text-[#e6e4dd] font-mono placeholder:text-neutral-500 focus:border-[#dc2626] transition-colors disabled:opacity-60"
+                        className="flex-1 min-w-0 min-h-[38px] sm:min-h-[44px] px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-[#08090a] border border-neutral-700 text-[#e6e4dd] font-mono placeholder:text-neutral-500 focus:border-[#dc2626] transition-colors disabled:opacity-60"
                       />
 
                       <button
                         type="submit"
                         disabled={isSubmitted}
-                        className="min-h-[44px] px-6 py-2 bg-[#dc2626] hover:bg-[#b91c1c] text-[#e6e4dd] font-mono text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors shrink-0 border border-[#e6e4dd]/20 disabled:opacity-60 cursor-pointer"
+                        className="min-h-[38px] sm:min-h-[44px] px-4 sm:px-6 py-1.5 sm:py-2 bg-[#dc2626] hover:bg-[#b91c1c] text-[#e6e4dd] font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 sm:gap-2 transition-colors shrink-0 border border-[#e6e4dd]/20 disabled:opacity-60 cursor-pointer"
                       >
                         {isSubmitted ? (
                           <>
-                            <CheckCircle2 className="w-4 h-4" />
+                            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             <span>Subscribed</span>
                           </>
                         ) : (
                           <>
                             <span>{data.substack.buttonText}</span>
-                            <ArrowUpRight className="w-4 h-4" />
+                            <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </>
                         )}
                       </button>
@@ -229,16 +229,16 @@ export default function ConclusionSection({ data, meta }) {
                     <div
                       id="substack-feedback"
                       aria-live="polite"
-                      className="min-h-[18px] mt-1"
+                      className="min-h-[14px] sm:min-h-[18px] mt-1"
                     >
                       {errorMessage && (
-                        <p className="inline-flex items-center gap-2 text-xs text-[#dc2626] font-mono">
+                        <p className="inline-flex items-center gap-2 text-[11px] sm:text-xs text-[#dc2626] font-mono">
                           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                           <span>{errorMessage}</span>
                         </p>
                       )}
                       {isSubmitted && !errorMessage && (
-                        <p className="inline-flex items-center gap-2 text-xs text-[#d97706] font-mono">
+                        <p className="inline-flex items-center gap-2 text-[11px] sm:text-xs text-[#d97706] font-mono">
                           <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                           <span>Subscribed ({email}).</span>
                         </p>
@@ -248,11 +248,11 @@ export default function ConclusionSection({ data, meta }) {
                 </div>
 
                 {/* Complete Sources & Empirical Citations Ledger */}
-                <div className="mt-4 pt-3 border-t border-neutral-800 font-mono text-[10px] sm:text-[11px] text-[#e6e4dd]/65">
-                  <div className="text-[#d97706] font-bold uppercase tracking-widest mb-1.5">
+                <div className="mt-2 sm:mt-4 pt-2 sm:pt-3 border-t border-neutral-800 font-mono text-[9px] sm:text-[11px] text-[#e6e4dd]/65">
+                  <div className="text-[#d97706] font-bold uppercase tracking-widest mb-1 sm:mb-1.5">
                     Sources &amp; Empirical References
                   </div>
-                  <ol className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 list-decimal list-inside leading-snug">
+                  <ol className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-0.5 sm:gap-y-1 list-decimal list-inside leading-tight sm:leading-snug">
                     <li>
                       <strong className="text-[#e6e4dd]">1.5°C Climate Breach (+1.55°C):</strong> World Meteorological Organization (WMO), <em>State of the Global Climate 2024</em> &amp; EU Copernicus Climate Change Service (Jan 2025).
                     </li>

@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 
 /**
- * PinnedStage guarantees that a scrollytelling beat stays 100% static/locked in the viewport
- * (`position: fixed; top: 0; height: 100vh`) while the user scrolls through its `heightVh` track,
+ * PinnedStage locks a scrollytelling beat in the viewport using native compositor-backed
+ * `position: sticky; top: 0; height: 100dvh` while the user scrolls through its `heightVh` track,
  * and exposes normalized `progress` (0 -> 1) to children.
  */
 export default function PinnedStage({
@@ -13,7 +13,6 @@ export default function PinnedStage({
   children,
 }) {
   const containerRef = useRef(null);
-  const [pinState, setPinState] = useState('before'); // 'before' | 'fixed' | 'after'
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -27,16 +26,7 @@ export default function PinnedStage({
       const scrollable = Math.max(1, rect.height - vh);
       const rawProgress = -rect.top / scrollable;
       const clamped = Math.min(1, Math.max(0, rawProgress));
-
       setProgress(clamped);
-
-      if (rect.top > 0) {
-        setPinState('before');
-      } else if (rect.bottom >= vh) {
-        setPinState('fixed');
-      } else {
-        setPinState('after');
-      }
     };
 
     const onScrollOrResize = () => {
@@ -54,13 +44,6 @@ export default function PinnedStage({
     };
   }, []);
 
-  const stagePositionStyle =
-    pinState === 'fixed'
-      ? { position: 'fixed', top: 0, left: 0, right: 0, height: '100vh', zIndex: 20 }
-      : pinState === 'after'
-      ? { position: 'absolute', bottom: 0, left: 0, right: 0, height: '100vh', zIndex: 10 }
-      : { position: 'absolute', top: 0, left: 0, right: 0, height: '100vh', zIndex: 10 };
-
   return (
     <section
       ref={containerRef}
@@ -69,7 +52,7 @@ export default function PinnedStage({
       style={{ height: `${heightVh}vh` }}
       className={`relative w-full ${className}`}
     >
-      <div style={stagePositionStyle} className="w-full overflow-hidden">
+      <div className="sticky top-0 left-0 w-full stage-dvh overflow-hidden">
         {typeof children === 'function' ? children(progress) : children}
       </div>
     </section>

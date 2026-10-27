@@ -151,21 +151,21 @@ export default function HeroSection({ data, meta }) {
                 transform: `translateY(${cardY}px) scale(${cardScale})`,
                 pointerEvents: cardOpacity > 0.2 ? 'auto' : 'none',
               }}
-              className="absolute inset-x-6 z-20 max-w-3xl mx-auto will-change-transform"
+              className="absolute inset-x-4 sm:inset-x-6 z-20 max-w-3xl mx-auto will-change-transform"
             >
-              <div className="ink-panel ink-panel-crimson border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-6 sm:p-10 shadow-2xl">
-                <p className="font-editorial text-xl sm:text-2xl md:text-3xl text-[#e6e4dd] leading-relaxed font-medium mb-6">
+              <div className="ink-panel ink-panel-crimson border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-4 sm:p-10 shadow-2xl">
+                <p className="font-editorial text-lg sm:text-2xl md:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed font-medium mb-4 sm:mb-6">
                   {data.paragraphs[0]}
                 </p>
 
-                <div className="border-l-2 border-[#dc2626] pl-5">
-                  <p className="font-sans text-base sm:text-lg md:text-xl text-[#e6e4dd]/90 leading-relaxed mb-5">
+                <div className="border-l-2 border-[#dc2626] pl-3.5 sm:pl-5">
+                  <p className="font-sans text-sm sm:text-lg md:text-xl text-[#e6e4dd]/90 leading-snug sm:leading-relaxed mb-3.5 sm:mb-5">
                     {data.paragraphs[1]}
                   </p>
 
                   {/* Scroll-Driven Bar Chart that completes and stays static during reading hold */}
-                  <div className="p-3.5 bg-[#08090a] border border-neutral-800">
-                    <div className="flex items-center justify-between font-mono text-xs mb-2">
+                  <div className="p-2.5 sm:p-3.5 bg-[#08090a] border border-neutral-800">
+                    <div className="flex items-center justify-between font-mono text-[11px] sm:text-xs mb-1.5 sm:mb-2">
                       <span className="text-[#e6e4dd]/70 uppercase">
                         1.5°C CLIMATE GOAL BREACH
                       </span>
@@ -173,13 +173,13 @@ export default function HeroSection({ data, meta }) {
                         +1.55°C BREACHED
                       </span>
                     </div>
-                    <div className="h-2 w-full bg-[#1f232b] overflow-hidden mb-2">
+                    <div className="h-2 w-full bg-[#1f232b] overflow-hidden mb-1.5 sm:mb-2">
                       <div
                         style={{ width: `${barPct}%` }}
                         className="h-full bg-gradient-to-r from-[#d97706] to-[#dc2626]"
                       />
                     </div>
-                    <div className="font-mono text-[11px] text-[#e6e4dd]/55">
+                    <div className="font-mono text-[10px] sm:text-[11px] text-[#e6e4dd]/55 leading-tight">
                       Ref: World Meteorological Organization (WMO), &ldquo;State of the Global Climate 2024&rdquo; &amp; EU Copernicus Climate Change Service (2025)
                     </div>
                   </div>

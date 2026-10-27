@@ -69,7 +69,7 @@ export default function DataComparisonSection({ data }) {
         const currentYearStat = yearStats[activeYear];
 
         return (
-          <div className="relative w-full h-full flex flex-col justify-between px-6 sm:px-10 py-5 sm:py-7 bg-[#0c0d10] overflow-hidden">
+          <div className="relative w-full h-full flex flex-col justify-between px-4 sm:px-10 py-3 sm:py-7 bg-[#0c0d10] overflow-hidden">
             {/* Full-Screen Background Visual Crossfade Across the 3 Steps */}
             <div
               style={{ opacity: scaleOpacity * 0.22 }}
@@ -110,14 +110,14 @@ export default function DataComparisonSection({ data }) {
             />
 
             {/* Top Header — Clean Section Title Only */}
-            <div className="relative z-10 max-w-5xl w-full mx-auto flex flex-wrap items-end justify-between gap-3 border-b border-neutral-800 pb-2.5 shrink-0">
-              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-[#e6e4dd]">
+            <div className="relative z-10 max-w-5xl w-full mx-auto flex flex-wrap items-end justify-between gap-3 border-b border-neutral-800 pb-2 sm:pb-2.5 shrink-0">
+              <h2 className="font-serif text-xl sm:text-4xl font-bold text-[#e6e4dd]">
                 {data.sectionTitle}
               </h2>
             </div>
 
             {/* Center Full-Screen Sequenced Stage (Each Step in its own absolute .seq-layer) */}
-            <div className="relative z-10 max-w-5xl w-full mx-auto flex-1 my-2">
+            <div className="relative z-10 max-w-5xl w-full mx-auto flex-1 my-1 sm:my-2">
               {/* ================================================================= */}
               {/* LAYER 1: FULL-SCREEN WEIGHING SCALE (Moves up after animation)     */}
               {/* ================================================================= */}
@@ -129,7 +129,7 @@ export default function DataComparisonSection({ data }) {
                 }}
                 className="seq-layer will-change-transform"
               >
-                <div className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-5 sm:p-7 overflow-hidden">
+                <div className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-4 sm:p-7 overflow-hidden">
                   {!scaleImgError && (
                     <img
                       src={scaleImageSrc}
@@ -142,7 +142,7 @@ export default function DataComparisonSection({ data }) {
                     />
                   )}
 
-                  <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 border-b border-neutral-800 pb-2.5 mb-3 font-mono text-xs uppercase tracking-widest text-[#e6e4dd]/80">
+                  <div className="relative z-10 flex flex-wrap items-center justify-between gap-1.5 border-b border-neutral-800 pb-2 sm:pb-2.5 mb-2.5 sm:mb-3 font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#e6e4dd]/80">
                     <span>NATIONAL PRIORITY SCALE</span>
                     <span className="text-[#dc2626] font-bold">
                       {secShare}% PUBLIC SECURITY VS {eduShare}% EDUCATION &amp; HEALTH
@@ -150,10 +150,10 @@ export default function DataComparisonSection({ data }) {
                   </div>
 
                   {/* Full-Width Minimalist Visual Scale Tipping Violently */}
-                  <div className="relative z-10 bg-[#08090a]/90 border border-neutral-800 p-3 sm:p-4 mb-3">
+                  <div className="relative z-10 bg-[#08090a]/90 border border-neutral-800 p-2 sm:p-4 mb-2.5 sm:mb-3">
                     <svg
                       viewBox="0 0 560 200"
-                      className="w-full max-h-[210px] mx-auto overflow-visible"
+                      className="w-full max-h-[145px] sm:max-h-[210px] mx-auto overflow-visible"
                       role="img"
                       aria-label="Scale tipping violently toward Public Security Budgets over Healthcare and Education"
                     >
@@ -296,7 +296,7 @@ export default function DataComparisonSection({ data }) {
                 }}
                 className="seq-layer will-change-transform"
               >
-                <article className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-6 sm:p-8 overflow-hidden">
+                <article className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-4 sm:p-8 overflow-hidden">
                   <img
                     src="/issues/issue-01/protest-2.webp"
                     alt=""
@@ -305,25 +305,25 @@ export default function DataComparisonSection({ data }) {
                   />
 
                   <div className="relative z-10">
-                    <div className="mb-3 pb-2.5 border-b border-neutral-800">
-                      <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#dc2626]">
+                    <div className="mb-2 sm:mb-3 pb-2 sm:pb-2.5 border-b border-neutral-800">
+                      <h3 className="font-serif text-base sm:text-2xl font-bold text-[#dc2626]">
                         Detached from Street Reality
                       </h3>
                     </div>
 
-                    <p className="font-editorial text-xl sm:text-2xl md:text-3xl text-[#e6e4dd] leading-relaxed mb-5">
+                    <p className="font-editorial text-sm sm:text-2xl md:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-3 sm:mb-5">
                       {data.paragraphs[0]}
                     </p>
 
                     {/* Scroll-Driven Doctrine Comparison: Swing Harder -> Civic Accountability */}
-                    <div className="p-4 bg-[#08090a]/95 border border-neutral-800 font-mono text-xs">
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-neutral-800">
+                    <div className="p-2.5 sm:p-4 bg-[#08090a]/95 border border-neutral-800 font-mono text-[10px] sm:text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 mb-2 sm:mb-3 pb-1.5 sm:pb-2 border-b border-neutral-800">
                         <span className="text-[#e6e4dd]/70 uppercase">
                           STATE DOCTRINE SIMULATION:
                         </span>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
                           <span
-                            className={`px-2.5 py-1 border transition-colors ${
+                            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 border transition-colors ${
                               !isCivic
                                 ? 'border-[#dc2626] bg-[#dc2626] text-white font-bold'
                                 : 'border-neutral-700 bg-[#0e1014] text-[#e6e4dd]/50'
@@ -332,7 +332,7 @@ export default function DataComparisonSection({ data }) {
                             Swing Harder (Status Quo)
                           </span>
                           <span
-                            className={`px-2.5 py-1 border transition-colors ${
+                            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 border transition-colors ${
                               isCivic
                                 ? 'border-[#d97706] bg-[#d97706] text-black font-bold'
                                 : 'border-neutral-700 bg-[#0e1014] text-[#e6e4dd]/50'
@@ -343,29 +343,29 @@ export default function DataComparisonSection({ data }) {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3 text-center mb-2.5">
-                        <div className="p-2.5 bg-[#0e1014] border border-neutral-800">
-                          <div className="text-[#e6e4dd]/60 mb-1">RIOT &amp; FORCE SPEND</div>
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 text-center mb-2 sm:mb-2.5">
+                        <div className="p-1.5 sm:p-2.5 bg-[#0e1014] border border-neutral-800">
+                          <div className="text-[9px] sm:text-xs text-[#e6e4dd]/60 mb-0.5 sm:mb-1">RIOT &amp; FORCE SPEND</div>
                           <div
-                            className="text-lg font-bold"
+                            className="text-sm sm:text-lg font-bold"
                             style={{ color: isCivic ? '#d97706' : '#dc2626' }}
                           >
                             {forceSpendStr}
                           </div>
                         </div>
-                        <div className="p-2.5 bg-[#0e1014] border border-neutral-800">
-                          <div className="text-[#e6e4dd]/60 mb-1">ESCALATION RATE</div>
+                        <div className="p-1.5 sm:p-2.5 bg-[#0e1014] border border-neutral-800">
+                          <div className="text-[9px] sm:text-xs text-[#e6e4dd]/60 mb-0.5 sm:mb-1">ESCALATION RATE</div>
                           <div
-                            className="text-lg font-bold"
+                            className="text-sm sm:text-lg font-bold"
                             style={{ color: isCivic ? '#d97706' : '#dc2626' }}
                           >
                             {unrestVal}%
                           </div>
                         </div>
-                        <div className="p-2.5 bg-[#0e1014] border border-neutral-800">
-                          <div className="text-[#e6e4dd]/60 mb-1">PUBLIC TRUST</div>
+                        <div className="p-1.5 sm:p-2.5 bg-[#0e1014] border border-neutral-800">
+                          <div className="text-[9px] sm:text-xs text-[#e6e4dd]/60 mb-0.5 sm:mb-1">PUBLIC TRUST</div>
                           <div
-                            className="text-lg font-bold"
+                            className="text-sm sm:text-lg font-bold"
                             style={{ color: isCivic ? '#d97706' : '#dc2626' }}
                           >
                             {trustVal}%
@@ -373,7 +373,7 @@ export default function DataComparisonSection({ data }) {
                         </div>
                       </div>
 
-                      <div className="text-[11px] text-[#e6e4dd]/55 pt-2 border-t border-neutral-800/80">
+                      <div className="text-[9px] sm:text-[11px] text-[#e6e4dd]/55 pt-1.5 sm:pt-2 border-t border-neutral-800/80 leading-tight">
                         Ref: ACLED State Repression Monitor (2024); Maguire et al., &ldquo;Policing Protests&rdquo; (Criminology &amp; Public Policy)
                       </div>
                     </div>
@@ -392,7 +392,7 @@ export default function DataComparisonSection({ data }) {
                 }}
                 className="seq-layer will-change-transform"
               >
-                <article className="ink-panel w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-6 sm:p-8 overflow-hidden">
+                <article className="ink-panel w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-4 sm:p-8 overflow-hidden">
                   <img
                     src="/issues/issue-01/protest-4.webp"
                     alt=""
@@ -401,27 +401,27 @@ export default function DataComparisonSection({ data }) {
                   />
 
                   <div className="relative z-10">
-                    <div className="mb-3 pb-2.5 border-b border-neutral-800">
-                      <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#d97706]">
+                    <div className="mb-2 sm:mb-3 pb-2 sm:pb-2.5 border-b border-neutral-800">
+                      <h3 className="font-serif text-base sm:text-2xl font-bold text-[#d97706]">
                         How Societies Fracture
                       </h3>
                     </div>
 
-                    <p className="font-editorial text-xl sm:text-2xl md:text-3xl text-[#e6e4dd] leading-relaxed mb-5">
+                    <p className="font-editorial text-sm sm:text-2xl md:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-3 sm:mb-5">
                       {data.paragraphs[1]}
                     </p>
 
                     {/* Scroll-Driven Generational Fracture Timeline: 1990 -> 2008 -> 2026 */}
-                    <div className="p-4 bg-[#08090a]/95 border border-neutral-800 font-mono text-xs">
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-neutral-800">
+                    <div className="p-2.5 sm:p-4 bg-[#08090a]/95 border border-neutral-800 font-mono text-[10px] sm:text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 mb-2 sm:mb-3 pb-1.5 sm:pb-2 border-b border-neutral-800">
                         <span className="text-[#e6e4dd]/70 uppercase">
                           GENERATIONAL FRACTURE TIMELINE:
                         </span>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1 sm:gap-1.5">
                           {['1990', '2008', '2026'].map((yr) => (
                             <span
                               key={yr}
-                              className={`px-2.5 py-1 border transition-colors ${
+                              className={`px-2 py-0.5 sm:px-2.5 sm:py-1 border transition-colors ${
                                 activeYear === yr
                                   ? 'border-[#d97706] bg-[#d97706] text-black font-bold'
                                   : 'border-neutral-700 bg-[#0e1014] text-[#e6e4dd]/50'
@@ -433,42 +433,42 @@ export default function DataComparisonSection({ data }) {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3 text-center mb-2.5">
-                        <div className="p-2 bg-[#0e1014] border border-neutral-800">
-                          <div className="text-[#e6e4dd]/60 mb-0.5">
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 text-center mb-2 sm:mb-2.5">
+                        <div className="p-1.5 sm:p-2 bg-[#0e1014] border border-neutral-800">
+                          <div className="text-[9px] sm:text-xs text-[#e6e4dd]/60 mb-0.5">
                             65+ COHORT WEALTH
                           </div>
-                          <div className="text-base font-bold text-[#dc2626]">
+                          <div className="text-xs sm:text-base font-bold text-[#dc2626]">
                             {currentYearStat.stocks}
                           </div>
                         </div>
-                        <div className="p-2 bg-[#0e1014] border border-neutral-800">
-                          <div className="text-[#e6e4dd]/60 mb-0.5">
+                        <div className="p-1.5 sm:p-2 bg-[#0e1014] border border-neutral-800">
+                          <div className="text-[9px] sm:text-xs text-[#e6e4dd]/60 mb-0.5">
                             FAMILY VIABILITY
                           </div>
-                          <div className="text-base font-bold text-[#d97706]">
+                          <div className="text-xs sm:text-base font-bold text-[#d97706]">
                             {currentYearStat.family}
                           </div>
                         </div>
-                        <div className="p-2 bg-[#0e1014] border border-neutral-800">
-                          <div className="text-[#e6e4dd]/60 mb-0.5">
+                        <div className="p-1.5 sm:p-2 bg-[#0e1014] border border-neutral-800">
+                          <div className="text-[9px] sm:text-xs text-[#e6e4dd]/60 mb-0.5">
                             FRACTURE INDEX
                           </div>
-                          <div className="text-base font-bold text-[#dc2626]">
+                          <div className="text-xs sm:text-base font-bold text-[#dc2626]">
                             {currentYearStat.fracture}
                           </div>
                         </div>
                       </div>
 
                       {/* Fracture Bar */}
-                      <div className="h-2 w-full bg-[#1f232b] overflow-hidden mb-2">
+                      <div className="h-1.5 sm:h-2 w-full bg-[#1f232b] overflow-hidden mb-1.5 sm:mb-2">
                         <div
                           style={{ width: `${currentYearStat.bar}%` }}
                           className="h-full bg-gradient-to-r from-[#d97706] to-[#dc2626] transition-all duration-150"
                         />
                       </div>
 
-                      <div className="text-[11px] text-[#e6e4dd]/55 pt-1.5 border-t border-neutral-800/80">
+                      <div className="text-[9px] sm:text-[11px] text-[#e6e4dd]/55 pt-1 sm:pt-1.5 border-t border-neutral-800/80 leading-tight">
                         Ref: U.S. Federal Reserve Survey of Consumer Finances (Wealth by Age, 1989–2024); OECD &ldquo;Society at a Glance 2024&rdquo; (Fertility &amp; Family Cost)
                       </div>
                     </div>

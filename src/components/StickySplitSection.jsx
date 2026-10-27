@@ -56,7 +56,7 @@ export default function StickySplitSection({ data }) {
         ];
 
         return (
-          <div className="relative w-full h-full flex flex-col justify-between px-6 sm:px-10 py-8 bg-[#0c0d10] overflow-hidden">
+          <div className="relative w-full h-full flex flex-col justify-between px-4 sm:px-10 py-3 sm:py-8 bg-[#0c0d10] overflow-hidden">
             {/* Full-Bleed Animated Background Image 1: Youth Lockout (Cards 1 & 2) */}
             {!lockoutImgError && (
               <div
@@ -106,17 +106,17 @@ export default function StickySplitSection({ data }) {
             />
 
             {/* Top Section Title */}
-            <div className="relative z-10 max-w-6xl w-full mx-auto flex items-end justify-between border-b border-neutral-800 pb-3">
-              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-[#e6e4dd]">
+            <div className="relative z-10 max-w-6xl w-full mx-auto flex items-end justify-between border-b border-neutral-800 pb-2 sm:pb-3 shrink-0">
+              <h2 className="font-serif text-xl sm:text-4xl font-bold text-[#e6e4dd]">
                 {data.sectionTitle}
               </h2>
             </div>
 
             {/* Main 50/50 Split Stage */}
-            <div className="relative z-10 max-w-6xl w-full mx-auto my-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            <div className="relative z-10 max-w-6xl w-full mx-auto my-auto grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-8 items-center">
               {/* Left Pinned Comparison Card (5 cols) */}
-              <div className="md:col-span-5 ink-panel ink-panel-crimson border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-5">
-                <div className="flex items-center justify-between border-b border-neutral-800 pb-2.5 mb-3 font-mono text-xs">
+              <div className="md:col-span-5 ink-panel ink-panel-crimson border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3 md:p-5">
+                <div className="flex items-center justify-between border-b border-neutral-800 pb-1.5 md:pb-2.5 mb-2 md:mb-3 font-mono text-[11px] md:text-xs">
                   <span className="text-[#e6e4dd] font-bold truncate">
                     {isAgeMode
                       ? 'LEADER AGE (70+) VS. POPULATION (28)'
@@ -127,8 +127,8 @@ export default function StickySplitSection({ data }) {
                   </span>
                 </div>
 
-                {/* Morphing Thumbnail Plate (Youth Lockout -> Old Politician) */}
-                <div className="relative aspect-video overflow-hidden border border-neutral-800 bg-[#08090a] mb-3">
+                {/* Morphing Thumbnail Plate (Desktop only — mobile sees full-screen animated background) */}
+                <div className="hidden md:block relative aspect-video overflow-hidden border border-neutral-800 bg-[#08090a] mb-3">
                   {!lockoutImgError && (
                     <img
                       src={lockoutImgSrc}
@@ -162,10 +162,10 @@ export default function StickySplitSection({ data }) {
                 </div>
 
                 {/* Animated SVG Comparison Chart Highlighting Stark Divergence */}
-                <div className="bg-[#08090a] border border-neutral-800 p-3 mb-3">
+                <div className="bg-[#08090a] border border-neutral-800 p-2 md:p-3 mb-0 md:mb-3">
                   <svg
                     viewBox="0 0 360 135"
-                    className="w-full h-auto overflow-visible"
+                    className="w-full max-h-[100px] md:max-h-none h-auto overflow-visible"
                   >
                     <line
                       x1="25"
@@ -347,8 +347,8 @@ export default function StickySplitSection({ data }) {
                   </svg>
                 </div>
 
-                {/* Live Bar Charts */}
-                <div className="p-3 bg-[#08090a] border border-neutral-800 space-y-2 font-mono text-xs">
+                {/* Live Bar Charts (Desktop only — mobile sees per-card bar below) */}
+                <div className="hidden md:block p-3 bg-[#08090a] border border-neutral-800 space-y-2 font-mono text-xs">
                   <div>
                     <div className="flex justify-between mb-1">
                       <span className="text-[#d97706]">MEDIAN HOME PRICES</span>
@@ -398,7 +398,7 @@ export default function StickySplitSection({ data }) {
               </div>
 
               {/* Right Stage (7 cols): Cards 1, 2, 3 with Static Reading Plateaus */}
-              <div className="md:col-span-7 relative min-h-[360px]">
+              <div className="md:col-span-7 relative min-h-[255px] sm:min-h-[320px] md:min-h-[360px]">
                 {cards.map((card, idx) => {
                   const w = cardWindows[idx];
                   const enter = invLerp(w.enterStart, w.enterEnd, progress);
@@ -422,35 +422,35 @@ export default function StickySplitSection({ data }) {
                       <article
                         className={`ink-panel ${
                           card.accent === '#dc2626' ? 'ink-panel-crimson' : ''
-                        } w-full border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-6 sm:p-9`}
+                        } w-full border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-4 sm:p-8`}
                       >
-                        <div className="mb-4 pb-3 border-b border-neutral-800">
+                        <div className="mb-2.5 sm:mb-4 pb-2 sm:pb-3 border-b border-neutral-800">
                           <h3
-                            className="font-serif text-lg sm:text-xl font-bold"
+                            className="font-serif text-base sm:text-xl font-bold"
                             style={{ color: card.accent }}
                           >
                             {card.tag}
                           </h3>
                         </div>
 
-                        <p className="font-editorial text-xl sm:text-2xl lg:text-3xl text-[#e6e4dd] leading-relaxed mb-6">
+                        <p className="font-editorial text-base sm:text-2xl lg:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-3.5 sm:mb-6">
                           {card.copy}
                         </p>
 
                         {/* Card Bar Chart — Completes before reading hold */}
-                        <div className="p-4 bg-[#08090a] border border-neutral-800">
-                          <div className="flex items-baseline justify-between gap-4 mb-2">
-                            <span className="font-mono text-xs uppercase tracking-wider text-[#e6e4dd]/70">
+                        <div className="p-2.5 sm:p-4 bg-[#08090a] border border-neutral-800">
+                          <div className="flex items-baseline justify-between gap-3 mb-1.5 sm:mb-2">
+                            <span className="font-mono text-[10px] sm:text-xs uppercase tracking-wider text-[#e6e4dd]/70">
                               {card.metricLabel}
                             </span>
                             <span
-                              className="font-mono text-2xl font-bold shrink-0"
+                              className="font-mono text-lg sm:text-2xl font-bold shrink-0"
                               style={{ color: card.accent }}
                             >
                               {card.metric}
                             </span>
                           </div>
-                          <div className="h-2.5 w-full bg-[#1f232b] overflow-hidden p-0.5 mb-2">
+                          <div className="h-2 sm:h-2.5 w-full bg-[#1f232b] overflow-hidden p-0.5 mb-1.5 sm:mb-2">
                             <div
                               style={{
                                 width: `${barFill}%`,
@@ -459,7 +459,7 @@ export default function StickySplitSection({ data }) {
                               className="h-full"
                             />
                           </div>
-                          <div className="font-mono text-[11px] text-[#e6e4dd]/55">
+                          <div className="font-mono text-[10px] sm:text-[11px] text-[#e6e4dd]/55 leading-tight">
                             {cardCitations[idx]}
                           </div>
                         </div>
