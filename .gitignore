@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Production build
+dist/
+dist-ssr/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# OS & Editor files
+.DS_Store
+*.local
+.vscode/
+.idea/
+
+# Unoptimized large draft GIFs
+substack-header-clean-loop.gif
+substack-header-titled-loop.gif

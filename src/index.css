@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --bg-washi-base: #0c0d10;
+  --ink-black: #08090a;
+  --dilute-wash: #1f232b;
+  --panel-bg: #0e1014;
+  --rice-bone: #e6e4dd;
+  --accent-amber: #d97706;
+  --accent-crimson: #dc2626;
+}
+
+html,
+body {
+  background-color: #0d0d0d;
+  color: #e6e4dd;
+  margin: 0;
+  padding: 0;
+  overflow-x: clip;
+}
+
+/* Subtle manga-editorial ink grid */
+.bg-sumi-grid {
+  background-size: 64px 64px;
+  background-image:
+    linear-gradient(to right, rgba(230, 228, 221, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(230, 228, 221, 0.025) 1px, transparent 1px);
+}
+
+/* Graphic Novel Panel: asymmetric hand-cut radius, ink-bleed box shadow, and pseudo-element corner brackets */
+.ink-panel:not(.absolute):not(.fixed):not(.sticky) {
+  position: relative;
+}
+
+.ink-panel {
+  border-radius: 2px 10px 3px 8px;
+  box-shadow:
+    0 18px 42px -12px rgba(8, 9, 10, 0.95),
+    5px 5px 0px 0px rgba(8, 9, 10, 0.9),
+    inset 0 0 32px rgba(31, 35, 43, 0.35);
+}
+
+.seq-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.ink-panel::before,
+.ink-panel::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 20;
+  transition: border-color 0.35s ease, transform 0.35s ease;
+}
+
+.ink-panel::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid #e6e4dd;
+  border-left: 2px solid #e6e4dd;
+}
+
+.ink-panel::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid #d97706;
+  border-right: 2px solid #d97706;
+}
+
+.ink-panel-crimson::after {
+  border-bottom-color: #dc2626;
+  border-right-color: #dc2626;
+}
+
+/* Accessible focus outlines */
+input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* Progressive enhancement with native CSS scroll-driven animation feature detection */
+@supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
+  .scroll-progress-native {
+    transform-origin: 0% 50%;
+  }
+}
+
+/* MANDATORY Copy-Paste Safety: Ensure content remains fully visible and legible for assistive technologies or users with motion sensitivities */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .scrolly-animated,
+  .brush-reveal-node {
+    opacity: 1 !important;
+    transform: none !important;
+    translate: 0 0 !important;
+    clip-path: none !important;
+  }
+}

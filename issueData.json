@@ -1,0 +1,126 @@
+{
+  "meta": {
+    "issue": "Issue 01",
+    "publication": "Observations by Moth",
+    "date": "October 2026",
+    "readingTime": "5 Min Visual Essay",
+    "title": "Watering Grass in a Thunderstorm"
+  },
+  "hero": {
+    "beatLabel": "The Cold Open",
+    "kicker": "Observations by Moth",
+    "title": "Watering Grass in a Thunderstorm",
+    "image": "/issues/issue-01/substack-header-16x9.webp",
+    "paragraphs": [
+      "As simple as it sounds, people generally don't take to the streets to protest if their governments were actually doing their jobs.",
+      "I think it is safe to say that this current batch of world leaders are probably some of the most incompetent in history. Take the 1.5°C climate goal that was quietly missed. Nobody even flinched."
+    ],
+    "scrollHint": "Scroll to Enter the Essay"
+  },
+  "stickySplit": {
+    "beatLabel": "The Geriatric Disconnect",
+    "sectionTitle": "The Geriatric Disconnect",
+    "image": "/issues/issue-01/disconnect-balcony.webp",
+    "cards": [
+      {
+        "id": "disconnect-1",
+        "tag": "Shrinking Reality",
+        "visualMode": "wages",
+        "metric": "11.4x",
+        "metricLabel": "MEDIAN HOME PRICE TO YOUTH WAGES",
+        "accent": "#d97706",
+        "copy": "Now factor in everything else. The lack of decent jobs. The bizarre disconnect where the \"economy\" is allegedly growing, but everyday quality of life keeps shrinking."
+      },
+      {
+        "id": "disconnect-2",
+        "tag": "Shutters Pulled Down",
+        "visualMode": "wages",
+        "metric": "-38%",
+        "metricLabel": "YOUTH PURCHASING POWER VS 1990 BASELINE",
+        "accent": "#d97706",
+        "copy": "Young people are entering a world that effectively locked the door and pulled down the shutters before they could even get a foot in."
+      },
+      {
+        "id": "disconnect-3",
+        "tag": "Wealth Extraction",
+        "visualMode": "age",
+        "metric": "70+ YRS",
+        "metricLabel": "AVG LEADER AGE VS 28 YR MEDIAN POPULATION",
+        "accent": "#dc2626",
+        "copy": "And who's running the building? Geriatric politicians at least a decade past retirement age. People who spent an entire lifetime in an era where upward social mobility was the default setting, now lecturing everyone else on hard work, completely ignoring that their lifetime of wealth extraction is what destabilised the room in the first place."
+      }
+    ]
+  },
+  "protestCycle": {
+    "beatLabel": "The Protest Loop",
+    "sectionTitle": "The Protest Loop",
+    "sectionSubtitle": "How modern protests escalate.",
+    "steps": [
+      {
+        "step": "The Catalyst",
+        "phaseTitle": "Phase 1: The Catalyst.",
+        "copy": "A thousand young people gather peacefully against an obvious injustice. They hold signs. They want to be heard.",
+        "image": "/issues/issue-01/protest-1.webp",
+        "crowdCount": "1,000",
+        "crowdUnit": "PEACEFUL YOUTH GATHERED",
+        "tensionLevel": 25,
+        "accent": "#d97706"
+      },
+      {
+        "step": "The Overreaction",
+        "phaseTitle": "Phase 2: The Overreaction.",
+        "copy": "An overpowered police force shows up in military riot gear, shutting down the crowd with unprovoked thuggery.",
+        "image": "/issues/issue-01/protest-2.webp",
+        "crowdCount": "MILITARY",
+        "crowdUnit": "RIOT GEAR ESCALATION",
+        "tensionLevel": 60,
+        "accent": "#dc2626"
+      },
+      {
+        "step": "The Escalation",
+        "phaseTitle": "Phase 3: The Escalation.",
+        "copy": "People get furious. The youth bring their parents, their aunts, their colleagues. Suddenly that 1,000-person gathering is a 500,000-person strike shutting down four major cities.",
+        "image": "/issues/issue-01/protest-3.webp",
+        "crowdCount": "500,000",
+        "crowdUnit": "CITIZENS ACROSS 4 MAJOR CITIES",
+        "tensionLevel": 95,
+        "accent": "#dc2626"
+      },
+      {
+        "step": "The Void",
+        "phaseTitle": "Phase 4: The Void.",
+        "copy": "Pockets of opportunists move in, looting kicks off, and foreign bad actors have a field day destabilising the wreckage.",
+        "aftermathCopy": "In the end? Nothing gets solved. The underlying rot just bubbles under the floorboards until the next eruption.",
+        "image": "/issues/issue-01/protest-4.webp",
+        "crowdCount": "0",
+        "crowdUnit": "SOLUTIONS — ROT BUBBLES UNDERNEATH",
+        "tensionLevel": 85,
+        "accent": "#d97706"
+      }
+    ]
+  },
+  "dataComparison": {
+    "beatLabel": "The Misplaced Priorities",
+    "sectionTitle": "The Misplaced Priorities",
+    "scaleImage": "/issues/issue-01/scale.webp",
+    "heavySideLabel": "Public Security Budgets",
+    "lightSideLabel": "Healthcare & Education",
+    "paragraphs": [
+      "Is it the young people's fault? Of course not. It's what happens when a government is entirely detached from street reality, and law enforcement thinks de-escalation means swinging harder.",
+      "When a national budget spends more on riot gear than public education, and geriatrics serve their stock portfolios at the expense of their grandkids, you don't get stability. You get a future that is simply too unappealing for anyone even thinking of starting a family. That’s how societies fracture."
+    ]
+  },
+  "conclusion": {
+    "beatLabel": "The Anchor",
+    "statementLead": "What the world actually needs is a fresh roster of leaders, and a governance model that gives more weight to the people who will live long enough to deal with the fallout.",
+    "statementPunchline": "Everything else is, and should be treated as, a scam.",
+    "substack": {
+      "badge": "Observations by Moth",
+      "heading": "Subscribe to Observations by Moth",
+      "description": "Visual essays on power, generational economics, and street-level reality.",
+      "placeholder": "Enter your email",
+      "buttonText": "Subscribe",
+      "finePrint": "No spam. Unsubscribe anytime."
+    }
+  }
+}
