@@ -165,7 +165,7 @@ export default function StickySplitSection({ data }) {
                 <div className="bg-[#08090a] border border-neutral-800 p-2 md:p-3 mb-0 md:mb-3">
                   <svg
                     viewBox="0 0 360 135"
-                    className="w-full max-h-[100px] md:max-h-none h-auto overflow-visible"
+                    className="w-full max-h-[82px] sm:max-h-[110px] md:max-h-none h-auto overflow-visible"
                   >
                     <line
                       x1="25"
@@ -397,15 +397,15 @@ export default function StickySplitSection({ data }) {
                 </div>
               </div>
 
-              {/* Right Stage (7 cols): Cards 1, 2, 3 with Static Reading Plateaus */}
-              <div className="md:col-span-7 relative min-h-[255px] sm:min-h-[320px] md:min-h-[360px]">
+              {/* Right Stage (7 cols): Cards 1, 2, 3 in a CSS Grid stack so no card ever overlaps the chart above on mobile */}
+              <div className="md:col-span-7 grid grid-cols-1 items-start md:items-center">
                 {cards.map((card, idx) => {
                   const w = cardWindows[idx];
                   const enter = invLerp(w.enterStart, w.enterEnd, progress);
                   const exit = invLerp(w.holdEnd, w.exitEnd, progress);
                   const opacity = enter * (1 - exit);
-                  const y = (1 - enter) * 44 - exit * 36;
-                  const scale = 0.95 + opacity * 0.05;
+                  const y = (1 - enter) * 24 - exit * 16;
+                  const scale = 0.96 + opacity * 0.04;
                   const barFill =
                     invLerp(w.enterStart, w.barEnd, progress) * w.targetBar;
 
@@ -417,23 +417,23 @@ export default function StickySplitSection({ data }) {
                         transform: `translateY(${y}px) scale(${scale})`,
                         pointerEvents: opacity > 0.4 ? 'auto' : 'none',
                       }}
-                      className="seq-layer will-change-transform"
+                      className="col-start-1 row-start-1 w-full will-change-transform"
                     >
                       <article
                         className={`ink-panel ${
                           card.accent === '#dc2626' ? 'ink-panel-crimson' : ''
-                        } w-full border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-4 sm:p-8`}
+                        } w-full border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3.5 sm:p-8`}
                       >
-                        <div className="mb-2.5 sm:mb-4 pb-2 sm:pb-3 border-b border-neutral-800">
+                        <div className="mb-2 sm:mb-4 pb-1.5 sm:pb-3 border-b border-neutral-800">
                           <h3
-                            className="font-serif text-base sm:text-xl font-bold"
+                            className="font-serif text-sm sm:text-xl font-bold"
                             style={{ color: card.accent }}
                           >
                             {card.tag}
                           </h3>
                         </div>
 
-                        <p className="font-editorial text-base sm:text-2xl lg:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-3.5 sm:mb-6">
+                        <p className="font-editorial text-sm sm:text-2xl lg:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-3 sm:mb-6">
                           {card.copy}
                         </p>
 
