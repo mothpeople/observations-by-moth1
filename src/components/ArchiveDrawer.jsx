@@ -128,7 +128,10 @@ export default function ArchiveDrawer({
                         >
                           ISSUE #{issue.id} {isActive ? '• ACTIVE' : ''}
                         </span>
-                        <span className="text-[#e6e4dd]/50">{issue.date}</span>
+                        <span className="text-[#e6e4dd]/50">
+                          {issue.date}
+                          {issue.readTime ? ` • ${issue.readTime}` : ''}
+                        </span>
                       </div>
 
                       <h3 className="font-serif text-sm sm:text-base font-bold text-[#e6e4dd] group-hover:text-[#d97706] transition-colors leading-snug mb-1 truncate">

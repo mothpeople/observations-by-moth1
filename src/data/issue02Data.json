@@ -1,0 +1,177 @@
+{
+  "meta": {
+    "issue": "Issue 02",
+    "publication": "Observations by Moth1",
+    "date": "NOV 2026",
+    "readingTime": "5 MIN",
+    "title": "The Meat Grinder Needs More Meat"
+  },
+  "hero": {
+    "title": "The Meat Grinder Needs More Meat",
+    "subtitle": "Why billionaires panic about birth rates, why the Venn diagram collapsed, and why the earth is quietly exhausted.",
+    "image": "/issues/issue-02/hero-machine.webp",
+    "paragraphs": [
+      "You know why the total fertility rate is in freefall worldwide and people simply refuse to have children? Listen to politicians and tech billionaires whine, and they’ll tell you society is collapsing because younger generations became selfish. What they really mean is: the meat grinder is running out of meat.",
+      "They do not care about procreation or the dignity of human life. They care about future taxpayers to fund pension deficits, and warm bodies to keep consumer demand humming."
+    ],
+    "scrollHint": "Scroll to Inspect the Machine"
+  },
+  "vennSection": {
+    "sectionTitle": "The Collapsing Family Venn Diagram",
+    "circles": [
+      {
+        "id": "A",
+        "label": "Family Support",
+        "shortLabel": "FAMILY SUPPORT",
+        "color": "#86efac",
+        "description": "Multi-generational care, community time & domestic bandwidth"
+      },
+      {
+        "id": "B",
+        "label": "Social Policies & Housing",
+        "shortLabel": "SOCIAL POLICIES & HOUSING",
+        "color": "#67e8f9",
+        "description": "Accessible housing, urban livability & public childcare"
+      },
+      {
+        "id": "C",
+        "label": "Financial Sustainability",
+        "shortLabel": "FINANCIAL SUSTAINABILITY",
+        "color": "#fda4af",
+        "description": "Real wage security, career stability & predictable costs"
+      }
+    ],
+    "cards": [
+      {
+        "id": "venn-1",
+        "tag": "The Original Overlap",
+        "accent": "#86efac",
+        "metric": "2.10",
+        "metricLabel": "REPLACEMENT FERTILITY THRESHOLD",
+        "copy": "For having a child to be a rational, joyful decision rather than an act of financial self-harm, three circles have to intersect: Family Support, Social Policies & Housing, and Financial Sustainability.",
+        "citation": "Ref: UN DESA 'World Population Prospects 2024' & OECD Family Database (Replacement TFR = 2.1)"
+      },
+      {
+        "id": "venn-2",
+        "tag": "The Great Drift",
+        "accent": "#67e8f9",
+        "metric": "1.50",
+        "metricLabel": "OECD AVERAGE TFR (DOWN FROM 2.8 IN 1970)",
+        "copy": "Over the last thirty years, dual-income burnout pulled Family Support outward, housing financialization yanked Social Policies away, and stagnant wages dragged Financial Sustainability through the floor.",
+        "citation": "Ref: OECD 'Society at a Glance 2024' — Total Fertility Rate Across 38 OECD Member Economies"
+      },
+      {
+        "id": "venn-3",
+        "tag": "The TFR Black Hole",
+        "accent": "#fda4af",
+        "metric": "0.72–0.97",
+        "metricLabel": "EAST & SOUTHEAST ASIAN URBAN TFR FLOOR",
+        "copy": "Where the overlapping center once read 'Make Baby', there is now a structural vacuum: the TFR Black Hole. South Korea sits at 0.72. Singapore hit 0.97. No amount of moral lecturing can close a broken geometry.",
+        "citation": "Ref: Statistics Korea (KOSTAT 2024) & Singapore Department of Statistics Population in Brief (2024)"
+      }
+    ]
+  },
+  "contradictionsSection": {
+    "sectionTitle": "The 4 Contradictions",
+    "steps": [
+      {
+        "phaseTitle": "AI & Stolen Ladders",
+        "copy": "How do you ask people to breed future workers for an economy that is simultaneously bragging about replacing entry-level careers with AI? You cannot saw off the bottom rungs of the economic ladder and act shocked when nobody wagers a 20-year dependent on it.",
+        "image": "/issues/issue-02/contradiction-1-ai.webp",
+        "crowdCount": "300M",
+        "crowdUnit": "FULL-TIME ROLES EXPOSED TO AI AUTOMATION",
+        "tensionLevel": 84,
+        "accent": "#67e8f9",
+        "citation": "Ref: Goldman Sachs Global Macro Research (2023) & WEF 'Future of Jobs Report' (2025)"
+      },
+      {
+        "phaseTitle": "Sinking Cities (2050 Sea Level Realities)",
+        "copy": "Governments hand out fertility brochures while low-lying coastal cities quietly model chronic 2050 sea-level flooding, lethal wet-bulb heatwaves, and severe water stress. Young people aren't nihilists—they can simply read a climate chart.",
+        "image": "/issues/issue-02/contradiction-2-sinking.webp",
+        "crowdCount": "1.0B+",
+        "crowdUnit": "COASTAL RESIDENTS EXPOSED BY 2050",
+        "tensionLevel": 88,
+        "accent": "#86efac",
+        "citation": "Ref: IPCC Sixth Assessment Report (AR6) & Climate Central Coastal DEM 2050 Projections"
+      },
+      {
+        "phaseTitle": "The Paid Gig Baby (BTO & Subsidy Illusions)",
+        "copy": "Throwing a one-off baby bonus or a 5-year waitlisted micro-flat at a 25-year cost crisis treats parenthood like an underpaid gig job. A $10,000 cash token against $310,000+ of housing, childcare, and tuition inflation is an insult to basic arithmetic.",
+        "image": "/issues/issue-02/contradiction-3-subsidy.webp",
+        "crowdCount": "$310K+",
+        "crowdUnit": "LIFETIME CHILD COST VS TOKEN CASH SUBSIDY",
+        "tensionLevel": 92,
+        "accent": "#fda4af",
+        "citation": "Ref: Brookings Institution Cost of Raising a Child & OECD Family Cash Benefits Database (2024)"
+      },
+      {
+        "phaseTitle": "The Sandwich Generation Fatigue",
+        "copy": "Today's working adults are already serving as the private safety net for their own aging parents amidst vanishing pensions and surging medical costs. Expecting a generation crushed between eldercare and 60-hour workweeks to add another dependent is delusional.",
+        "aftermathCopy": "The meat grinder does not care about families. It only cares about fresh collateral.",
+        "image": "/issues/issue-02/contradiction-4-sandwich.webp",
+        "crowdCount": "54%",
+        "crowdUnit": "ADULTS SIMULTANEOUSLY FUNDING ELDER & SELF CARE",
+        "tensionLevel": 96,
+        "accent": "#c084fc",
+        "citation": "Ref: Pew Research Center 'The Sandwich Generation' & National Transfer Accounts (2024)"
+      }
+    ]
+  },
+  "terminalSolutions": {
+    "sectionTitle": "Three Taboo Propositions",
+    "subtitle": "What if we stop pretending birth rates are returning to 2.1 and redesign civilization around reality?",
+    "propositions": [
+      {
+        "id": "01",
+        "title": "01: Redefining the Family Unit",
+        "accent": "#86efac",
+        "lead": "Decouple public housing, tax law, and healthcare rights from nuclear biological reproduction.",
+        "body": "Right now, housing allocation (like BTO schemes) and tax codes punish single adults and non-traditional households to coerce marriage and childbirth. Legalizing platonic co-living cooperatives, multi-adult household equity, and chosen-family care networks lets citizens pool resources and mutual care without forced procreation.",
+        "metrics": [
+          { "label": "NON-NUCLEAR HOUSEHOLDS", "value": "62%" },
+          { "label": "SHARED LIVING COST DROP", "value": "-38%" },
+          { "label": "SOCIAL ISOLATION REDUCTION", "value": "-54%" }
+        ],
+        "citation": "Ref: OECD Household Projections (2024–2040) & European Collaborative Housing Index"
+      },
+      {
+        "id": "02",
+        "title": "02: Normalising End-of-Life Dignity (Euthanasia)",
+        "accent": "#67e8f9",
+        "lead": "Replace forced biological prolongation with autonomous, dignified end-of-life choice.",
+        "body": "Modern medicine excels at keeping organs ticking long after agency, cognition, and quality of life have vanished—draining over 25% of lifetime healthcare expenditure in the final months of agony. Normalising voluntary, safeguarded end-of-life dignity honors human autonomy and lifts an immense emotional and financial terror from aging societies.",
+        "metrics": [
+          { "label": "FINAL-YEAR MEDICAL SHARE", "value": "25%+" },
+          { "label": "PUBLIC SUPPORT FOR DIGNITY", "value": "74%" },
+          { "label": "AUTONOMY & CARE INDEX", "value": "HIGH" }
+        ],
+        "citation": "Ref: The Lancet Commission on the Value of Death (2022) & OECD Health at a Glance (2024)"
+      },
+      {
+        "id": "03",
+        "title": "03: Dismantling Infinite GDP Growth",
+        "accent": "#c084fc",
+        "lead": "Treat population stabilization as an ecological rescue rather than a capitalist emergency.",
+        "body": "A finite biosphere already operating at 1.7x ecological overshoot does not need 10 billion consumers churning disposable goods to prop up quarterly GDP. Shifting from aggregate GDP growth to per-capita well-being, automated public dividends, and ecological restoration turns a smaller population into humanity's greatest dividend.",
+        "metrics": [
+          { "label": "BIOSPHERE OVERSHOOT", "value": "1.7x EARTHS" },
+          { "label": "PER-CAPITA SPACE GAIN", "value": "+42%" },
+          { "label": "ECOLOGICAL TRAJECTORY", "value": "REGENERATIVE" }
+        ],
+        "citation": "Ref: Global Footprint Network (2024) & Hickel et al., 'Degrowth & Post-Growth Economics' (Nature, 2022)"
+      }
+    ]
+  },
+  "conclusion": {
+    "backgroundImage": "/issues/issue-02/quiet-earth.webp",
+    "statementLead": "Maybe declining birth rates aren't an extinction crisis at all. Maybe it is the human species quietly refusing to feed an extractive machine—and giving an exhausted planet its first chance to breathe.",
+    "statementPunchline": "Stop demanding more meat for the grinder. Build a world worth being born into.",
+    "substack": {
+      "badge": "Observations by Moth1",
+      "heading": "Subscribe to Observations by Moth1",
+      "description": "Visual essays on power, generational economics, and street-level reality.",
+      "placeholder": "Enter your email",
+      "buttonText": "Subscribe"
+    }
+  }
+}

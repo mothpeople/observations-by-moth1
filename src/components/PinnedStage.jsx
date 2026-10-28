@@ -9,9 +9,11 @@ export default function PinnedStage({
   id,
   ariaLabel,
   heightVh = 300,
+  heightMultiplier,
   className = '',
   children,
 }) {
+  const resolvedHeightVh = heightMultiplier ? heightMultiplier * 100 : heightVh;
   const containerRef = useRef(null);
   const [progress, setProgress] = useState(0);
 
@@ -49,7 +51,7 @@ export default function PinnedStage({
       ref={containerRef}
       id={id}
       aria-label={ariaLabel}
-      style={{ height: `${heightVh}vh` }}
+      style={{ height: `${resolvedHeightVh}vh` }}
       className={`relative w-full ${className}`}
     >
       <div className="sticky top-0 left-0 w-full stage-dvh overflow-hidden">
