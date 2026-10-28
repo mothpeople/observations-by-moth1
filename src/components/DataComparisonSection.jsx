@@ -69,7 +69,7 @@ export default function DataComparisonSection({ data }) {
         const currentYearStat = yearStats[activeYear];
 
         return (
-          <div className="relative w-full h-full flex flex-col justify-between px-4 sm:px-10 py-3 sm:py-7 bg-[#0c0d10] overflow-hidden">
+          <div className="relative w-full h-full flex flex-col justify-between px-4 sm:px-10 pt-14 pb-3 sm:pt-16 sm:pb-7 bg-[#0c0d10] overflow-hidden">
             {/* Full-Screen Background Visual Crossfade Across the 3 Steps */}
             <div
               style={{ opacity: scaleOpacity * 0.22 }}

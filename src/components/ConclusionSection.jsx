@@ -78,7 +78,7 @@ export default function ConclusionSection({ data, meta }) {
         const formReveal = invLerp(0.64, 0.75, progress);
 
         return (
-          <div className="relative w-full h-full flex flex-col justify-between py-3 sm:py-8 px-4 sm:px-10 bg-[#08090a] overflow-hidden">
+          <div className="relative w-full h-full flex flex-col justify-between pt-14 pb-3 sm:pt-16 sm:pb-8 px-4 sm:px-10 bg-[#08090a] overflow-hidden">
             {/* Dramatic Sumi-e Finale Background Image — Starts at Brightest, Dims as Words Appear */}
             {!bgError && (
               <div

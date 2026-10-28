@@ -1,19 +1,33 @@
-import React from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion';
-import issueData from './data/issueData.json';
-import HeroSection from './components/HeroSection';
-import StickySplitSection from './components/StickySplitSection';
-import HorizontalScrollSection from './components/HorizontalScrollSection';
-import DataComparisonSection from './components/DataComparisonSection';
-import ConclusionSection from './components/ConclusionSection';
+import React, { useState, useEffect } from 'react';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useParams,
+} from 'react-router-dom';
+import {
+  dispatches,
+  getLatestDispatch,
+  findDispatchByParam,
+} from './data/dispatches';
+import Masthead from './components/Masthead';
+import ArchiveDrawer from './components/ArchiveDrawer';
 
-export default function App() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 110,
-    damping: 28,
-    restDelta: 0.001,
-  });
+function DispatchShell({ dispatch }) {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    if (dispatch) {
+      document.title = `Issue #${dispatch.id}: ${dispatch.title} — Observations by Moth1`;
+    }
+  }, [dispatch]);
+
+  if (!dispatch) {
+    return <Navigate to="/" replace />;
+  }
+
+  const ActiveIssueComponent = dispatch.component;
 
   return (
     <div className="relative min-h-screen bg-[#0c0d10] text-[#e6e4dd] selection:bg-[#dc2626] selection:text-[#e6e4dd]">
@@ -23,7 +37,13 @@ export default function App() {
         className="pointer-events-none fixed inset-0 w-full h-full z-50 opacity-[0.04]"
       >
         <defs>
-          <filter id="washi-paper-noise" x="0%" y="0%" width="100%" height="100%">
+          <filter
+            id="washi-paper-noise"
+            x="0%"
+            y="0%"
+            width="100%"
+            height="100%"
+          >
             <feTurbulence
               type="fractalNoise"
               baseFrequency="0.78"
@@ -32,7 +52,13 @@ export default function App() {
             />
             <feColorMatrix type="saturate" values="0" />
           </filter>
-          <filter id="sumi-brush-stroke" x="-10%" y="-10%" width="120%" height="120%">
+          <filter
+            id="sumi-brush-stroke"
+            x="-10%"
+            y="-10%"
+            width="120%"
+            height="120%"
+          >
             <feTurbulence
               type="turbulence"
               baseFrequency="0.035"
@@ -51,47 +77,58 @@ export default function App() {
         <rect width="100%" height="100%" filter="url(#washi-paper-noise)" />
       </svg>
 
-      {/* Top Crimson/Amber Ink Brush Progress Bar */}
-      <motion.div
-        style={{ scaleX }}
-        aria-hidden="true"
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#dc2626] via-[#d97706] to-[#dc2626] origin-left z-50 shadow-[0_0_12px_rgba(220,38,38,0.65)]"
+      {/* Global Floating Masthead */}
+      <Masthead
+        activeDispatch={dispatch}
+        totalIssues={dispatches.length}
+        isDrawerOpen={isDrawerOpen}
+        onToggleDrawer={() => setIsDrawerOpen((prev) => !prev)}
       />
 
-      {/* Floating Graphic Novel Act Index (Desktop) */}
-      <nav
-        aria-label="Graphic Novel Acts"
-        className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-3 p-2.5 ink-panel border border-neutral-800 bg-[#0e1014]/90 backdrop-blur-md"
-      >
-        {[
-          { href: '#hero', label: 'Watering Grass in a Thunderstorm' },
-          { href: '#fracture', label: 'The Geriatric Disconnect' },
-          { href: '#protest-cycle', label: 'The Protest Loop' },
-          { href: '#budget-imbalance', label: 'The Misplaced Priorities' },
-          { href: '#conclusion', label: 'Conclusion' },
-        ].map((chapter) => (
-          <a
-            key={chapter.href}
-            href={chapter.href}
-            title={chapter.label}
-            aria-label={chapter.label}
-            className="group relative flex items-center justify-center w-3 h-3 rotate-45 border border-neutral-600 bg-[#08090a] hover:bg-[#dc2626] hover:border-[#e6e4dd] transition-colors"
-          >
-            <span className=" -rotate-45 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity absolute right-7 whitespace-nowrap px-2.5 py-1 border border-neutral-800 bg-[#08090a] font-mono text-[10px] uppercase tracking-widest text-[#e6e4dd]">
-              {chapter.label}
-            </span>
-          </a>
-        ))}
-      </nav>
+      {/* Slide-Over Cyber-Zen Archive Drawer */}
+      <ArchiveDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        dispatches={dispatches}
+        activeDispatch={dispatch}
+      />
 
-      {/* Main Scrollytelling Visual Essay Flow */}
+      {/* Active Issue Scrollytelling Visual Essay */}
       <main className="relative z-10">
-        <HeroSection data={issueData.hero} meta={issueData.meta} />
-        <StickySplitSection data={issueData.stickySplit} />
-        <HorizontalScrollSection data={issueData.protestCycle} />
-        <DataComparisonSection data={issueData.dataComparison} />
-        <ConclusionSection data={issueData.conclusion} meta={issueData.meta} />
+        <ActiveIssueComponent />
       </main>
     </div>
+  );
+}
+
+function DynamicDispatchRoute() {
+  const { slug, id } = useParams();
+  const matched = findDispatchByParam(slug || id);
+  if (!matched) {
+    return <Navigate to="/" replace />;
+  }
+  return <DispatchShell dispatch={matched} />;
+}
+
+export default function App() {
+  const latestDispatch = getLatestDispatch();
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Route /: Automatically renders the latest dispatch */}
+        <Route
+          path="/"
+          element={<DispatchShell dispatch={latestDispatch} />}
+        />
+
+        {/* Route /:slug and /issue/:id: Dynamically renders the matching dispatch */}
+        <Route path="/:slug" element={<DynamicDispatchRoute />} />
+        <Route path="/issue/:id" element={<DynamicDispatchRoute />} />
+
+        {/* Fallback route *: Redirects to / */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

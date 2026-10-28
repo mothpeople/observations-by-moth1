@@ -114,16 +114,6 @@ export default function HeroSection({ data, meta }) {
               </svg>
             </div>
 
-            {/* Top Editorial Masthead */}
-            <div className="absolute top-6 left-6 right-6 md:left-12 md:right-12 z-20 flex items-center justify-between border-b border-white/10 pb-4 text-xs font-mono tracking-widest uppercase text-[#e6e4dd]/70">
-              <div className="flex items-center gap-3">
-                <span className="inline-block h-2 w-2 rotate-45 bg-[#dc2626]" />
-                <span className="text-[#e6e4dd] font-semibold tracking-[0.2em]">
-                  {meta.publication}
-                </span>
-              </div>
-            </div>
-
             {/* Stage A: Opening Full-Screen Title */}
             <div
               style={{

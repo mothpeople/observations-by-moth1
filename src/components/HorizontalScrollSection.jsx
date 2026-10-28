@@ -45,7 +45,7 @@ export default function HorizontalScrollSection({ data }) {
         return (
           <div className="relative w-full h-full flex flex-col justify-between bg-[#0c0d10] bg-sumi-grid overflow-hidden">
             {/* Top Header — Clean Section Title Only */}
-            <div className="relative z-20 max-w-6xl w-full mx-auto px-4 sm:px-10 pt-3 sm:pt-7 pb-2 sm:pb-3 border-b border-neutral-800 flex items-end justify-between gap-6 shrink-0">
+            <div className="relative z-20 max-w-6xl w-full mx-auto px-4 sm:px-10 pt-14 sm:pt-16 pb-2 sm:pb-3 border-b border-neutral-800 flex items-end justify-between gap-6 shrink-0">
               <h2 className="font-serif text-xl sm:text-4xl font-bold text-[#e6e4dd]">
                 {data.sectionTitle}
               </h2>
