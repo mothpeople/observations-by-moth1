@@ -4,69 +4,63 @@ import CyberPanel from './CyberPanel';
 import { clamp, remap } from '../../utils/math';
 
 export default function HeroMachineSection({ data }) {
+  const { meta, hero } = data;
+
   return (
-    <PinnedStage id="beat-1" heightMultiplier={3.2}>
+    <PinnedStage id="beat-1" heightMultiplier={3.4}>
       {(progress) => {
-        // Cover fades out 0.30 -> 0.48
+        // Cover fades out 0.28 -> 0.45
         const coverOpacity =
-          progress < 0.3
+          progress < 0.28
             ? 1
-            : progress < 0.48
-              ? 1 - remap(progress, 0.3, 0.48)
+            : progress < 0.45
+              ? 1 - remap(progress, 0.28, 0.45)
               : 0;
         const coverY =
-          progress < 0.3 ? 0 : remap(progress, 0.3, 0.48, 0, -28);
+          progress < 0.28 ? 0 : remap(progress, 0.28, 0.45, 0, -28);
 
-        // Card 2 fades in 0.45 -> 0.62 and holds until end of section
+        // Cold Open Story Spread fades in 0.42 -> 0.58 and holds
         const cardOpacity =
-          progress < 0.45
+          progress < 0.42
             ? 0
-            : progress < 0.62
-              ? remap(progress, 0.45, 0.62)
+            : progress < 0.58
+              ? remap(progress, 0.42, 0.58)
               : 1;
         const cardY =
-          progress < 0.45
+          progress < 0.42
             ? 28
-            : progress < 0.62
-              ? remap(progress, 0.45, 0.62, 28, 0)
+            : progress < 0.58
+              ? remap(progress, 0.42, 0.58, 28, 0)
               : 0;
 
-        // Bar growth 0.56 -> 0.85
-        const barFill = clamp(remap(progress, 0.56, 0.85, 0, 1), 0, 1);
+        // Bar growth 0.54 -> 0.84
+        const barFill = clamp(remap(progress, 0.54, 0.84, 0, 1), 0, 1);
 
-        // Background dim as text card appears
+        // Background dim as Cold Open spread appears
         const bgOpacity =
-          progress < 0.35
-            ? 0.68
-            : remap(progress, 0.35, 0.6, 0.68, 0.32);
-        const bgScale = remap(progress, 0, 1, 1.0, 1.07);
+          progress < 0.32
+            ? 0.78
+            : remap(progress, 0.32, 0.58, 0.78, 0.26);
+        const bgScale = remap(progress, 0, 1, 1.0, 1.06);
 
         return (
-          <div className="relative w-full h-full bg-[#0f1115] text-[#e2e8f0] overflow-hidden">
-            {/* Animated Cyberpunk Line-Art Background */}
+          <div className="relative w-full h-full bg-[#121316] text-[#e2e8f0] overflow-hidden">
+            {/* Animated Cyberpunk Line-Art Skyline Background */}
             <div
               className="absolute inset-0 bg-cover bg-center transition-transform duration-150 will-change-transform"
               style={{
-                backgroundImage: `url('/issues/issue-02/hero-machine.webp')`,
+                backgroundImage: `url('${hero.image}')`,
                 opacity: bgOpacity,
                 transform: `scale(${bgScale})`,
               }}
             />
 
-            {/* Technical Grid & Gradient Vignette */}
+            {/* Soft Pastel Cyan & Muted Lavender Window Glow + Vignette */}
             <div
               className="pointer-events-none absolute inset-0"
               style={{
                 background:
-                  'radial-gradient(circle at 50% 35%, rgba(15,17,21,0.25) 0%, rgba(15,17,21,0.92) 85%)',
-              }}
-            />
-            <div
-              className="pointer-events-none absolute inset-0 opacity-15"
-              style={{
-                backgroundImage:
-                  'linear-gradient(to right, #334155 1px, transparent 1px), linear-gradient(to bottom, #334155 1px, transparent 1px)',
-                backgroundSize: '48px 48px',
+                  'radial-gradient(circle at 50% 35%, rgba(103,232,249,0.08) 0%, rgba(192,132,252,0.08) 40%, rgba(18,19,22,0.92) 88%)',
               }}
             />
 
@@ -77,129 +71,144 @@ export default function HeroMachineSection({ data }) {
                 transform: `translate3d(0, ${coverY}px, 0)`,
                 pointerEvents: coverOpacity > 0.15 ? 'auto' : 'none',
               }}
-              className="seq-layer absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center"
+              className="seq-layer absolute inset-0 z-10 flex flex-col items-center justify-center px-5 text-center pt-12"
             >
               <div className="max-w-4xl mx-auto">
-                <div className="inline-flex items-center gap-2.5 border border-slate-800 bg-[#121316]/90 px-3.5 py-1.5 mb-6">
-                  <span className="h-2 w-2 rounded-full bg-[#86efac] animate-pulse" />
-                  <span className="font-mono text-[11px] tracking-[0.24em] text-[#86efac] uppercase">
-                    {data.meta.tag} // {data.meta.issue}
+                <div className="inline-flex items-center gap-2 border border-slate-800 bg-[#121316]/90 px-3.5 py-1.5 mb-5">
+                  <span className="h-2 w-2 rounded-full bg-[#67e8f9] animate-pulse" />
+                  <span className="font-mono text-[10px] sm:text-[11px] tracking-[0.22em] text-[#67e8f9] uppercase">
+                    {meta.publication} • {meta.date}
                   </span>
                 </div>
 
-                <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-[#e2e8f0] uppercase leading-[1.04] mb-6 drop-shadow-[0_8px_30px_rgba(0,0,0,0.9)]">
+                <h1 className="font-editorial text-3xl sm:text-6xl md:text-7xl font-black tracking-tight text-[#e2e8f0] uppercase leading-[1.05] mb-4 sm:mb-5 drop-shadow-[0_8px_30px_rgba(0,0,0,0.9)]">
                   The Meat Grinder{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#86efac] via-[#67e8f9] to-[#fda4af]">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#86efac] via-[#67e8f9] to-[#c084fc]">
                     Needs More Meat
                   </span>
                 </h1>
 
-                <p className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-slate-300 leading-relaxed font-normal mb-8">
-                  {data.meta.subtitle}
+                <p className="max-w-2xl mx-auto text-base sm:text-xl md:text-2xl text-[#e2e8f0]/90 leading-relaxed font-medium mb-6 sm:mb-8">
+                  {hero.subtitle}
                 </p>
 
-                <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-mono tracking-[0.2em] text-slate-400 uppercase">
-                  <span className="border border-slate-800 bg-[#0f1115]/80 px-3 py-1.5 text-[#67e8f9]">
-                    {data.meta.publication}
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-mono tracking-[0.16em] text-slate-300 uppercase">
+                  <span className="border border-slate-800 bg-[#121316]/85 px-3 py-1 text-[#86efac]">
+                    1.73 Earths Consumed
                   </span>
-                  <span className="border border-slate-800 bg-[#0f1115]/80 px-3 py-1.5">
-                    {data.meta.date}
+                  <span className="border border-slate-800 bg-[#121316]/85 px-3 py-1 text-[#67e8f9]">
+                    2050 Coastal Horizon
                   </span>
-                  <span className="border border-slate-800 bg-[#0f1115]/80 px-3 py-1.5 text-[#fda4af]">
-                    2.1 TFR REPLACEMENT THRESHOLD
+                  <span className="border border-slate-800 bg-[#121316]/85 px-3 py-1 text-[#c084fc]">
+                    The Biological Scam
                   </span>
                 </div>
 
-                <div className="mt-12 flex flex-col items-center gap-2 text-slate-400">
-                  <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#86efac]">
-                    Scroll to Inspect the Machine
+                <div className="mt-8 sm:mt-12 flex flex-col items-center gap-2 text-slate-400">
+                  <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#67e8f9]">
+                    Scroll to Enter
                   </span>
-                  <div className="w-[1px] h-10 bg-gradient-to-b from-[#86efac] to-transparent" />
+                  <div className="w-[1px] h-8 sm:h-10 bg-gradient-to-b from-[#67e8f9] to-transparent" />
                 </div>
               </div>
             </div>
 
-            {/* LAYER 2: Opening Premise + Global TFR Freefall Chart */}
+            {/* LAYER 2: The Cold Open Graphic-Novel Spread */}
             <div
               style={{
                 opacity: cardOpacity,
                 transform: `translate3d(0, ${cardY}px, 0)`,
                 pointerEvents: cardOpacity > 0.2 ? 'auto' : 'none',
               }}
-              className="seq-layer absolute inset-0 z-20 flex items-center justify-center px-4 sm:px-6 pt-14 pb-6"
+              className="seq-layer absolute inset-0 z-20 flex items-center justify-center px-3 sm:px-6 pt-14 pb-3 sm:pb-6"
             >
-              <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-8 items-center">
-                {/* Left Narrative Panel */}
+              <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 md:gap-7 items-center">
+                {/* Left Column: Animated Illustration + Cold Open Copy */}
                 <CyberPanel
-                  tag={data.hero.tag}
-                  accent="#fda4af"
+                  label="The Cold Open"
+                  accent="#67e8f9"
                   className="lg:col-span-7"
                 >
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e2e8f0] tracking-tight leading-tight mb-4">
-                    {data.hero.card2Headline}
-                  </h2>
-                  <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-4">
-                    {data.hero.card2Copy}
-                  </p>
-                  <p className="text-xs sm:text-sm text-slate-400 leading-relaxed border-l-2 border-[#86efac] pl-3.5">
-                    {data.hero.card2Subcopy}
-                  </p>
-                </CyberPanel>
-
-                {/* Right TFR Telemetry Panel */}
-                <CyberPanel
-                  tag="[TELEMETRY // TFR FREEFALL]"
-                  accent="#67e8f9"
-                  className="lg:col-span-5"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-mono text-xs uppercase tracking-[0.18em] text-[#67e8f9] font-semibold">
-                      Total Fertility Rate (2024–2025)
-                    </span>
-                    <span className="font-mono text-[11px] text-slate-400">
-                      Births / Woman
-                    </span>
+                  {/* Embedded Animated Graphic-Novel Panel */}
+                  <div className="relative w-full aspect-[16/8.5] max-h-[115px] sm:max-h-[200px] lg:max-h-[240px] mb-2.5 sm:mb-4 border border-slate-800 bg-[#0f1115] overflow-hidden">
+                    <img
+                      src={hero.grinderImage || hero.image}
+                      alt="The Billionaire Podcast vs. The Meat Grinder"
+                      className="w-full h-full object-cover"
+                    />
+                    <div
+                      className="pointer-events-none absolute inset-0"
+                      style={{
+                        background:
+                          'linear-gradient(to top, rgba(18,19,22,0.75) 0%, transparent 50%)',
+                      }}
+                    />
                   </div>
 
-                  <div className="space-y-3">
-                    {data.hero.tfrStats.map((stat, idx) => {
-                      const pct = Math.min(100, (stat.value / 2.4) * 100) * barFill;
-                      const displayedVal = (stat.value * barFill).toFixed(2);
+                  <h2 className="text-sm sm:text-xl md:text-2xl font-bold text-[#e2e8f0] tracking-tight leading-snug mb-2 sm:mb-3">
+                    {hero.coldOpenHeadline}
+                  </h2>
+
+                  <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed">
+                    {hero.paragraphs.map((p, i) => (
+                      <p
+                        key={i}
+                        className={
+                          i === 1
+                            ? 'border-l-2 border-[#c084fc] pl-3 text-[#e2e8f0]/90'
+                            : ''
+                        }
+                      >
+                        {p}
+                      </p>
+                    ))}
+                  </div>
+                </CyberPanel>
+
+                {/* Right Column: Three Undeniable Data Anchors */}
+                <CyberPanel
+                  label="Three Undeniable Data Points"
+                  accent="#86efac"
+                  className="lg:col-span-5"
+                >
+                  <div className="space-y-2 sm:space-y-3.5">
+                    {hero.anchors.map((anchor) => {
+                      const pct = Math.round(anchor.percent * barFill);
                       return (
-                        <div key={stat.label} className="space-y-1">
-                          <div className="flex justify-between text-xs font-mono">
-                            <span
-                              className={
-                                idx === 0
-                                  ? 'text-[#86efac] font-semibold'
-                                  : 'text-slate-300'
-                              }
-                            >
-                              {stat.label}
+                        <div
+                          key={anchor.label}
+                          className="p-2 sm:p-3 bg-[#0f1115]/90 border border-slate-800/90 space-y-1 sm:space-y-1.5"
+                        >
+                          <div className="flex items-baseline justify-between gap-2 font-mono text-[10px] sm:text-xs">
+                            <span className="text-[#e2e8f0] font-semibold truncate">
+                              {anchor.label}
                             </span>
                             <span
-                              style={{ color: stat.color }}
-                              className="font-bold tabular-nums"
+                              style={{ color: anchor.color }}
+                              className="font-bold shrink-0"
                             >
-                              {displayedVal}
+                              {anchor.value}
                             </span>
                           </div>
-                          <div className="h-2 w-full bg-slate-900 border border-slate-800 overflow-hidden">
+                          <div className="h-1.5 w-full bg-slate-900 border border-slate-800 overflow-hidden">
                             <div
                               style={{
                                 width: `${pct}%`,
-                                backgroundColor: stat.color,
+                                backgroundColor: anchor.color,
                               }}
-                              className="h-full transition-all duration-75"
+                              className="h-full transition-all duration-100"
                             />
                           </div>
+                          <p className="hidden sm:block text-[11px] sm:text-xs text-slate-400 leading-relaxed">
+                            {anchor.detail}
+                          </p>
                         </div>
                       );
                     })}
                   </div>
 
-                  <p className="mt-4 pt-3 border-t border-slate-800/80 font-mono text-[10px] text-slate-400 leading-relaxed">
-                    {data.hero.citation}
+                  <p className="mt-2.5 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-800/80 font-mono text-[9px] sm:text-[10px] text-slate-400 leading-relaxed">
+                    {hero.citation}
                   </p>
                 </CyberPanel>
               </div>

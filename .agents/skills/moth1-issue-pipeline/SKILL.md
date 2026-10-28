@@ -52,7 +52,8 @@ Use this workflow whenever the user introduces a new topic, script, or issue for
      npx remotion render src/remotion/index.js WateringGrassReel out/watering-grass-reel.mp4 --codec=h264
      ```
 
-## Deliverable 4: Build Verification & GitHub Deployment
+## Deliverable 4: Local Preview Verification & Gated GitHub Deployment
 
 1. Run `npm run build` to verify the Vite production bundle compiles cleanly.
-2. Stage, commit, and push to `origin/main` (`https://github.com/mothpeople/observations-by-moth1.git`).
+2. Start the local dev server (`npm run dev`) so the user can inspect the new issue locally at `http://localhost:5173/<slug>` and request any copy, visual, or layout adjustments.
+3. **Do NOT push (`git push`) automatically.** Only stage, commit, and push to `origin/main` (`https://github.com/mothpeople/observations-by-moth1.git`) after the user has checked the local version and explicitly instructed to push it online.

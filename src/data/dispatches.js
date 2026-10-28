@@ -27,7 +27,7 @@ export const dispatches = [
 ];
 
 export function getLatestDispatch() {
-  return dispatches[dispatches.length - 1];
+  return dispatches[0];
 }
 
 export function findDispatchByParam(param) {

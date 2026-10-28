@@ -19,7 +19,7 @@ function DispatchShell({ dispatch }) {
 
   useEffect(() => {
     if (dispatch) {
-      document.title = `Issue #${dispatch.id}: ${dispatch.title} — Observations by Moth1`;
+      document.title = `Issue #${dispatch.id}: ${dispatch.title}, Observations by Moth1`;
     }
   }, [dispatch]);
 

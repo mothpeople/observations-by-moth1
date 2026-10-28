@@ -26,3 +26,6 @@
   - Always scope `.ink-panel:not(.absolute):not(.fixed):not(.sticky) { position: relative; }` so `.ink-panel` never overrides absolute/fixed/sticky positioning on sequenced layers (`.seq-layer`).
 - **Scroll-Driven Interactivity**:
   - All bar charts, comparison curves, doctrine simulators, timelines, and finale typewriter reveals must animate automatically via scroll progress (`progress`) with static reading plateaus before transitioning to the next card.
+
+## 4. Deployment & Git Push Guardrail
+- **Local Preview First (Do Not Push Automatically)**: Never run `git push` to deploy changes online until the user has reviewed the local preview (`http://localhost:5173`) and explicitly instructed to push/deploy.

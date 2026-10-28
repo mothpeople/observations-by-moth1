@@ -49,21 +49,21 @@ export default function Masthead({
   const formattedCount = String(totalIssues).padStart(2, '0');
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-[#08090a]/85 backdrop-blur-md border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 h-12 sm:h-14 flex items-center justify-between gap-4">
+    <header className="fixed top-0 inset-x-0 w-full z-50 bg-[#08090a]/90 backdrop-blur-md border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 h-12 sm:h-14 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Minimal Logo Mark OBSERVATIONS // MOTH1 */}
         <Link
           to="/"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="flex items-center gap-2.5 shrink-0 group focus:outline-none"
+          className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 group focus:outline-none"
         >
           <img
             src="/favicon.png"
             alt=""
             aria-hidden="true"
-            className="w-5 h-5 sm:w-6 sm:h-6 rounded-sm border border-neutral-700 object-cover group-hover:border-[#d97706] transition-colors"
+            className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 rounded-sm border border-neutral-700 object-cover group-hover:border-[#d97706] transition-colors"
           />
-          <span className="font-mono text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase text-[#e6e4dd] group-hover:text-[#d97706] transition-colors">
+          <span className="font-mono text-[10px] sm:text-xs font-bold tracking-[0.08em] sm:tracking-[0.2em] uppercase text-[#e6e4dd] group-hover:text-[#d97706] transition-colors truncate">
             OBSERVATIONS <span className="text-[#dc2626]">//</span> MOTH1
           </span>
         </Link>
@@ -82,11 +82,11 @@ export default function Masthead({
         </div>
 
         {/* Right Controls: SHARE ↗ & INDEX [X] */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0 relative">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 relative">
           <button
             type="button"
             onClick={handleShare}
-            className="px-2.5 sm:px-3.5 py-1.5 bg-[#0e1014] hover:bg-[#1f232b] border border-neutral-700 hover:border-[#d97706] text-[#e6e4dd] font-mono text-[10px] sm:text-xs font-semibold tracking-widest uppercase transition-colors cursor-pointer"
+            className="px-2 sm:px-3.5 py-1 sm:py-1.5 bg-[#0e1014] hover:bg-[#1f232b] border border-neutral-700 hover:border-[#d97706] text-[#e6e4dd] font-mono text-[10px] sm:text-xs font-semibold tracking-wider sm:tracking-widest uppercase transition-colors cursor-pointer whitespace-nowrap"
           >
             SHARE <span aria-hidden="true">↗</span>
           </button>
@@ -96,7 +96,7 @@ export default function Masthead({
             onClick={onToggleDrawer}
             aria-expanded={isDrawerOpen}
             aria-controls="archive-drawer"
-            className={`px-2.5 sm:px-3.5 py-1.5 border font-mono text-[10px] sm:text-xs font-semibold tracking-widest uppercase transition-colors cursor-pointer ${
+            className={`px-2 sm:px-3.5 py-1 sm:py-1.5 border font-mono text-[10px] sm:text-xs font-semibold tracking-wider sm:tracking-widest uppercase transition-colors cursor-pointer whitespace-nowrap ${
               isDrawerOpen
                 ? 'bg-[#d97706] text-[#08090a] border-[#d97706]'
                 : 'bg-[#0e1014] hover:bg-[#1f232b] text-[#e6e4dd] border-neutral-700 hover:border-[#d97706]'

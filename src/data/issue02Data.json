@@ -4,174 +4,234 @@
     "publication": "Observations by Moth1",
     "date": "NOV 2026",
     "readingTime": "5 MIN",
-    "title": "The Meat Grinder Needs More Meat"
+    "title": "The Meat Grinder Needs More Meat",
+    "subtitle": "The billionaire panic vs. the biological scam."
   },
   "hero": {
     "title": "The Meat Grinder Needs More Meat",
-    "subtitle": "Why billionaires panic about birth rates, why the Venn diagram collapsed, and why the earth is quietly exhausted.",
+    "subtitle": "The billionaire panic vs. the biological scam.",
     "image": "/issues/issue-02/hero-machine.webp",
+    "grinderImage": "/issues/issue-02/hero-grinder.webp",
+    "coldOpenHeadline": "You know why the total fertility rate is in freefall worldwide and people simply refuse to have children?",
     "paragraphs": [
-      "You know why the total fertility rate is in freefall worldwide and people simply refuse to have children? Listen to politicians and tech billionaires whine, and they’ll tell you society is collapsing because younger generations became selfish. What they really mean is: the meat grinder is running out of meat.",
-      "They do not care about procreation or the dignity of human life. They care about future taxpayers to fund pension deficits, and warm bodies to keep consumer demand humming."
+      "Listen to politicians and tech billionaires whine on podcasts, and they will tell you civilisation is collapsing because people have become selfish. What they really mean is the meat grinder is running out of meat.",
+      "They do not care about procreation or the poetry of human life. They care about future taxpayers to fund old-age welfare deficits, and warm bodies to keep consumer demand humming."
     ],
-    "scrollHint": "Scroll to Inspect the Machine"
+    "anchors": [
+      {
+        "label": "The Ecological Deficit (Carrying Capacity)",
+        "value": "1.73 Earths",
+        "percent": 87,
+        "color": "#86efac",
+        "detail": "Humanity consumes resources at 1.73x Earth's biocapacity; demanding more people accelerates resource insolvency."
+      },
+      {
+        "label": "The 2050 Inundation Horizon",
+        "value": "Bangkok • Saigon • Jakarta • Manila",
+        "percent": 82,
+        "color": "#67e8f9",
+        "detail": "Chronic coastal flooding and urban subsidence threaten Asia's primary low-lying economic hubs by 2050."
+      },
+      {
+        "label": "The Billionaire / State Contradiction",
+        "value": "300M Jobs Exposed to AI",
+        "percent": 91,
+        "color": "#fda4af",
+        "detail": "Executives demand 'more babies to save civilisation' while deploying AI agents to erase entry-level careers."
+      }
+    ],
+    "citation": "Ref: Global Footprint Network (1.73 Earths Overshoot Index), Climate Central 2050 Coastal DEM & WEF Future of Jobs Report."
   },
   "vennSection": {
-    "sectionTitle": "The Collapsing Family Venn Diagram",
+    "sectionTitle": "The Collapsing Venn Diagram",
+    "subtitle": "Three glowing pastel wireframe circles drifting apart into a demographic void.",
+    "citation": "Ref: OECD Family Database (2024), SingStat (0.97 TFR) & Statistics Korea KOSTAT (0.72 TFR).",
     "circles": [
       {
         "id": "A",
         "label": "Family Support",
-        "shortLabel": "FAMILY SUPPORT",
-        "color": "#86efac",
-        "description": "Multi-generational care, community time & domestic bandwidth"
+        "sublabel": "Caregiving, community trust, extended networks",
+        "color": "#86efac"
       },
       {
         "id": "B",
         "label": "Social Policies & Housing",
-        "shortLabel": "SOCIAL POLICIES & HOUSING",
-        "color": "#67e8f9",
-        "description": "Accessible housing, urban livability & public childcare"
+        "sublabel": "Job security, parental leave, affordable shelter",
+        "color": "#67e8f9"
       },
       {
         "id": "C",
         "label": "Financial Sustainability",
-        "shortLabel": "FINANCIAL SUSTAINABILITY",
-        "color": "#fda4af",
-        "description": "Real wage security, career stability & predictable costs"
+        "sublabel": "Upward mobility, cost of living, real savings",
+        "color": "#fda4af"
       }
     ],
     "cards": [
       {
         "id": "venn-1",
-        "tag": "The Original Overlap",
+        "start": 0.0,
+        "end": 0.34,
         "accent": "#86efac",
-        "metric": "2.10",
-        "metricLabel": "REPLACEMENT FERTILITY THRESHOLD",
-        "copy": "For having a child to be a rational, joyful decision rather than an act of financial self-harm, three circles have to intersect: Family Support, Social Policies & Housing, and Financial Sustainability.",
-        "citation": "Ref: UN DESA 'World Population Prospects 2024' & OECD Family Database (Replacement TFR = 2.1)"
+        "headline": "The Three Fundamental Circles",
+        "body": "Before a child can be brought into this world with a fair shot at a decent life, three fundamental circles have to intersect: family support, social policy, and financial sustainability.",
+        "image": "/issues/issue-02/hero-machine.webp",
+        "metric": "2.10 REPLACEMENT OVERLAP",
+        "citation": "Ref: UN DESA World Population Prospects, Replacement Level Fertility Threshold (2.1)"
       },
       {
         "id": "venn-2",
-        "tag": "The Great Drift",
+        "start": 0.34,
+        "end": 0.66,
         "accent": "#67e8f9",
-        "metric": "1.50",
-        "metricLabel": "OECD AVERAGE TFR (DOWN FROM 2.8 IN 1970)",
-        "copy": "Over the last thirty years, dual-income burnout pulled Family Support outward, housing financialization yanked Social Policies away, and stagnant wages dragged Financial Sustainability through the floor.",
-        "citation": "Ref: OECD 'Society at a Glance 2024' — Total Fertility Rate Across 38 OECD Member Economies"
+        "headline": "When the Circles Held Together",
+        "body": "In our grandparents' era, these circles held together. You had large extended families, neighbours who actually knew your name, and a baseline where one income could house and feed five kids. Upward mobility was the default expectation.",
+        "image": "/issues/issue-02/venn-village.webp",
+        "metric": "SINGLE-INCOME HOUSEHOLD VIABILITY",
+        "citation": "Ref: OECD Historical Household Income & Intergenerational Mobility Ledger (1970-2000)"
       },
       {
         "id": "venn-3",
-        "tag": "The TFR Black Hole",
+        "start": 0.66,
+        "end": 1.0,
         "accent": "#fda4af",
-        "metric": "0.72–0.97",
-        "metricLabel": "EAST & SOUTHEAST ASIAN URBAN TFR FLOOR",
-        "copy": "Where the overlapping center once read 'Make Baby', there is now a structural vacuum: the TFR Black Hole. South Korea sits at 0.72. Singapore hit 0.97. No amount of moral lecturing can close a broken geometry.",
-        "citation": "Ref: Statistics Korea (KOSTAT 2024) & Singapore Department of Statistics Population in Brief (2024)"
+        "headline": "The Middle Fell Through",
+        "body": "Somewhere in the early 2000s, at the peak of financialisation and hyper-efficiency, those circles drifted apart. The middle fell through. Today, governments toss baby-bonus cash into that black hole and wonder why the needle doesn't move. The biological function of continuing a species has somehow turned into an underpaid freelance gig.",
+        "image": "/issues/issue-02/venn-blackhole.webp",
+        "metric": "0.72 - 0.97 TFR BLACK HOLE",
+        "citation": "Ref: KOSTAT (2024) & Singapore Dept of Statistics, Cash Subsidies vs. Urban TFR Floor"
       }
     ]
   },
-  "contradictionsSection": {
-    "sectionTitle": "The 4 Contradictions",
+  "contradictions": {
+    "title": "The Grand Contradictions",
+    "subtitle": "Four structural paradoxes turning family planning into an impossible equation.",
     "steps": [
       {
-        "phaseTitle": "AI & Stolen Ladders",
-        "copy": "How do you ask people to breed future workers for an economy that is simultaneously bragging about replacing entry-level careers with AI? You cannot saw off the bottom rungs of the economic ladder and act shocked when nobody wagers a 20-year dependent on it.",
+        "id": "contradiction-1",
+        "title": "The Automation Paradox",
+        "subtitle": "AI & Stolen Ladders",
+        "copy": "People breeding workers for a market that is aggressively automating them out of existence. Kids born today face a world where cognitive work is taken by models, entry-level career ladders are dismantled, and downward mobility into survival gig-work is the baseline. Raising a human to live without economic purpose is not a blessing; it is cruelty.",
         "image": "/issues/issue-02/contradiction-1-ai.webp",
-        "crowdCount": "300M",
-        "crowdUnit": "FULL-TIME ROLES EXPOSED TO AI AUTOMATION",
-        "tensionLevel": 84,
-        "accent": "#67e8f9",
-        "citation": "Ref: Goldman Sachs Global Macro Research (2023) & WEF 'Future of Jobs Report' (2025)"
-      },
-      {
-        "phaseTitle": "Sinking Cities (2050 Sea Level Realities)",
-        "copy": "Governments hand out fertility brochures while low-lying coastal cities quietly model chronic 2050 sea-level flooding, lethal wet-bulb heatwaves, and severe water stress. Young people aren't nihilists—they can simply read a climate chart.",
-        "image": "/issues/issue-02/contradiction-2-sinking.webp",
-        "crowdCount": "1.0B+",
-        "crowdUnit": "COASTAL RESIDENTS EXPOSED BY 2050",
-        "tensionLevel": 88,
+        "metricLabel": "ENTRY-LEVEL & COGNITIVE ROLES EXPOSED TO AI",
+        "metricValue": "300M ROLES AT RISK",
+        "barPercent": 86,
         "accent": "#86efac",
-        "citation": "Ref: IPCC Sixth Assessment Report (AR6) & Climate Central Coastal DEM 2050 Projections"
+        "citation": "Ref: Goldman Sachs Global Macro Research & WEF 'Future of Jobs Report' (2025)"
       },
       {
-        "phaseTitle": "The Paid Gig Baby (BTO & Subsidy Illusions)",
-        "copy": "Throwing a one-off baby bonus or a 5-year waitlisted micro-flat at a 25-year cost crisis treats parenthood like an underpaid gig job. A $10,000 cash token against $310,000+ of housing, childcare, and tuition inflation is an insult to basic arithmetic.",
+        "id": "contradiction-2",
+        "title": "Sinking Cities (The 2050 Horizon)",
+        "subtitle": "1.73 Earths & Rising Seas",
+        "copy": "By 2050, studies project major coastal metropolises, from Bangkok and Manila to southern Vietnam, will face chronic flooding and displacement from rising sea levels. We are currently consuming 1.73 Earths of biocapacity every year. The planet is literally choking on human extraction, yet leaders plead for more mouths to feed.",
+        "image": "/issues/issue-02/contradiction-2-sinking.webp",
+        "metricLabel": "GLOBAL ECOLOGICAL CONSUMPTION DEFICIT",
+        "metricValue": "1.73 EARTHS / YEAR",
+        "barPercent": 90,
+        "accent": "#67e8f9",
+        "citation": "Ref: Global Footprint Network (1.73 Earths) & Climate Central 2050 Coastal Inundation Projections"
+      },
+      {
+        "id": "contradiction-3",
+        "title": "The \"Paid Gig\" Child",
+        "subtitle": "Financialised Shelter & Subsidies",
+        "copy": "In modern hyper-expensive cities, housing was transformed from shelter into an appreciating financial asset to flip. Now family planning has followed. Subsidies and paternal leave do not guarantee you keep your career trajectory, nor do they guarantee your child won't grow up trapped in a hyper-competitive rat race.",
         "image": "/issues/issue-02/contradiction-3-subsidy.webp",
-        "crowdCount": "$310K+",
-        "crowdUnit": "LIFETIME CHILD COST VS TOKEN CASH SUBSIDY",
-        "tensionLevel": 92,
+        "metricLabel": "HOUSING & CHILD COST VS. SUBSIDY TOKEN",
+        "metricValue": "$310K+ COST BURDEN",
+        "barPercent": 93,
         "accent": "#fda4af",
-        "citation": "Ref: Brookings Institution Cost of Raising a Child & OECD Family Cash Benefits Database (2024)"
+        "citation": "Ref: Brookings Institution Lifetime Child Cost Analysis & Demographia Housing Affordability Index"
       },
       {
-        "phaseTitle": "The Sandwich Generation Fatigue",
-        "copy": "Today's working adults are already serving as the private safety net for their own aging parents amidst vanishing pensions and surging medical costs. Expecting a generation crushed between eldercare and 60-hour workweeks to add another dependent is delusional.",
-        "aftermathCopy": "The meat grinder does not care about families. It only cares about fresh collateral.",
+        "id": "contradiction-4",
+        "title": "The Sandwich Meat",
+        "subtitle": "Sandwich Generation Trap",
+        "copy": "Today's adults are the sandwich filling: exhausted caregivers carrying aging parents past retirement on one shoulder, while being pressured to bear children on the other, with zero community support. The math does not work.",
         "image": "/issues/issue-02/contradiction-4-sandwich.webp",
-        "crowdCount": "54%",
-        "crowdUnit": "ADULTS SIMULTANEOUSLY FUNDING ELDER & SELF CARE",
-        "tensionLevel": 96,
+        "metricLabel": "WORKING ADULTS SQUEEZED BY DUAL CAREGIVING",
+        "metricValue": "54% CAREGIVER STRAIN",
+        "barPercent": 96,
         "accent": "#c084fc",
-        "citation": "Ref: Pew Research Center 'The Sandwich Generation' & National Transfer Accounts (2024)"
+        "citation": "Ref: Pew Research Center Intergenerational Care Study & OECD Old-Age Dependency Projections"
       }
     ]
   },
   "terminalSolutions": {
-    "sectionTitle": "Three Taboo Propositions",
-    "subtitle": "What if we stop pretending birth rates are returning to 2.1 and redesign civilization around reality?",
+    "title": "Three Uncomfortable Counter-Proposals",
     "propositions": [
       {
-        "id": "01",
-        "title": "01: Redefining the Family Unit",
+        "id": "prop-01",
+        "code": "01",
+        "shortTitle": "Redefine the Family Unit",
+        "title": "Redefine the Family Unit",
         "accent": "#86efac",
-        "lead": "Decouple public housing, tax law, and healthcare rights from nuclear biological reproduction.",
-        "body": "Right now, housing allocation (like BTO schemes) and tax codes punish single adults and non-traditional households to coerce marriage and childbirth. Legalizing platonic co-living cooperatives, multi-adult household equity, and chosen-family care networks lets citizens pool resources and mutual care without forced procreation.",
-        "metrics": [
-          { "label": "NON-NUCLEAR HOUSEHOLDS", "value": "62%" },
-          { "label": "SHARED LIVING COST DROP", "value": "-38%" },
-          { "label": "SOCIAL ISOLATION REDUCTION", "value": "-54%" }
-        ],
-        "citation": "Ref: OECD Household Projections (2024–2040) & European Collaborative Housing Index"
+        "image": "/issues/issue-02/taboo-1-unit.webp",
+        "copy": "The rigid state definition of a nuclear family, father, mother, and legal marriage, is completely outdated. If governments genuinely cared about raising well-adjusted kids, housing and childcare frameworks would open fully to cohabitation, single parents, and queer partnerships without the bureaucratic trap of traditional marriage.",
+        "metricLabel": "NON-TRADITIONAL & COHABITING HOUSEHOLD SHARE",
+        "metricValue": "62% OF MODERN HOUSEHOLDS",
+        "barPercent": 80,
+        "citation": "Ref: OECD Household Projections (2024-2040) & Family Policy Inclusivity Index"
       },
       {
-        "id": "02",
-        "title": "02: Normalising End-of-Life Dignity (Euthanasia)",
+        "id": "prop-02",
+        "code": "02",
+        "shortTitle": "Dignity & Euthanasia",
+        "title": "Normalise Dignity in Aging (Euthanasia)",
         "accent": "#67e8f9",
-        "lead": "Replace forced biological prolongation with autonomous, dignified end-of-life choice.",
-        "body": "Modern medicine excels at keeping organs ticking long after agency, cognition, and quality of life have vanished—draining over 25% of lifetime healthcare expenditure in the final months of agony. Normalising voluntary, safeguarded end-of-life dignity honors human autonomy and lifts an immense emotional and financial terror from aging societies.",
-        "metrics": [
-          { "label": "FINAL-YEAR MEDICAL SHARE", "value": "25%+" },
-          { "label": "PUBLIC SUPPORT FOR DIGNITY", "value": "74%" },
-          { "label": "AUTONOMY & CARE INDEX", "value": "HIGH" }
-        ],
-        "citation": "Ref: The Lancet Commission on the Value of Death (2022) & OECD Health at a Glance (2024)"
+        "image": "/issues/issue-02/taboo-2-dignity.webp",
+        "copy": "Nobody wants to admit that millions of elderly citizens are not spending their final years in picturesque peace. They are trapped in physical decay, feeling like indefinite financial burdens on their exhausted children. Open conversations about end-of-life autonomy and legalised euthanasia would restore dignity and relieve unbearable caregiver pressure on the generation in between.",
+        "metricLabel": "FINAL-YEAR MEDICAL SHARE & PUBLIC AUTONOMY SUPPORT",
+        "metricValue": "74% SUPPORT END-OF-LIFE AUTONOMY",
+        "barPercent": 85,
+        "citation": "Ref: The Lancet Commission on the Value of Death (2022) & OECD End-of-Life Care Expenditure"
       },
       {
-        "id": "03",
-        "title": "03: Dismantling Infinite GDP Growth",
+        "id": "prop-03",
+        "code": "03",
+        "shortTitle": "Kill the Infinite Growth Fetish",
+        "title": "Kill the \"Growth at All Costs\" Fetish",
         "accent": "#c084fc",
-        "lead": "Treat population stabilization as an ecological rescue rather than a capitalist emergency.",
-        "body": "A finite biosphere already operating at 1.7x ecological overshoot does not need 10 billion consumers churning disposable goods to prop up quarterly GDP. Shifting from aggregate GDP growth to per-capita well-being, automated public dividends, and ecological restoration turns a smaller population into humanity's greatest dividend.",
-        "metrics": [
-          { "label": "BIOSPHERE OVERSHOOT", "value": "1.7x EARTHS" },
-          { "label": "PER-CAPITA SPACE GAIN", "value": "+42%" },
-          { "label": "ECOLOGICAL TRAJECTORY", "value": "REGENERATIVE" }
-        ],
-        "citation": "Ref: Global Footprint Network (2024) & Hickel et al., 'Degrowth & Post-Growth Economics' (Nature, 2022)"
+        "image": "/issues/issue-02/taboo-3-degrowth.webp",
+        "copy": "You cannot prioritize perpetual GDP expansion and expect people to build healthy families. An economic model that demands infinite growth on a finite, overheated planet will always sacrifice human wellbeing for quarterly figures.",
+        "metricLabel": "PLANETARY BIOCAPACITY OVERSHOOT",
+        "metricValue": "1.73 EARTHS CONSUMED ANNUALLY",
+        "barPercent": 92,
+        "citation": "Ref: Global Footprint Network Earth Overshoot Index & Hickel et al. (Nature, 2022)"
       }
     ]
   },
   "conclusion": {
     "backgroundImage": "/issues/issue-02/quiet-earth.webp",
-    "statementLead": "Maybe declining birth rates aren't an extinction crisis at all. Maybe it is the human species quietly refusing to feed an extractive machine—and giving an exhausted planet its first chance to breathe.",
-    "statementPunchline": "Stop demanding more meat for the grinder. Build a world worth being born into.",
-    "substack": {
-      "badge": "Observations by Moth1",
-      "heading": "Subscribe to Observations by Moth1",
-      "description": "Visual essays on power, generational economics, and street-level reality.",
-      "placeholder": "Enter your email",
-      "buttonText": "Subscribe"
+    "lead": "People will have kids when they genuinely feel the future is brighter than the past.",
+    "body": "But when you look around at an unaffordable world, an unstable climate, and an automated job landscape run by billionaires who hoard the ladder, having less people is not a crisis. It is a biological correction. The planet is tired of us, and declining birth rates are simply society's immune response.",
+    "punchline": "Everything else is just noise from people who need more cogs in their machine.",
+    "substackPrompt": "Visual essays on power, generational economics, and street-level reality."
+  },
+  "sources": [
+    {
+      "id": "01",
+      "name": "Global Footprint Network: Earth Overshoot Index (2024)",
+      "detail": "Humanity currently consumes ecological resources at 1.73 Earths annually, placing planetary biocapacity in severe deficit."
+    },
+    {
+      "id": "02",
+      "name": "Climate Central Coastal DEM & IPCC AR6 (2050 Inundation Horizon)",
+      "detail": "Projections of chronic flooding, sea-level rise, and urban subsidence across Bangkok, southern Vietnam (Saigon/Mekong Delta), Jakarta, and Manila by 2050."
+    },
+    {
+      "id": "03",
+      "name": "Goldman Sachs Global Macro Research & WEF Future of Jobs Report (2025)",
+      "detail": "Autonomous AI agents and robotic labor exposure across 300 million jobs, dismantling entry-level white-collar and cognitive career ladders."
+    },
+    {
+      "id": "04",
+      "name": "OECD Family Database, KOSTAT & Singapore Department of Statistics (2024)",
+      "detail": "Global TFR compression across industrialised cities (South Korea 0.72, Singapore 0.97, OECD average 1.50 vs. 2.10 replacement threshold)."
+    },
+    {
+      "id": "05",
+      "name": "The Lancet Commission on the Value of Death & Pew Research Center",
+      "detail": "Sandwich generation caregiver strain (54% dual-burden adults) and end-of-life medicalization vs. dignified autonomy."
     }
-  }
+  ]
 }

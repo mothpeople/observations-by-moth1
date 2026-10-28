@@ -280,7 +280,7 @@ const SceneVenn = () => {
           }}
         >
           <p style={{ fontSize: 26, fontWeight: 700, color: COLORS.coral }}>
-            All 3 circles drifted apart — leaving a demographic void in the center.
+            All 3 circles drifted apart, leaving a demographic void in the center.
           </p>
         </div>
       </div>

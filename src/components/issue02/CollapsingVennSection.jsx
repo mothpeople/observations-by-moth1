@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
+import { useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
 import CyberPanel from './CyberPanel';
-import { getCardEnvelope } from '../../utils/math';
+import { getCardEnvelope, remap } from '../../utils/math';
 
 export default function CollapsingVennSection({ data }) {
   const containerRef = useRef(null);
@@ -12,45 +12,52 @@ export default function CollapsingVennSection({ data }) {
     offset: ['start start', 'end end'],
   });
 
+  // Framer Motion useTransform driving circle separation across the 300vh section
+  const separationProgress = useTransform(
+    scrollYProgress,
+    [0, 0.22, 0.72, 1],
+    [0, 0, 1, 1]
+  );
+  const [sep, setSep] = useState(0);
+
   useMotionValueEvent(scrollYProgress, 'change', (latest) => {
     setScrollProgress(latest);
   });
 
-  // Circle A: Family Support (Mint #86efac) — moves Top-Left outward
-  const circleAX = useTransform(scrollYProgress, [0, 0.2, 0.72, 1], [175, 175, 108, 108]);
-  const circleAY = useTransform(scrollYProgress, [0, 0.2, 0.72, 1], [150, 150, 96, 96]);
+  useMotionValueEvent(separationProgress, 'change', (latest) => {
+    setSep(latest);
+  });
 
-  // Circle B: Social Policies & Housing (Cyan #67e8f9) — moves Top-Right outward
-  const circleBX = useTransform(scrollYProgress, [0, 0.2, 0.72, 1], [225, 225, 292, 292]);
-  const circleBY = useTransform(scrollYProgress, [0, 0.2, 0.72, 1], [150, 150, 96, 96]);
+  // Interpolate the 3 Venn circle positions outward from overlapping center
+  const ax = remap(sep, 0, 1, 174, 104);
+  const ay = remap(sep, 0, 1, 148, 92);
 
-  // Circle C: Financial Sustainability (Coral #fda4af) — moves Bottom-Center outward
-  const circleCX = useTransform(scrollYProgress, [0, 0.2, 0.72, 1], [200, 200, 200, 200]);
-  const circleCY = useTransform(scrollYProgress, [0, 0.2, 0.72, 1], [192, 192, 268, 268]);
+  const bx = remap(sep, 0, 1, 226, 296);
+  const by = remap(sep, 0, 1, 148, 92);
 
-  // Center "MAKE BABY" intersection fades out as circles drift apart
-  const makeBabyOpacity = useTransform(scrollYProgress, [0, 0.18, 0.42], [1, 1, 0]);
-  const makeBabyScale = useTransform(scrollYProgress, [0, 0.18, 0.42], [1, 1, 0.65]);
+  const cx = 200;
+  const cy = remap(sep, 0, 1, 192, 268);
+
+  // Center Glowing Heart ("Make Baby") fades out as circles drift apart
+  const makeBabyOpacity = remap(sep, 0, 0.42, 1, 0);
+  const makeBabyScale = remap(sep, 0, 0.42, 1, 0.6);
 
   // Center "TFR BLACK HOLE" negative space fades in as circles separate
-  const blackHoleOpacity = useTransform(scrollYProgress, [0.35, 0.62, 1], [0, 1, 1]);
-  const blackHoleScale = useTransform(scrollYProgress, [0.35, 0.68, 1], [0.55, 1, 1.05]);
+  const blackHoleOpacity = remap(sep, 0.34, 0.82, 0, 1);
+  const blackHoleScale = remap(sep, 0.34, 0.85, 0.55, 1.04);
 
-  // Separation distance metric (0% -> 100% divergence)
-  const divergencePct = Math.round(
-    Math.min(100, Math.max(0, ((scrollProgress - 0.18) / 0.54) * 100))
-  );
-  const currentTfr = (2.1 - (divergencePct / 100) * 1.13).toFixed(2);
+  const divergencePct = Math.round(sep * 100);
+  const currentTfr = (2.1 - sep * 1.13).toFixed(2);
 
   return (
     <section
       id="beat-2"
       ref={containerRef}
-      style={{ height: '300vh' }}
-      className="relative w-full bg-[#0f1115] text-[#e2e8f0]"
+      style={{ height: '320vh' }}
+      className="relative w-full bg-[#121316] text-[#e2e8f0]"
     >
       <div className="sticky top-0 left-0 w-full stage-dvh overflow-hidden flex items-center justify-center">
-        {/* Technical Grid & Subtle Radial Glow */}
+        {/* Subtle Wireframe Grid & Radial Glow */}
         <div
           className="pointer-events-none absolute inset-0 opacity-15"
           style={{
@@ -63,22 +70,22 @@ export default function CollapsingVennSection({ data }) {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(circle at 30% 50%, rgba(134,239,172,0.06) 0%, rgba(15,17,21,0.96) 75%)',
+              'radial-gradient(circle at 30% 50%, rgba(134,239,172,0.07) 0%, rgba(18,19,22,0.96) 75%)',
           }}
         />
 
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-4 md:py-10 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 items-center">
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-4 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-7 items-center">
           {/* LEFT COLUMN: Interactive Collapsing SVG Venn Diagram */}
-          <div className="md:col-span-7 flex flex-col items-center justify-center">
+          <div className="md:col-span-6 flex flex-col items-center justify-center">
             <CyberPanel
-              tag={data.tag}
+              label={data.sectionTitle}
               accent="#86efac"
-              className="w-full p-3 sm:p-5 md:p-6"
+              className="w-full p-3 sm:p-5"
             >
               {/* Top Telemetry Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2 border-b border-slate-800/80 text-[10px] sm:text-xs font-mono">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-800/80 text-[10px] sm:text-xs font-mono">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400">STRUCTURAL DIVERGENCE:</span>
+                  <span className="text-slate-400">CIRCLE DRIFT:</span>
                   <span
                     className={
                       divergencePct > 50
@@ -90,7 +97,7 @@ export default function CollapsingVennSection({ data }) {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400">IMPLIED URBAN TFR:</span>
+                  <span className="text-slate-400">FERTILITY RATE:</span>
                   <span
                     className={
                       divergencePct > 50
@@ -103,8 +110,8 @@ export default function CollapsingVennSection({ data }) {
                 </div>
               </div>
 
-              {/* SVG Venn Canvas */}
-              <div className="relative w-full aspect-[4/3] max-h-[250px] sm:max-h-[320px] md:max-h-[380px] flex items-center justify-center">
+              {/* SVG Venn Wireframe Canvas */}
+              <div className="relative w-full aspect-[4/3] max-h-[175px] sm:max-h-[280px] md:max-h-[360px] flex items-center justify-center">
                 <svg
                   viewBox="0 0 400 340"
                   className="w-full h-full overflow-visible select-none"
@@ -113,9 +120,14 @@ export default function CollapsingVennSection({ data }) {
                 >
                   <defs>
                     <radialGradient id="blackHoleGrad" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#090a0d" stopOpacity="0.98" />
-                      <stop offset="65%" stopColor="#0f1115" stopOpacity="0.92" />
+                      <stop offset="0%" stopColor="#050608" stopOpacity="1" />
+                      <stop offset="68%" stopColor="#0b0d11" stopOpacity="0.95" />
                       <stop offset="100%" stopColor="#fda4af" stopOpacity="0" />
+                    </radialGradient>
+                    <radialGradient id="heartGlowGrad" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#fda4af" stopOpacity="0.55" />
+                      <stop offset="60%" stopColor="#86efac" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#121316" stopOpacity="0" />
                     </radialGradient>
                   </defs>
 
@@ -131,22 +143,22 @@ export default function CollapsingVennSection({ data }) {
                   />
                   <line
                     x1="30"
-                    y1="168"
+                    y1="166"
                     x2="370"
-                    y2="168"
+                    y2="166"
                     stroke="#1e293b"
                     strokeWidth="1"
                     strokeDasharray="3 3"
                   />
 
-                  {/* Circle A: Family Support (Mint #86efac) */}
-                  <motion.g style={{ x: circleAX, y: circleAY }}>
+                  {/* Circle 1: Family Support (Mint Green #86efac) */}
+                  <g transform={`translate(${ax}, ${ay})`}>
                     <circle
                       cx="0"
                       cy="0"
-                      r="74"
+                      r="75"
                       fill="#86efac"
-                      fillOpacity="0.14"
+                      fillOpacity="0.12"
                       stroke="#86efac"
                       strokeWidth="1.75"
                     />
@@ -156,9 +168,9 @@ export default function CollapsingVennSection({ data }) {
                       r="70"
                       fill="none"
                       stroke="#86efac"
-                      strokeWidth="0.5"
+                      strokeWidth="0.6"
                       strokeDasharray="4 4"
-                      opacity="0.6"
+                      opacity="0.7"
                     />
                     <text
                       x="0"
@@ -173,21 +185,21 @@ export default function CollapsingVennSection({ data }) {
                       x="0"
                       y="-29"
                       textAnchor="middle"
-                      fill="#94a3b8"
-                      className="font-mono text-[7.5px]"
+                      fill="#cbd5e1"
+                      className="font-mono text-[7px]"
                     >
-                      [Kin & Village Care]
+                      Caregiving &amp; Extended Kin
                     </text>
-                  </motion.g>
+                  </g>
 
-                  {/* Circle B: Social Policies & Housing (Cyan #67e8f9) */}
-                  <motion.g style={{ x: circleBX, y: circleBY }}>
+                  {/* Circle 2: Social Policies & Housing (Pastel Cyan #67e8f9) */}
+                  <g transform={`translate(${bx}, ${by})`}>
                     <circle
                       cx="0"
                       cy="0"
-                      r="74"
+                      r="75"
                       fill="#67e8f9"
-                      fillOpacity="0.14"
+                      fillOpacity="0.12"
                       stroke="#67e8f9"
                       strokeWidth="1.75"
                     />
@@ -197,9 +209,9 @@ export default function CollapsingVennSection({ data }) {
                       r="70"
                       fill="none"
                       stroke="#67e8f9"
-                      strokeWidth="0.5"
+                      strokeWidth="0.6"
                       strokeDasharray="4 4"
-                      opacity="0.6"
+                      opacity="0.7"
                     />
                     <text
                       x="0"
@@ -214,21 +226,21 @@ export default function CollapsingVennSection({ data }) {
                       x="0"
                       y="-29"
                       textAnchor="middle"
-                      fill="#94a3b8"
-                      className="font-mono text-[7.5px]"
+                      fill="#cbd5e1"
+                      className="font-mono text-[7px]"
                     >
-                      [Space &amp; Time Security]
+                      Parental Leave &amp; Shelter
                     </text>
-                  </motion.g>
+                  </g>
 
-                  {/* Circle C: Financial Sustainability (Coral #fda4af) */}
-                  <motion.g style={{ x: circleCX, y: circleCY }}>
+                  {/* Circle 3: Financial Sustainability (Peach/Coral #fda4af) */}
+                  <g transform={`translate(${cx}, ${cy})`}>
                     <circle
                       cx="0"
                       cy="0"
-                      r="74"
+                      r="75"
                       fill="#fda4af"
-                      fillOpacity="0.14"
+                      fillOpacity="0.12"
                       stroke="#fda4af"
                       strokeWidth="1.75"
                     />
@@ -238,9 +250,9 @@ export default function CollapsingVennSection({ data }) {
                       r="70"
                       fill="none"
                       stroke="#fda4af"
-                      strokeWidth="0.5"
+                      strokeWidth="0.6"
                       strokeDasharray="4 4"
-                      opacity="0.6"
+                      opacity="0.7"
                     />
                     <text
                       x="0"
@@ -255,78 +267,73 @@ export default function CollapsingVennSection({ data }) {
                       x="0"
                       y="55"
                       textAnchor="middle"
-                      fill="#94a3b8"
-                      className="font-mono text-[7.5px]"
+                      fill="#cbd5e1"
+                      className="font-mono text-[7px]"
                     >
-                      [1-to-2 Income Cushion]
+                      Mobility &amp; Real Savings
                     </text>
-                  </motion.g>
+                  </g>
 
-                  {/* INITIAL OVERLAP STATE: "Make Baby" */}
-                  <motion.g
-                    style={{
-                      opacity: makeBabyOpacity,
-                      scale: makeBabyScale,
-                      transformOrigin: '200px 164px',
-                    }}
+                  {/* INITIAL OVERLAP STATE: Glowing Heart ("Make Baby") */}
+                  <g
+                    opacity={makeBabyOpacity}
+                    transform={`translate(200, 164) scale(${makeBabyScale})`}
                   >
+                    <circle cx="0" cy="0" r="38" fill="url(#heartGlowGrad)" />
                     <circle
-                      cx="200"
-                      cy="164"
-                      r="28"
-                      fill="#0f1115"
-                      fillOpacity="0.9"
-                      stroke="#86efac"
+                      cx="0"
+                      cy="0"
+                      r="27"
+                      fill="#121316"
+                      fillOpacity="0.92"
+                      stroke="#fda4af"
                       strokeWidth="1.5"
                     />
+                    {/* Glowing Pastel Heart Path */}
+                    <path
+                      d="M0 -4 C-3 -9, -11 -9, -11 -2 C-11 4, 0 10, 0 13 C0 10, 11 4, 11 -2 C11 -9, 3 -9, 0 -4 Z"
+                      fill="#fda4af"
+                      fillOpacity="0.88"
+                      stroke="#e2e8f0"
+                      strokeWidth="0.8"
+                      transform="translate(0, -6) scale(0.95)"
+                    />
                     <text
-                      x="200"
-                      y="162"
+                      x="0"
+                      y="16"
                       textAnchor="middle"
                       fill="#e2e8f0"
-                      className="font-mono text-[9.5px] font-extrabold uppercase tracking-wider"
+                      className="font-mono text-[8.5px] font-extrabold uppercase tracking-wider"
                     >
                       Make Baby
                     </text>
-                    <text
-                      x="200"
-                      y="173"
-                      textAnchor="middle"
-                      fill="#86efac"
-                      className="font-mono text-[7px] uppercase tracking-widest"
-                    >
-                      2.1 TFR Overlap
-                    </text>
-                  </motion.g>
+                  </g>
 
                   {/* SEPARATED NEGATIVE SPACE: "TFR BLACK HOLE" */}
-                  <motion.g
-                    style={{
-                      opacity: blackHoleOpacity,
-                      scale: blackHoleScale,
-                      transformOrigin: '200px 164px',
-                    }}
+                  <g
+                    opacity={blackHoleOpacity}
+                    transform={`translate(200, 164) scale(${blackHoleScale})`}
                   >
                     <circle
-                      cx="200"
-                      cy="164"
-                      r="44"
+                      cx="0"
+                      cy="0"
+                      r="46"
                       fill="url(#blackHoleGrad)"
                       stroke="#fda4af"
-                      strokeWidth="1.25"
+                      strokeWidth="1.4"
                       strokeDasharray="3 3"
                     />
                     <circle
-                      cx="200"
-                      cy="164"
-                      r="32"
-                      fill="#08090c"
+                      cx="0"
+                      cy="0"
+                      r="34"
+                      fill="#050608"
                       stroke="#c084fc"
-                      strokeWidth="0.8"
+                      strokeWidth="0.9"
                     />
                     <text
-                      x="200"
-                      y="160"
+                      x="0"
+                      y="-3"
                       textAnchor="middle"
                       fill="#fda4af"
                       className="font-mono text-[9px] font-extrabold uppercase tracking-[0.14em]"
@@ -334,27 +341,26 @@ export default function CollapsingVennSection({ data }) {
                       TFR BLACK HOLE
                     </text>
                     <text
-                      x="200"
-                      y="172"
+                      x="0"
+                      y="9"
                       textAnchor="middle"
                       fill="#c084fc"
                       className="font-mono text-[7px] uppercase tracking-widest"
                     >
-                      0.72 – 0.97 VOID
+                      THE MIDDLE FELL THROUGH
                     </text>
-                  </motion.g>
+                  </g>
                 </svg>
               </div>
 
               <div className="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400">
-                <span>{data.citation}</span>
-                <span className="text-[#c084fc]">SCROLL TO SEPARATE ↗</span>
+                <span className="truncate">{data.citation}</span>
               </div>
             </CyberPanel>
           </div>
 
-          {/* RIGHT COLUMN: Flow-Aware CSS Grid Story Cards (No Mobile Overlap) */}
-          <div className="md:col-span-5 grid grid-cols-1 items-start md:items-center">
+          {/* RIGHT COLUMN: Flow-Aware CSS Grid Illustrated Story Cards (No Mobile Overlap) */}
+          <div className="md:col-span-6 grid grid-cols-1 items-start md:items-center">
             {data.cards.map((card) => {
               const { opacity, y } = getCardEnvelope(
                 scrollProgress,
@@ -371,20 +377,34 @@ export default function CollapsingVennSection({ data }) {
                   }}
                   className="col-start-1 row-start-1 w-full transition-opacity duration-75"
                 >
-                  <CyberPanel tag={card.badge} accent={card.accent}>
-                    <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#e2e8f0] tracking-tight leading-snug mb-3">
-                      {card.headline}
-                    </h3>
-                    <p className="text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed mb-4">
+                  <CyberPanel label={card.headline} accent={card.accent}>
+                    {/* Animated Graphic-Novel Illustration inside each Venn Card */}
+                    {card.image && (
+                      <div className="relative w-full aspect-[16/8.5] max-h-[115px] sm:max-h-[185px] md:max-h-[220px] mb-3 sm:mb-4 border border-slate-800 bg-[#0f1115] overflow-hidden">
+                        <img
+                          src={card.image}
+                          alt={card.headline}
+                          className="w-full h-full object-cover"
+                        />
+                        <div
+                          className="pointer-events-none absolute inset-0"
+                          style={{
+                            background:
+                              'linear-gradient(to top, rgba(18,19,22,0.7) 0%, transparent 55%)',
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    <p className="text-sm sm:text-base text-[#e2e8f0]/95 leading-relaxed mb-4">
                       {card.body}
                     </p>
-                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono">
+
+                    <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[10px] sm:text-[11px] font-mono">
                       <span style={{ color: card.accent }} className="font-bold">
                         {card.metric}
                       </span>
-                      <span className="text-slate-500">
-                        VENN STATE // {divergencePct < 35 ? 'INTACT' : 'COLLAPSED'}
-                      </span>
+                      <span className="text-slate-400">{card.citation}</span>
                     </div>
                   </CyberPanel>
                 </div>
