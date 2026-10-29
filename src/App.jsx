@@ -6,6 +6,7 @@ import {
   Navigate,
   useParams,
 } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { dispatches, findDispatchByParam } from './data/dispatches';
 import Masthead from './components/Masthead';
 import ArchiveDrawer from './components/ArchiveDrawer';
@@ -88,6 +89,9 @@ function PublicationLayout({ dispatch = null, children }) {
 
       {/* Main Content */}
       <main className="relative z-10">{children}</main>
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 }
