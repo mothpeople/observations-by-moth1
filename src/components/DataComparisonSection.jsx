@@ -129,7 +129,7 @@ export default function DataComparisonSection({ data }) {
                 }}
                 className="seq-layer will-change-transform"
               >
-                <div className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-4 sm:p-7 overflow-hidden">
+                <div className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3 sm:p-7 overflow-hidden">
                   {!scaleImgError && (
                     <img
                       src={scaleImageSrc}
@@ -142,7 +142,7 @@ export default function DataComparisonSection({ data }) {
                     />
                   )}
 
-                  <div className="relative z-10 flex flex-wrap items-center justify-between gap-1.5 border-b border-neutral-800 pb-2 sm:pb-2.5 mb-2.5 sm:mb-3 font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#e6e4dd]/80">
+                  <div className="relative z-10 flex flex-wrap items-center justify-between gap-1.5 border-b border-neutral-800 pb-1.5 sm:pb-2.5 mb-2 sm:mb-3 font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#e6e4dd]/80">
                     <span>NATIONAL PRIORITY SCALE</span>
                     <span className="text-[#dc2626] font-bold">
                       {secShare}% PUBLIC SECURITY VS {eduShare}% EDUCATION &amp; HEALTH
@@ -150,10 +150,10 @@ export default function DataComparisonSection({ data }) {
                   </div>
 
                   {/* Full-Width Minimalist Visual Scale Tipping Violently */}
-                  <div className="relative z-10 bg-[#08090a]/90 border border-neutral-800 p-2 sm:p-4 mb-2.5 sm:mb-3">
+                  <div className="relative z-10 bg-[#08090a]/90 border border-neutral-800 p-1.5 sm:p-4 mb-2 sm:mb-3">
                     <svg
                       viewBox="0 0 560 200"
-                      className="w-full max-h-[145px] sm:max-h-[210px] mx-auto overflow-visible"
+                      className="w-full max-h-[125px] sm:max-h-[210px] mx-auto overflow-visible"
                       role="img"
                       aria-label="Scale tipping violently toward Public Security Budgets over Healthcare and Education"
                     >
@@ -296,7 +296,7 @@ export default function DataComparisonSection({ data }) {
                 }}
                 className="seq-layer will-change-transform"
               >
-                <article className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-4 sm:p-8 overflow-hidden">
+                <article className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3 sm:p-8 overflow-hidden">
                   <img
                     src="/issues/issue-01/protest-2.webp"
                     alt=""
@@ -305,19 +305,19 @@ export default function DataComparisonSection({ data }) {
                   />
 
                   <div className="relative z-10">
-                    <div className="mb-2 sm:mb-3 pb-2 sm:pb-2.5 border-b border-neutral-800">
+                    <div className="mb-1.5 sm:mb-3 pb-1.5 sm:pb-2.5 border-b border-neutral-800">
                       <h3 className="font-serif text-base sm:text-2xl font-bold text-[#dc2626]">
                         Detached from Street Reality
                       </h3>
                     </div>
 
-                    <p className="font-editorial text-sm sm:text-2xl md:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-3 sm:mb-5">
+                    <p className="font-editorial text-[13px] sm:text-2xl md:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-2.5 sm:mb-5">
                       {data.paragraphs[0]}
                     </p>
 
                     {/* Scroll-Driven Doctrine Comparison: Swing Harder -> Civic Accountability */}
-                    <div className="p-2.5 sm:p-4 bg-[#08090a]/95 border border-neutral-800 font-mono text-[10px] sm:text-xs">
-                      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 mb-2 sm:mb-3 pb-1.5 sm:pb-2 border-b border-neutral-800">
+                    <div className="p-2 sm:p-4 bg-[#08090a]/95 border border-neutral-800 font-mono text-[10px] sm:text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 mb-1.5 sm:mb-3 pb-1.5 sm:pb-2 border-b border-neutral-800">
                         <span className="text-[#e6e4dd]/70 uppercase">
                           STATE DOCTRINE SIMULATION:
                         </span>
@@ -343,7 +343,7 @@ export default function DataComparisonSection({ data }) {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 text-center mb-2 sm:mb-2.5">
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 text-center mb-1.5 sm:mb-2.5">
                         <div className="p-1.5 sm:p-2.5 bg-[#0e1014] border border-neutral-800">
                           <div className="text-[9px] sm:text-xs text-[#e6e4dd]/60 mb-0.5 sm:mb-1">RIOT &amp; FORCE SPEND</div>
                           <div
@@ -373,7 +373,7 @@ export default function DataComparisonSection({ data }) {
                         </div>
                       </div>
 
-                      <div className="text-[9px] sm:text-[11px] text-[#e6e4dd]/55 pt-1.5 sm:pt-2 border-t border-neutral-800/80 leading-tight">
+                      <div className="text-[9px] sm:text-[11px] text-[#e6e4dd]/60 pt-1 sm:pt-2 border-t border-neutral-800/80 leading-tight">
                         Ref: ACLED State Repression Monitor (2024); Maguire et al., &ldquo;Policing Protests&rdquo; (Criminology &amp; Public Policy)
                       </div>
                     </div>
@@ -392,7 +392,7 @@ export default function DataComparisonSection({ data }) {
                 }}
                 className="seq-layer will-change-transform"
               >
-                <article className="ink-panel w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-4 sm:p-8 overflow-hidden">
+                <article className="ink-panel w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3 sm:p-8 overflow-hidden">
                   <img
                     src="/issues/issue-01/protest-4.webp"
                     alt=""
@@ -401,19 +401,19 @@ export default function DataComparisonSection({ data }) {
                   />
 
                   <div className="relative z-10">
-                    <div className="mb-2 sm:mb-3 pb-2 sm:pb-2.5 border-b border-neutral-800">
+                    <div className="mb-1.5 sm:mb-3 pb-1.5 sm:pb-2.5 border-b border-neutral-800">
                       <h3 className="font-serif text-base sm:text-2xl font-bold text-[#d97706]">
                         How Societies Fracture
                       </h3>
                     </div>
 
-                    <p className="font-editorial text-sm sm:text-2xl md:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-3 sm:mb-5">
+                    <p className="font-editorial text-[13px] sm:text-2xl md:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-2.5 sm:mb-5">
                       {data.paragraphs[1]}
                     </p>
 
                     {/* Scroll-Driven Generational Fracture Timeline: 1990 -> 2008 -> 2026 */}
-                    <div className="p-2.5 sm:p-4 bg-[#08090a]/95 border border-neutral-800 font-mono text-[10px] sm:text-xs">
-                      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 mb-2 sm:mb-3 pb-1.5 sm:pb-2 border-b border-neutral-800">
+                    <div className="p-2 sm:p-4 bg-[#08090a]/95 border border-neutral-800 font-mono text-[10px] sm:text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 mb-1.5 sm:mb-3 pb-1.5 sm:pb-2 border-b border-neutral-800">
                         <span className="text-[#e6e4dd]/70 uppercase">
                           GENERATIONAL FRACTURE TIMELINE:
                         </span>
@@ -433,7 +433,7 @@ export default function DataComparisonSection({ data }) {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 text-center mb-2 sm:mb-2.5">
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 text-center mb-1.5 sm:mb-2.5">
                         <div className="p-1.5 sm:p-2 bg-[#0e1014] border border-neutral-800">
                           <div className="text-[9px] sm:text-xs text-[#e6e4dd]/60 mb-0.5">
                             65+ COHORT WEALTH
@@ -461,14 +461,14 @@ export default function DataComparisonSection({ data }) {
                       </div>
 
                       {/* Fracture Bar */}
-                      <div className="h-1.5 sm:h-2 w-full bg-[#1f232b] overflow-hidden mb-1.5 sm:mb-2">
+                      <div className="h-1.5 sm:h-2 w-full bg-[#1f232b] overflow-hidden mb-1 sm:mb-2">
                         <div
                           style={{ width: `${currentYearStat.bar}%` }}
                           className="h-full bg-gradient-to-r from-[#d97706] to-[#dc2626] transition-all duration-150"
                         />
                       </div>
 
-                      <div className="text-[9px] sm:text-[11px] text-[#e6e4dd]/55 pt-1 sm:pt-1.5 border-t border-neutral-800/80 leading-tight">
+                      <div className="text-[9px] sm:text-[11px] text-[#e6e4dd]/60 pt-1 sm:pt-1.5 border-t border-neutral-800/80 leading-tight">
                         Ref: U.S. Federal Reserve Survey of Consumer Finances (Wealth by Age, 1989–2024); OECD &ldquo;Society at a Glance 2024&rdquo; (Fertility &amp; Family Cost)
                       </div>
                     </div>

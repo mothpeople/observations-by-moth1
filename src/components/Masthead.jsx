@@ -18,14 +18,14 @@ export default function Masthead({
   });
 
   const handleShare = async () => {
-    const slug = activeDispatch?.slug || 'watering-grass-in-a-thunderstorm';
+    const slug = activeDispatch?.slug ? `/${activeDispatch.slug}` : '/';
     const origin =
       typeof window !== 'undefined' &&
       window.location.hostname !== 'localhost' &&
       window.location.hostname !== '127.0.0.1'
         ? window.location.origin
         : 'https://observations.moth1.xyz';
-    const shareUrl = `${origin}/${slug}`;
+    const shareUrl = `${origin}${slug}`;
 
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {

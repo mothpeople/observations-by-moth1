@@ -81,34 +81,34 @@ export default function QuietEarthConclusion({ data, sources }) {
                 <CyberPanel
                   label="Biological Correction"
                   accent="#86efac"
-                  className="bg-[#121316]/84 backdrop-blur-md"
+                  className="bg-[#121316]/84 backdrop-blur-md p-3.5 sm:p-6"
                 >
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-[#e2e8f0] leading-tight mb-4">
+                  <h2 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-[#e2e8f0] leading-tight mb-2.5 sm:mb-4">
                     {data.lead}
                   </h2>
 
-                  <p className="text-base sm:text-lg md:text-xl text-slate-200 leading-relaxed font-medium min-h-[5.5rem] mb-5">
+                  <p className="text-sm sm:text-lg md:text-xl text-slate-200 leading-snug sm:leading-relaxed font-medium min-h-[4rem] sm:min-h-[5.5rem] mb-3.5 sm:mb-5">
                     {typedBody}
                     {charCount < bodyText.length && (
-                      <span className="inline-block w-2.5 h-6 ml-1 bg-[#86efac] animate-pulse align-middle" />
+                      <span className="inline-block w-2.5 h-5 sm:h-6 ml-1 bg-[#86efac] animate-pulse align-middle" />
                     )}
                   </p>
 
                   <div
                     style={{ opacity: punchlineOpacity }}
-                    className="space-y-5 transition-opacity duration-200"
+                    className="space-y-3.5 sm:space-y-5 transition-opacity duration-200"
                   >
-                    <p className="text-base sm:text-lg md:text-2xl font-extrabold text-[#86efac] border-l-2 border-[#86efac] pl-4 py-1">
+                    <p className="text-sm sm:text-lg md:text-2xl font-extrabold text-[#86efac] border-l-2 border-[#86efac] pl-3 sm:pl-4 py-0.5 sm:py-1 leading-snug">
                       {data.punchline}
                     </p>
 
                     {/* Dual-Track Substack / Direct Subscribe Box */}
-                    <div className="pt-4 border-t border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="pt-3 sm:pt-4 border-t border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-4">
                       <div>
-                        <div className="font-mono text-xs uppercase tracking-[0.2em] text-[#67e8f9] font-bold">
+                        <div className="font-mono text-[11px] sm:text-xs uppercase tracking-[0.2em] text-[#67e8f9] font-bold">
                           Observations by Moth1
                         </div>
-                        <div className="text-xs text-slate-300">
+                        <div className="text-[11px] sm:text-xs text-slate-300">
                           {data.substackPrompt}
                         </div>
                       </div>
@@ -123,11 +123,11 @@ export default function QuietEarthConclusion({ data, sources }) {
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="Enter your email for future dispatches..."
                           aria-label="Email address for Substack subscription"
-                          className="bg-[#0b0d10] border border-slate-700 px-3.5 py-2 text-xs font-mono text-[#e2e8f0] placeholder:text-slate-500 focus:outline-none focus:border-[#86efac]"
+                          className="bg-[#0b0d10] border border-slate-700 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-mono text-[#e2e8f0] placeholder:text-slate-500 focus:outline-none focus:border-[#86efac]"
                         />
                         <button
                           type="submit"
-                          className="bg-[#86efac] text-[#121316] font-mono text-xs font-extrabold uppercase tracking-[0.18em] px-5 py-2 hover:bg-[#67e8f9] transition-colors cursor-pointer"
+                          className="bg-[#86efac] text-[#121316] font-mono text-xs font-extrabold uppercase tracking-[0.18em] px-4 py-1.5 sm:px-5 sm:py-2 hover:bg-[#67e8f9] transition-colors cursor-pointer"
                         >
                           Subscribe ↗
                         </button>

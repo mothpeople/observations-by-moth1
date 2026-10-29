@@ -60,10 +60,10 @@ export default function TerminalSolutions({ data }) {
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6 items-stretch">
-                {/* LEFT SIDE: 3-Col Horizontal Selector on Mobile, Vertical Stack on Desktop */}
-                <div className="lg:col-span-5 flex flex-col justify-between gap-2 sm:gap-2.5">
-                  <div className="grid grid-cols-3 lg:flex lg:flex-col gap-2 sm:gap-2.5 flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-4 lg:gap-6 items-stretch">
+                {/* LEFT SIDE: 3-Col Horizontal Selector on Mobile, Vertical Stack on Tablet/Desktop */}
+                <div className="md:col-span-5 flex flex-col justify-between gap-2 sm:gap-2.5">
+                  <div className="grid grid-cols-3 md:flex md:flex-col gap-2 sm:gap-2.5 flex-1">
                     {propositions.map((prop, idx) => {
                       const isSelected = idx === activeIdx;
                       return (
@@ -74,7 +74,7 @@ export default function TerminalSolutions({ data }) {
                           style={{
                             borderColor: isSelected ? prop.accent : '#1e293b',
                           }}
-                          className="group relative text-left p-2.5 sm:p-4 border overflow-hidden transition-all duration-200 hover:border-slate-500 focus:outline-none cursor-pointer flex-1 flex flex-col justify-between min-h-[64px] sm:min-h-[82px] lg:min-h-[96px]"
+                          className="group relative text-left p-2.5 sm:p-3.5 border overflow-hidden transition-all duration-200 hover:border-slate-500 focus:outline-none cursor-pointer flex-1 flex flex-col justify-between min-h-[64px] sm:min-h-[76px] lg:min-h-[88px]"
                         >
                           {/* Matching Artwork Texture Inside Each Tab */}
                           <div
@@ -127,7 +127,7 @@ export default function TerminalSolutions({ data }) {
                     })}
                   </div>
 
-                  <div className="border border-slate-800/80 bg-[#0f1115]/90 px-3 py-1.5 sm:py-2 flex items-center justify-between font-mono text-[9px] sm:text-[10px] text-slate-400">
+                    <div className="hidden lg:flex border border-slate-800/80 bg-[#0f1115]/90 px-3 py-2 items-center justify-between font-mono text-[10px] text-slate-400">
                     <span>
                       {manualIndex !== null
                         ? 'MANUAL SELECTION ACTIVE'
@@ -148,12 +148,12 @@ export default function TerminalSolutions({ data }) {
                 {/* RIGHT SIDE: Illustrated Radical Observation Panel */}
                 <CyberPanel
                   accent={activeProp.accent}
-                  className="lg:col-span-7 p-4 sm:p-5 md:p-6 flex flex-col justify-between"
+                  className="md:col-span-7 p-3 sm:p-4 lg:p-5 flex flex-col justify-between"
                 >
                   <div>
                     {/* Dedicated Animated Graphic-Novel Illustration for each Taboo Reality */}
                     {activeProp.image && (
-                      <div className="relative w-full aspect-video max-h-[165px] sm:max-h-[210px] md:max-h-[235px] mb-3.5 border border-slate-800 bg-[#0f1115] overflow-hidden">
+                      <div className="relative w-full aspect-video max-h-[120px] sm:max-h-[165px] lg:max-h-[195px] mb-2 sm:mb-3 border border-slate-800 bg-[#0f1115] overflow-hidden">
                         <img
                           src={activeProp.image}
                           alt={activeProp.title}
@@ -169,29 +169,29 @@ export default function TerminalSolutions({ data }) {
                       </div>
                     )}
 
-                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-[#e2e8f0] leading-snug mb-2">
+                    <h3 className="text-base sm:text-lg lg:text-xl font-bold text-[#e2e8f0] leading-snug mb-1 sm:mb-1.5">
                       {activeProp.title}
                     </h3>
 
-                    <p className="text-xs sm:text-sm md:text-base text-slate-200 leading-relaxed mb-4">
+                    <p className="text-xs sm:text-sm text-slate-200 leading-snug sm:leading-relaxed mb-2 sm:mb-3">
                       {activeProp.copy}
                     </p>
                   </div>
 
                   {/* Empirical Telemetry Bar */}
-                  <div className="pt-2.5 border-t border-slate-800">
+                  <div className="pt-2 border-t border-slate-800">
                     <div className="flex items-baseline justify-between gap-2 mb-1 font-mono">
-                      <span className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-wider">
+                      <span className="text-[9px] sm:text-xs text-slate-400 uppercase tracking-wider truncate">
                         {activeProp.metricLabel}
                       </span>
                       <span
                         style={{ color: activeProp.accent }}
-                        className="text-xs sm:text-sm font-extrabold tabular-nums"
+                        className="text-[11px] sm:text-sm font-extrabold tabular-nums shrink-0"
                       >
                         {activeProp.metricValue}
                       </span>
                     </div>
-                    <div className="h-2 w-full bg-slate-900 border border-slate-800 overflow-hidden mb-1.5">
+                    <div className="h-1.5 sm:h-2 w-full bg-slate-900 border border-slate-800 overflow-hidden mb-1.5">
                       <div
                         style={{
                           width: `${Math.round(activeProp.barPercent * barFill)}%`,
@@ -200,7 +200,7 @@ export default function TerminalSolutions({ data }) {
                         className="h-full transition-all duration-150"
                       />
                     </div>
-                    <p className="font-mono text-[10px] text-slate-400">
+                    <p className="font-mono text-[8.5px] sm:text-[10px] text-slate-400 leading-tight">
                       {activeProp.citation}
                     </p>
                   </div>

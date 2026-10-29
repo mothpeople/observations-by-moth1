@@ -74,16 +74,16 @@ export default function CollapsingVennSection({ data }) {
           }}
         />
 
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-4 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-7 items-center">
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-13 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-2.5 md:gap-7 items-center">
           {/* LEFT COLUMN: Interactive Collapsing SVG Venn Diagram */}
           <div className="md:col-span-6 flex flex-col items-center justify-center">
             <CyberPanel
               label={data.sectionTitle}
               accent="#86efac"
-              className="w-full p-3 sm:p-5"
+              className="w-full p-2.5 sm:p-5"
             >
               {/* Top Telemetry Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-800/80 text-[10px] sm:text-xs font-mono">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 mb-1.5 border-b border-slate-800/80 text-[9.5px] sm:text-xs font-mono">
                 <div className="flex items-center gap-2">
                   <span className="text-slate-400">CIRCLE DRIFT:</span>
                   <span
@@ -111,7 +111,7 @@ export default function CollapsingVennSection({ data }) {
               </div>
 
               {/* SVG Venn Wireframe Canvas */}
-              <div className="relative w-full aspect-[4/3] max-h-[175px] sm:max-h-[280px] md:max-h-[360px] flex items-center justify-center">
+              <div className="relative w-full aspect-[4/3] max-h-[140px] sm:max-h-[270px] md:max-h-[350px] flex items-center justify-center">
                 <svg
                   viewBox="0 0 400 340"
                   className="w-full h-full overflow-visible select-none"
@@ -353,7 +353,7 @@ export default function CollapsingVennSection({ data }) {
                 </svg>
               </div>
 
-              <div className="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400">
+              <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[8.5px] sm:text-[10px] font-mono text-slate-400 leading-tight">
                 <span className="truncate">{data.citation}</span>
               </div>
             </CyberPanel>
@@ -377,10 +377,14 @@ export default function CollapsingVennSection({ data }) {
                   }}
                   className="col-start-1 row-start-1 w-full transition-opacity duration-75"
                 >
-                  <CyberPanel label={card.headline} accent={card.accent}>
+                  <CyberPanel
+                    label={card.headline}
+                    accent={card.accent}
+                    className="p-2.5 sm:p-4 lg:p-5"
+                  >
                     {/* Animated Graphic-Novel Illustration inside each Venn Card */}
                     {card.image && (
-                      <div className="relative w-full aspect-[16/8.5] max-h-[115px] sm:max-h-[185px] md:max-h-[220px] mb-3 sm:mb-4 border border-slate-800 bg-[#0f1115] overflow-hidden">
+                      <div className="relative w-full aspect-[16/8.5] max-h-[92px] sm:max-h-[155px] md:max-h-[185px] mb-2 sm:mb-3 border border-slate-800 bg-[#0f1115] overflow-hidden">
                         <img
                           src={card.image}
                           alt={card.headline}
@@ -396,11 +400,11 @@ export default function CollapsingVennSection({ data }) {
                       </div>
                     )}
 
-                    <p className="text-sm sm:text-base text-[#e2e8f0]/95 leading-relaxed mb-4">
+                    <p className="text-xs sm:text-sm lg:text-[15px] text-[#e2e8f0]/95 leading-snug sm:leading-relaxed mb-2 sm:mb-3">
                       {card.body}
                     </p>
 
-                    <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[10px] sm:text-[11px] font-mono">
+                    <div className="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[8.5px] sm:text-[10.5px] font-mono leading-tight">
                       <span style={{ color: card.accent }} className="font-bold">
                         {card.metric}
                       </span>

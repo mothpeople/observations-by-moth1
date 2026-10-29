@@ -106,17 +106,17 @@ export default function StickySplitSection({ data }) {
             />
 
             {/* Top Section Title */}
-            <div className="relative z-10 max-w-6xl w-full mx-auto flex items-end justify-between border-b border-neutral-800 pb-2 sm:pb-3 shrink-0">
-              <h2 className="font-serif text-xl sm:text-4xl font-bold text-[#e6e4dd]">
+            <div className="relative z-10 max-w-6xl w-full mx-auto flex items-end justify-between border-b border-neutral-800 pb-1.5 sm:pb-3 shrink-0">
+              <h2 className="font-serif text-lg sm:text-4xl font-bold text-[#e6e4dd]">
                 {data.sectionTitle}
               </h2>
             </div>
 
             {/* Main 50/50 Split Stage */}
-            <div className="relative z-10 max-w-6xl w-full mx-auto my-auto grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-8 items-center">
+            <div className="relative z-10 max-w-6xl w-full mx-auto my-auto grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-8 items-center">
               {/* Left Pinned Comparison Card (5 cols) */}
-              <div className="md:col-span-5 ink-panel ink-panel-crimson border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3 md:p-5">
-                <div className="flex items-center justify-between border-b border-neutral-800 pb-1.5 md:pb-2.5 mb-2 md:mb-3 font-mono text-[11px] md:text-xs">
+              <div className="md:col-span-5 ink-panel ink-panel-crimson border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-2.5 md:p-5">
+                <div className="flex items-center justify-between border-b border-neutral-800 pb-1 md:pb-2.5 mb-1.5 md:mb-3 font-mono text-[10px] md:text-xs">
                   <span className="text-[#e6e4dd] font-bold truncate">
                     {isAgeMode
                       ? 'LEADER AGE (70+) VS. POPULATION (28)'
@@ -162,10 +162,10 @@ export default function StickySplitSection({ data }) {
                 </div>
 
                 {/* Animated SVG Comparison Chart Highlighting Stark Divergence */}
-                <div className="bg-[#08090a] border border-neutral-800 p-2 md:p-3 mb-0 md:mb-3">
+                <div className="bg-[#08090a] border border-neutral-800 p-1.5 md:p-3 mb-0 md:mb-3">
                   <svg
                     viewBox="0 0 360 135"
-                    className="w-full max-h-[82px] sm:max-h-[110px] md:max-h-none h-auto overflow-visible"
+                    className="w-full max-h-[68px] sm:max-h-[110px] md:max-h-none h-auto overflow-visible"
                   >
                     <line
                       x1="25"
@@ -422,9 +422,9 @@ export default function StickySplitSection({ data }) {
                       <article
                         className={`ink-panel ${
                           card.accent === '#dc2626' ? 'ink-panel-crimson' : ''
-                        } w-full border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3.5 sm:p-8`}
+                        } w-full border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-2.5 sm:p-8`}
                       >
-                        <div className="mb-2 sm:mb-4 pb-1.5 sm:pb-3 border-b border-neutral-800">
+                        <div className="mb-1.5 sm:mb-4 pb-1 sm:pb-3 border-b border-neutral-800">
                           <h3
                             className="font-serif text-sm sm:text-xl font-bold"
                             style={{ color: card.accent }}
@@ -433,24 +433,24 @@ export default function StickySplitSection({ data }) {
                           </h3>
                         </div>
 
-                        <p className="font-editorial text-sm sm:text-2xl lg:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-3 sm:mb-6">
+                        <p className="font-editorial text-[13px] sm:text-2xl lg:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-2 sm:mb-6">
                           {card.copy}
                         </p>
 
                         {/* Card Bar Chart — Completes before reading hold */}
-                        <div className="p-2.5 sm:p-4 bg-[#08090a] border border-neutral-800">
-                          <div className="flex items-baseline justify-between gap-3 mb-1.5 sm:mb-2">
-                            <span className="font-mono text-[10px] sm:text-xs uppercase tracking-wider text-[#e6e4dd]/70">
+                        <div className="p-2 sm:p-4 bg-[#08090a] border border-neutral-800">
+                          <div className="flex items-baseline justify-between gap-2 mb-1 sm:mb-2">
+                            <span className="font-mono text-[9.5px] sm:text-xs uppercase tracking-wider text-[#e6e4dd]/70">
                               {card.metricLabel}
                             </span>
                             <span
-                              className="font-mono text-lg sm:text-2xl font-bold shrink-0"
+                              className="font-mono text-base sm:text-2xl font-bold shrink-0"
                               style={{ color: card.accent }}
                             >
                               {card.metric}
                             </span>
                           </div>
-                          <div className="h-2 sm:h-2.5 w-full bg-[#1f232b] overflow-hidden p-0.5 mb-1.5 sm:mb-2">
+                          <div className="h-1.5 sm:h-2.5 w-full bg-[#1f232b] overflow-hidden p-0.5 mb-1 sm:mb-2">
                             <div
                               style={{
                                 width: `${barFill}%`,
@@ -459,7 +459,7 @@ export default function StickySplitSection({ data }) {
                               className="h-full"
                             />
                           </div>
-                          <div className="font-mono text-[10px] sm:text-[11px] text-[#e6e4dd]/55 leading-tight">
+                          <div className="font-mono text-[9px] sm:text-[11px] text-[#e6e4dd]/60 leading-tight">
                             {cardCitations[idx]}
                           </div>
                         </div>

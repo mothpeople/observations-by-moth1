@@ -120,17 +120,17 @@ export default function HeroMachineSection({ data }) {
                 transform: `translate3d(0, ${cardY}px, 0)`,
                 pointerEvents: cardOpacity > 0.2 ? 'auto' : 'none',
               }}
-              className="seq-layer absolute inset-0 z-20 flex items-center justify-center px-3 sm:px-6 pt-14 pb-3 sm:pb-6"
+              className="seq-layer absolute inset-0 z-20 flex items-center justify-center px-3 sm:px-6 pt-13 pb-2 sm:pt-14 sm:pb-4"
             >
-              <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 md:gap-7 items-center">
+              <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-12 gap-2 sm:gap-4 lg:gap-6 items-center">
                 {/* Left Column: Animated Illustration + Cold Open Copy */}
                 <CyberPanel
                   label="The Cold Open"
                   accent="#67e8f9"
-                  className="lg:col-span-7"
+                  className="md:col-span-7 p-2.5 sm:p-4 lg:p-5"
                 >
                   {/* Embedded Animated Graphic-Novel Panel */}
-                  <div className="relative w-full aspect-[16/8.5] max-h-[115px] sm:max-h-[200px] lg:max-h-[240px] mb-2.5 sm:mb-4 border border-slate-800 bg-[#0f1115] overflow-hidden">
+                  <div className="relative w-full aspect-[16/8.5] max-h-[88px] sm:max-h-[145px] md:max-h-[175px] lg:max-h-[205px] mb-2 sm:mb-3 border border-slate-800 bg-[#0f1115] overflow-hidden">
                     <img
                       src={hero.grinderImage || hero.image}
                       alt="The Billionaire Podcast vs. The Meat Grinder"
@@ -145,17 +145,17 @@ export default function HeroMachineSection({ data }) {
                     />
                   </div>
 
-                  <h2 className="text-sm sm:text-xl md:text-2xl font-bold text-[#e2e8f0] tracking-tight leading-snug mb-2 sm:mb-3">
+                  <h2 className="text-xs sm:text-lg lg:text-xl font-bold text-[#e2e8f0] tracking-tight leading-snug mb-1.5 sm:mb-2">
                     {hero.coldOpenHeadline}
                   </h2>
 
-                  <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed">
+                  <div className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs lg:text-sm text-slate-300 leading-snug sm:leading-relaxed">
                     {hero.paragraphs.map((p, i) => (
                       <p
                         key={i}
                         className={
                           i === 1
-                            ? 'border-l-2 border-[#c084fc] pl-3 text-[#e2e8f0]/90'
+                            ? 'border-l-2 border-[#c084fc] pl-2.5 sm:pl-3 text-[#e2e8f0]/90'
                             : ''
                         }
                       >
@@ -169,17 +169,17 @@ export default function HeroMachineSection({ data }) {
                 <CyberPanel
                   label="Three Undeniable Data Points"
                   accent="#86efac"
-                  className="lg:col-span-5"
+                  className="md:col-span-5 p-2.5 sm:p-4 lg:p-5"
                 >
-                  <div className="space-y-2 sm:space-y-3.5">
+                  <div className="space-y-1.5 sm:space-y-2.5">
                     {hero.anchors.map((anchor) => {
                       const pct = Math.round(anchor.percent * barFill);
                       return (
                         <div
                           key={anchor.label}
-                          className="p-2 sm:p-3 bg-[#0f1115]/90 border border-slate-800/90 space-y-1 sm:space-y-1.5"
+                          className="p-1.5 sm:p-2.5 bg-[#0f1115]/90 border border-slate-800/90 space-y-1"
                         >
-                          <div className="flex items-baseline justify-between gap-2 font-mono text-[10px] sm:text-xs">
+                          <div className="flex items-baseline justify-between gap-2 font-mono text-[9.5px] sm:text-xs">
                             <span className="text-[#e2e8f0] font-semibold truncate">
                               {anchor.label}
                             </span>
@@ -199,7 +199,7 @@ export default function HeroMachineSection({ data }) {
                               className="h-full transition-all duration-100"
                             />
                           </div>
-                          <p className="hidden sm:block text-[11px] sm:text-xs text-slate-400 leading-relaxed">
+                          <p className="hidden sm:block text-[10.5px] lg:text-xs text-slate-400 leading-snug">
                             {anchor.detail}
                           </p>
                         </div>
@@ -207,7 +207,7 @@ export default function HeroMachineSection({ data }) {
                     })}
                   </div>
 
-                  <p className="mt-2.5 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-800/80 font-mono text-[9px] sm:text-[10px] text-slate-400 leading-relaxed">
+                  <p className="mt-2 sm:mt-3 pt-1.5 sm:pt-2.5 border-t border-slate-800/80 font-mono text-[8.5px] sm:text-[10px] text-slate-400 leading-tight">
                     {hero.citation}
                   </p>
                 </CyberPanel>

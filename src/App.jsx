@@ -6,28 +6,21 @@ import {
   Navigate,
   useParams,
 } from 'react-router-dom';
-import {
-  dispatches,
-  getLatestDispatch,
-  findDispatchByParam,
-} from './data/dispatches';
+import { dispatches, findDispatchByParam } from './data/dispatches';
 import Masthead from './components/Masthead';
 import ArchiveDrawer from './components/ArchiveDrawer';
+import LandingPage from './components/LandingPage';
 
-function DispatchShell({ dispatch }) {
+function PublicationLayout({ dispatch = null, children }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (dispatch) {
       document.title = `Issue #${dispatch.id}: ${dispatch.title}, Observations by Moth1`;
+    } else {
+      document.title = 'Observations by Moth1 | Interactive Visual Essays';
     }
   }, [dispatch]);
-
-  if (!dispatch) {
-    return <Navigate to="/" replace />;
-  }
-
-  const ActiveIssueComponent = dispatch.component;
 
   return (
     <div className="relative min-h-screen bg-[#0c0d10] text-[#e6e4dd] selection:bg-[#dc2626] selection:text-[#e6e4dd]">
@@ -93,11 +86,21 @@ function DispatchShell({ dispatch }) {
         activeDispatch={dispatch}
       />
 
-      {/* Active Issue Scrollytelling Visual Essay */}
-      <main className="relative z-10">
-        <ActiveIssueComponent />
-      </main>
+      {/* Main Content */}
+      <main className="relative z-10">{children}</main>
     </div>
+  );
+}
+
+function DispatchShell({ dispatch }) {
+  if (!dispatch) {
+    return <Navigate to="/" replace />;
+  }
+  const ActiveIssueComponent = dispatch.component;
+  return (
+    <PublicationLayout dispatch={dispatch}>
+      <ActiveIssueComponent />
+    </PublicationLayout>
   );
 }
 
@@ -111,15 +114,17 @@ function DynamicDispatchRoute() {
 }
 
 export default function App() {
-  const latestDispatch = getLatestDispatch();
-
   return (
     <BrowserRouter>
       <Routes>
-        {/* Route /: Automatically renders the latest dispatch */}
+        {/* Route /: Main Publication Landing Page with dynamic animated background & links to all issues */}
         <Route
           path="/"
-          element={<DispatchShell dispatch={latestDispatch} />}
+          element={
+            <PublicationLayout dispatch={null}>
+              <LandingPage dispatches={dispatches} />
+            </PublicationLayout>
+          }
         />
 
         {/* Route /:slug and /issue/:id: Dynamically renders the matching dispatch */}

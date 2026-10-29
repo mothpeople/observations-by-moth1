@@ -79,7 +79,7 @@ export default function HorizontalScrollSection({ data }) {
                         } relative w-full max-w-5xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md overflow-hidden`}
                       >
                         {!imgErrors[index] && (
-                          <div className="relative h-36 sm:h-56 md:h-72 w-full overflow-hidden border-b border-neutral-800 bg-[#08090a]">
+                          <div className="relative h-28 sm:h-56 md:h-72 w-full overflow-hidden border-b border-neutral-800 bg-[#08090a]">
                             <img
                               src={imageSrc}
                               alt={item.phaseTitle}
@@ -98,41 +98,41 @@ export default function HorizontalScrollSection({ data }) {
                           </div>
                         )}
 
-                        <div className="p-4 sm:p-7 md:p-9 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 lg:gap-8 items-center">
+                        <div className="p-3 sm:p-7 md:p-9 grid grid-cols-1 lg:grid-cols-12 gap-2.5 sm:gap-6 lg:gap-8 items-center">
                           <div className="lg:col-span-8">
-                            <h3 className="font-serif text-lg sm:text-3xl md:text-4xl font-bold text-[#e6e4dd] tracking-tight mb-1.5 sm:mb-3">
+                            <h3 className="font-serif text-base sm:text-3xl md:text-4xl font-bold text-[#e6e4dd] tracking-tight mb-1 sm:mb-3">
                               {item.phaseTitle}
                             </h3>
-                            <p className="font-editorial text-sm sm:text-xl md:text-2xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-2 sm:mb-3">
+                            <p className="font-editorial text-[13px] sm:text-xl md:text-2xl text-[#e6e4dd] leading-snug sm:leading-relaxed mb-1.5 sm:mb-3">
                               {item.copy}
                             </p>
                             {item.aftermathCopy && (
-                              <p className="font-editorial text-xs sm:text-lg text-[#d97706] italic leading-snug sm:leading-relaxed border-l-2 border-[#dc2626] pl-3 sm:pl-4 mt-1.5 sm:mt-3">
+                              <p className="font-editorial text-xs sm:text-lg text-[#d97706] italic leading-snug sm:leading-relaxed border-l-2 border-[#dc2626] pl-2.5 sm:pl-4 mt-1 sm:mt-3">
                                 {item.aftermathCopy}
                               </p>
                             )}
                           </div>
 
-                          <div className="lg:col-span-4 flex flex-col justify-between p-3 sm:p-5 bg-[#08090a] border border-neutral-800">
+                          <div className="lg:col-span-4 flex flex-col justify-between p-2.5 sm:p-5 bg-[#08090a] border border-neutral-800">
                             <div className="flex lg:block items-baseline justify-between gap-2">
                               <div>
-                                <span className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#e6e4dd]/60 block mb-0.5 sm:mb-1">
+                                <span className="font-mono text-[9.5px] sm:text-xs uppercase tracking-widest text-[#e6e4dd]/60 block mb-0.5 sm:mb-1">
                                   ESCALATION SCALE
                                 </span>
                                 <div
-                                  className="font-mono text-xl sm:text-3xl md:text-4xl font-bold tracking-tight my-0.5 sm:my-1.5"
+                                  className="font-mono text-lg sm:text-3xl md:text-4xl font-bold tracking-tight my-0.5 sm:my-1.5"
                                   style={{ color: item.accent }}
                                 >
                                   {item.crowdCount}
                                 </div>
                               </div>
-                              <span className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#e6e4dd]/80">
+                              <span className="font-mono text-[9.5px] sm:text-xs uppercase tracking-widest text-[#e6e4dd]/80">
                                 {item.crowdUnit}
                               </span>
                             </div>
 
-                            <div className="mt-2.5 sm:mt-5 pt-2.5 sm:pt-4 border-t border-neutral-800">
-                              <div className="flex items-center justify-between font-mono text-[11px] sm:text-xs mb-1.5 sm:mb-2">
+                            <div className="mt-2 sm:mt-5 pt-2 sm:pt-4 border-t border-neutral-800">
+                              <div className="flex items-center justify-between font-mono text-[10px] sm:text-xs mb-1 sm:mb-2">
                                 <span className="text-[#e6e4dd]/60 uppercase">
                                   STREET TENSION
                                 </span>
@@ -143,7 +143,7 @@ export default function HorizontalScrollSection({ data }) {
                                   {item.tensionLevel}%
                                 </span>
                               </div>
-                              <div className="w-full h-2 sm:h-2.5 bg-[#1f232b] overflow-hidden p-0.5 mb-1.5 sm:mb-2">
+                              <div className="w-full h-1.5 sm:h-2.5 bg-[#1f232b] overflow-hidden p-0.5 mb-1 sm:mb-2">
                                 <div
                                   style={{
                                     width: `${barPct}%`,
@@ -152,7 +152,7 @@ export default function HorizontalScrollSection({ data }) {
                                   className="h-full"
                                 />
                               </div>
-                              <div className="font-mono text-[9px] sm:text-[10px] text-[#e6e4dd]/55 leading-tight">
+                              <div className="font-mono text-[9px] sm:text-[10px] text-[#e6e4dd]/60 leading-tight">
                                 Ref: Carnegie Global Protest Tracker (2024–25) &amp; ACLED Demonstration Monitor
                               </div>
                             </div>

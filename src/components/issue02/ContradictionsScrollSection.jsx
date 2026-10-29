@@ -57,7 +57,7 @@ export default function ContradictionsScrollSection({ data }) {
         const translateXPercent = -(trackPosition * 100);
 
         return (
-          <div className="relative w-full h-full bg-[#121316] text-[#e2e8f0] overflow-hidden flex flex-col justify-between pt-16 pb-5 px-4 sm:px-8">
+          <div className="relative w-full h-full bg-[#121316] text-[#e2e8f0] overflow-hidden flex flex-col justify-between pt-13 pb-2 sm:pt-14 sm:pb-3.5 px-3 sm:px-8">
             {/* Subtle Background Artwork Texture from Active Slide */}
             <div
               className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-15 blur-sm transition-all duration-500"
@@ -84,20 +84,20 @@ export default function ContradictionsScrollSection({ data }) {
             />
 
             {/* Section Header + 4-Panel Progress Pills */}
-            <div className="relative z-20 max-w-6xl w-full mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-3 border-b border-slate-800 pb-3.5">
+            <div className="relative z-20 max-w-6xl w-full mx-auto flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-slate-800 pb-1.5 sm:pb-2.5 shrink-0">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-[#e2e8f0] tracking-tight leading-tight">
+                <h2 className="text-base sm:text-2xl font-bold text-[#e2e8f0] tracking-tight leading-tight">
                   {data.title}
                 </h2>
                 {data.subtitle && (
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                  <p className="hidden lg:block text-xs text-slate-400 mt-0.5">
                     {data.subtitle}
                   </p>
                 )}
               </div>
 
               {/* 4-Panel Indicator Pills */}
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
+              <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 shrink-0">
                 {steps.map((step, idx) => {
                   const isActive = idx === activeIndex;
                   return (
@@ -109,14 +109,14 @@ export default function ContradictionsScrollSection({ data }) {
                           ? `${step.accent}18`
                           : '#0f1115',
                       }}
-                      className="px-2 sm:px-2.5 py-1 border font-mono text-[10px] tracking-wider uppercase transition-colors duration-200"
+                      className="px-2 sm:px-2.5 py-0.5 sm:py-1 border font-mono text-[9.5px] sm:text-[10px] tracking-wider uppercase transition-colors duration-200"
                     >
                       <span
                         style={{ color: isActive ? step.accent : '#64748b' }}
                         className="font-bold"
                       >
-                        <span className="sm:hidden">0{idx + 1}</span>
-                        <span className="hidden sm:inline">{step.subtitle}</span>
+                        <span className="md:hidden">0{idx + 1}</span>
+                        <span className="hidden md:inline">{step.subtitle}</span>
                       </span>
                     </div>
                   );
@@ -125,7 +125,7 @@ export default function ContradictionsScrollSection({ data }) {
             </div>
 
             {/* Full-Width Horizontal Scrub Track Container */}
-            <div className="relative z-10 flex-1 flex items-center w-full max-w-6xl mx-auto overflow-hidden my-1 sm:my-2">
+            <div className="relative z-10 flex-1 flex items-center w-full max-w-6xl mx-auto overflow-hidden py-2">
               <div
                 style={{
                   transform: `translate3d(${translateXPercent}%, 0, 0)`,
@@ -145,9 +145,9 @@ export default function ContradictionsScrollSection({ data }) {
                       }}
                       className="w-full shrink-0 px-1 sm:px-2 transition-opacity duration-75"
                     >
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 md:gap-8 items-center">
-                        {/* Graphic-Novel Illustration Panel (7 cols on Desktop) */}
-                        <div className="lg:col-span-7 relative border border-slate-800 bg-[#0f1115] overflow-hidden aspect-video max-h-[175px] sm:max-h-[260px] lg:max-h-none shadow-[0_24px_60px_rgba(0,0,0,0.85)]">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-4 lg:gap-6 items-center">
+                        {/* Graphic-Novel Illustration Panel (6 cols on Desktop/Tablet) */}
+                        <div className="md:col-span-6 relative border border-slate-800 bg-[#0f1115] overflow-hidden aspect-video max-h-[125px] sm:max-h-[145px] md:max-h-[290px] lg:max-h-[330px] shadow-[0_24px_60px_rgba(0,0,0,0.85)]">
                           <img
                             src={step.image}
                             alt={step.title}
@@ -165,39 +165,39 @@ export default function ContradictionsScrollSection({ data }) {
                               color: step.accent,
                               borderColor: `${step.accent}55`,
                             }}
-                            className="absolute bottom-3 left-3 border bg-[#121316]/92 px-3 py-1 font-mono text-[10px] sm:text-xs tracking-[0.18em] uppercase font-bold"
+                            className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 border bg-[#121316]/92 px-2.5 py-0.5 sm:px-3 sm:py-1 font-mono text-[9px] sm:text-xs tracking-[0.16em] uppercase font-bold"
                           >
                             {step.subtitle}
                           </div>
                         </div>
 
-                        {/* Narrative + Telemetry Card (5 cols on Desktop, Full Width on Mobile) */}
+                        {/* Narrative + Telemetry Card (6 cols on Desktop/Tablet, Full Width on Mobile) */}
                         <CyberPanel
                           label={step.subtitle}
                           accent={step.accent}
-                          className="lg:col-span-5"
+                          className="md:col-span-6 p-3 sm:p-4 lg:p-5"
                         >
-                          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#e2e8f0] tracking-tight leading-snug mb-3.5">
+                          <h3 className="text-base sm:text-xl lg:text-2xl font-bold text-[#e2e8f0] tracking-tight leading-snug mb-1.5 sm:mb-2">
                             {step.title}
                           </h3>
-                          <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-5">
+                          <p className="text-xs sm:text-sm lg:text-[15px] text-slate-300 leading-snug sm:leading-relaxed mb-2 sm:mb-3.5">
                             {step.copy}
                           </p>
 
                           {/* Scroll-Driven Metric Bar (Animates to end while card is parked) */}
-                          <div className="p-3.5 bg-[#0f1115] border border-slate-800 mb-3">
-                            <div className="flex items-baseline justify-between gap-2 mb-1.5 font-mono">
-                              <span className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-wider">
+                          <div className="p-2 sm:p-2.5 bg-[#0f1115] border border-slate-800 mb-1.5 sm:mb-2.5">
+                            <div className="flex items-baseline justify-between gap-2 mb-1 font-mono">
+                              <span className="text-[9px] sm:text-xs text-slate-400 uppercase tracking-wider truncate">
                                 {step.metricLabel}
                               </span>
                               <span
                                 style={{ color: step.accent }}
-                                className="text-xs sm:text-sm font-extrabold tabular-nums shrink-0"
+                                className="text-[11px] sm:text-sm font-extrabold tabular-nums shrink-0"
                               >
                                 {step.metricValue}
                               </span>
                             </div>
-                            <div className="h-2 w-full bg-slate-900 border border-slate-800 overflow-hidden">
+                            <div className="h-1.5 sm:h-2 w-full bg-slate-900 border border-slate-800 overflow-hidden">
                               <div
                                 style={{
                                   width: `${Math.round(step.barPercent * barGrowth)}%`,
@@ -208,7 +208,7 @@ export default function ContradictionsScrollSection({ data }) {
                             </div>
                           </div>
 
-                          <p className="font-mono text-[10px] text-slate-400 leading-relaxed">
+                          <p className="font-mono text-[8.5px] sm:text-[10px] text-slate-400 leading-tight">
                             {step.citation}
                           </p>
                         </CyberPanel>
@@ -220,7 +220,7 @@ export default function ContradictionsScrollSection({ data }) {
             </div>
 
             {/* Bottom Horizontal Scrub Bar */}
-            <div className="relative z-20 max-w-6xl w-full mx-auto pt-2 border-t border-slate-800/80 flex items-center justify-between gap-4 font-mono text-[10px] sm:text-xs text-slate-400">
+            <div className="relative z-20 max-w-6xl w-full mx-auto pt-1.5 sm:pt-2 border-t border-slate-800/80 flex items-center justify-between gap-4 font-mono text-[10px] sm:text-xs text-slate-400 shrink-0">
               <span>
                 <strong
                   style={{ color: steps[activeIndex].accent }}

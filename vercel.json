@@ -1,5 +1,10 @@
 {
+  "cleanUrls": true,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/watering-grass-in-a-thunderstorm", "destination": "/watering-grass-in-a-thunderstorm.html" },
+    { "source": "/issue-01", "destination": "/issue-01.html" },
+    { "source": "/the-meat-grinder", "destination": "/the-meat-grinder.html" },
+    { "source": "/issue-02", "destination": "/issue-02.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

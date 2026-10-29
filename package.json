@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/generate-og-routes.mjs",
     "preview": "vite preview",
     "remotion:studio": "npx remotion studio src/remotion/index.js",
     "remotion:render": "npx remotion render src/remotion/index.js WateringGrassReel out/watering-grass-reel.mp4"
