@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { Check } from 'lucide-react';
+import { recordSiteEvent } from '../utils/telemetry';
 
 export default function Masthead({
   activeDispatch,
@@ -39,9 +40,11 @@ export default function Masthead({
         document.body.removeChild(tempInput);
       }
       setCopied(true);
+      recordSiteEvent('share_copied', { path: slug, url: shareUrl });
       setTimeout(() => setCopied(false), 2200);
     } catch {
       setCopied(true);
+      recordSiteEvent('share_copied', { path: slug, url: shareUrl });
       setTimeout(() => setCopied(false), 2200);
     }
   };

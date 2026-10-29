@@ -11,6 +11,8 @@ import { dispatches, findDispatchByParam } from './data/dispatches';
 import Masthead from './components/Masthead';
 import ArchiveDrawer from './components/ArchiveDrawer';
 import LandingPage from './components/LandingPage';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
+import { recordSiteEvent } from './utils/telemetry';
 
 function PublicationLayout({ dispatch = null, children }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -18,8 +20,15 @@ function PublicationLayout({ dispatch = null, children }) {
   useEffect(() => {
     if (dispatch) {
       document.title = `Issue #${dispatch.id}: ${dispatch.title}, Observations by Moth1`;
+      recordSiteEvent('page_view', {
+        path: `/${dispatch.slug}`,
+        issueId: dispatch.id,
+      });
     } else {
       document.title = 'Observations by Moth1 | Interactive Visual Essays';
+      if (typeof window !== 'undefined' && window.location.pathname === '/') {
+        recordSiteEvent('page_view', { path: '/' });
+      }
     }
   }, [dispatch]);
 
@@ -127,6 +136,16 @@ export default function App() {
           element={
             <PublicationLayout dispatch={null}>
               <LandingPage dispatches={dispatches} />
+            </PublicationLayout>
+          }
+        />
+
+        {/* Route /analytics: Hidden Multi-Channel Publication Telemetry Dashboard */}
+        <Route
+          path="/analytics"
+          element={
+            <PublicationLayout dispatch={null}>
+              <AnalyticsDashboard />
             </PublicationLayout>
           }
         />
