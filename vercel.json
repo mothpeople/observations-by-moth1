@@ -2,10 +2,11 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/analytics", "destination": "/analytics.html" },
     { "source": "/watering-grass-in-a-thunderstorm", "destination": "/watering-grass-in-a-thunderstorm.html" },
     { "source": "/issue-01", "destination": "/issue-01.html" },
     { "source": "/the-meat-grinder", "destination": "/the-meat-grinder.html" },
     { "source": "/issue-02", "destination": "/issue-02.html" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

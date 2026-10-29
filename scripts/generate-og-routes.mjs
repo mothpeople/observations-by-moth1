@@ -28,13 +28,21 @@ const routes = [
     image: 'https://observations.moth1.xyz/og/og-issue-02.jpg',
     url: 'https://observations.moth1.xyz/the-meat-grinder',
   },
+  {
+    paths: ['analytics'],
+    title: 'Analytics & Telemetry Command | Observations by Moth1',
+    description: 'Private telemetry command.',
+    image: 'https://observations.moth1.xyz/og/og-home.jpg',
+    url: 'https://observations.moth1.xyz/analytics',
+    noindex: true,
+  },
 ];
 
 for (const route of routes) {
   let html = baseHtml
     .replace(
       /<title>.*?<\/title>/s,
-      `<title>${route.title}</title>`
+      `<title>${route.title}</title>${route.noindex ? '\n    <meta name="robots" content="noindex, nofollow" />' : ''}`
     )
     .replace(
       /<meta\s+name="description"\s+content=".*?"\s*\/>/s,

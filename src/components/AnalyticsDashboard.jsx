@@ -19,6 +19,7 @@ import { loadChannelLedger, saveChannelLedger } from '../utils/telemetry';
 
 const APIFY_TOKEN_STORAGE_KEY = 'moth1_apify_token';
 const APIFY_TARGETS_STORAGE_KEY = 'moth1_apify_targets_v2';
+const OWNER_UNLOCK_STORAGE_KEY = 'moth1_owner_unlocked_v1';
 
 const DEFAULT_TARGETS = {
   substackUrl: 'https://observationsbymoth1.substack.com',
@@ -350,6 +351,20 @@ export default function AnalyticsDashboard() {
     if (typeof window === 'undefined') return '';
     return window.localStorage.getItem(APIFY_TOKEN_STORAGE_KEY) || '';
   });
+
+  const [isOwnerUnlocked, setIsOwnerUnlocked] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const isLocal =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1';
+    if (isLocal) return true;
+    return (
+      window.localStorage.getItem(OWNER_UNLOCK_STORAGE_KEY) === 'true' ||
+      Boolean(window.localStorage.getItem(APIFY_TOKEN_STORAGE_KEY))
+    );
+  });
+  const [unlockInput, setUnlockInput] = useState('');
+  const [unlockError, setUnlockError] = useState('');
 
   const [targets, setTargets] = useState(() => {
     if (typeof window === 'undefined') return DEFAULT_TARGETS;
@@ -843,6 +858,82 @@ export default function AnalyticsDashboard() {
   );
   const totalFbViews = Math.max(fbScrapedViews, fbManualViews);
   const totalFbEngagement = Math.max(fbScrapedInteractions, fbManualEngagement);
+
+  const handleOwnerUnlock = (e) => {
+    e.preventDefault();
+    const val = unlockInput.trim();
+    if (
+      val.startsWith('apify_api_') ||
+      val.toLowerCase() === 'moth1.siv' ||
+      val.toLowerCase() === 'moth1'
+    ) {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(OWNER_UNLOCK_STORAGE_KEY, 'true');
+        if (val.startsWith('apify_api_')) {
+          window.localStorage.setItem(APIFY_TOKEN_STORAGE_KEY, val);
+          setApifyToken(val);
+          syncAllTelemetry(val);
+        }
+      }
+      setIsOwnerUnlocked(true);
+      setUnlockError('');
+    } else {
+      setUnlockError(
+        'Invalid access key. Enter your Apify API token (apify_api_...) or owner handle.'
+      );
+    }
+  };
+
+  if (!isOwnerUnlocked) {
+    return (
+      <div className="min-h-screen bg-[#0c0d10] text-[#e2e8f0] flex items-center justify-center px-4">
+        <CyberPanel
+          label="Private Telemetry • Owner Access Only"
+          accent="#67e8f9"
+          className="max-w-md w-full p-6 sm:p-8 space-y-5"
+        >
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#e2e8f0]">
+              Observations by Moth1
+            </h1>
+            <p className="text-xs text-slate-400 mt-1 font-mono">
+              This analytics console is restricted to the publication owner.
+              Paste your Apify API token (<code className="text-[#67e8f9]">apify_api_...</code>) or owner key to unlock on this browser.
+            </p>
+          </div>
+
+          <form onSubmit={handleOwnerUnlock} className="space-y-3">
+            <input
+              type="password"
+              value={unlockInput}
+              onChange={(e) => setUnlockInput(e.target.value)}
+              placeholder="Paste Apify API token or owner key..."
+              className="w-full bg-[#0b0d10] border border-slate-700 px-3.5 py-2.5 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-[#67e8f9]"
+            />
+            {unlockError && (
+              <div className="font-mono text-[11px] text-[#fda4af]">
+                {unlockError}
+              </div>
+            )}
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <Link
+                to="/"
+                className="font-mono text-xs text-slate-400 hover:text-white"
+              >
+                ← Back to Publication
+              </Link>
+              <button
+                type="submit"
+                className="bg-[#67e8f9] text-[#121316] font-mono text-xs font-extrabold uppercase tracking-wider px-5 py-2 hover:bg-[#86efac] transition-colors cursor-pointer"
+              >
+                Unlock Console
+              </button>
+            </div>
+          </form>
+        </CyberPanel>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0c0d10] text-[#e2e8f0] pt-16 pb-20 px-4 sm:px-8">
