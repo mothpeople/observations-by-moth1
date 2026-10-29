@@ -120,7 +120,7 @@ export default function HeroMachineSection({ data }) {
                 transform: `translate3d(0, ${cardY}px, 0)`,
                 pointerEvents: cardOpacity > 0.2 ? 'auto' : 'none',
               }}
-              className="seq-layer absolute inset-0 z-20 flex items-center justify-center px-3 sm:px-6 pt-13 pb-2 sm:pt-14 sm:pb-4"
+              className="seq-layer absolute inset-0 z-20 flex items-center justify-center px-3 sm:px-6 pt-12 pb-2 sm:pt-14 sm:pb-4"
             >
               <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-12 gap-2 sm:gap-4 lg:gap-6 items-center">
                 {/* Left Column: Animated Illustration + Cold Open Copy */}
@@ -130,7 +130,7 @@ export default function HeroMachineSection({ data }) {
                   className="md:col-span-7 p-2.5 sm:p-4 lg:p-5"
                 >
                   {/* Embedded Animated Graphic-Novel Panel */}
-                  <div className="relative w-full aspect-[16/8.5] max-h-[88px] sm:max-h-[145px] md:max-h-[175px] lg:max-h-[205px] mb-2 sm:mb-3 border border-slate-800 bg-[#0f1115] overflow-hidden">
+                  <div className="relative w-full h-[110px] sm:h-[145px] md:h-[175px] lg:h-[205px] mb-2 sm:mb-3 border border-slate-800 bg-[#0f1115] overflow-hidden">
                     <img
                       src={hero.grinderImage || hero.image}
                       alt="The Billionaire Podcast vs. The Meat Grinder"

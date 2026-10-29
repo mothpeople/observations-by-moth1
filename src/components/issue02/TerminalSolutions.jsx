@@ -153,7 +153,7 @@ export default function TerminalSolutions({ data }) {
                   <div>
                     {/* Dedicated Animated Graphic-Novel Illustration for each Taboo Reality */}
                     {activeProp.image && (
-                      <div className="relative w-full aspect-video max-h-[120px] sm:max-h-[165px] lg:max-h-[195px] mb-2 sm:mb-3 border border-slate-800 bg-[#0f1115] overflow-hidden">
+                      <div className="relative w-full h-[135px] sm:h-[165px] lg:h-[195px] mb-2 sm:mb-3 border border-slate-800 bg-[#0f1115] overflow-hidden">
                         <img
                           src={activeProp.image}
                           alt={activeProp.title}

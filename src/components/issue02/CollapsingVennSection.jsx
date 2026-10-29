@@ -74,7 +74,7 @@ export default function CollapsingVennSection({ data }) {
           }}
         />
 
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-13 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-2.5 md:gap-7 items-center">
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-12 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-2.5 md:gap-7 items-center">
           {/* LEFT COLUMN: Interactive Collapsing SVG Venn Diagram */}
           <div className="md:col-span-6 flex flex-col items-center justify-center">
             <CyberPanel
@@ -384,7 +384,7 @@ export default function CollapsingVennSection({ data }) {
                   >
                     {/* Animated Graphic-Novel Illustration inside each Venn Card */}
                     {card.image && (
-                      <div className="relative w-full aspect-[16/8.5] max-h-[92px] sm:max-h-[155px] md:max-h-[185px] mb-2 sm:mb-3 border border-slate-800 bg-[#0f1115] overflow-hidden">
+                      <div className="relative w-full h-[115px] sm:h-[155px] md:h-[185px] mb-2 sm:mb-3 border border-slate-800 bg-[#0f1115] overflow-hidden">
                         <img
                           src={card.image}
                           alt={card.headline}
