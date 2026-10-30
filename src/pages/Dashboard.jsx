@@ -16,6 +16,8 @@ import {
   Share2,
   Sparkles,
   Zap,
+  Edit2,
+  X,
 } from 'lucide-react';
 import CyberPanel from '../components/issue02/CyberPanel';
 import { loadChannelLedger, saveChannelLedger } from '../utils/telemetry';
@@ -389,6 +391,8 @@ export default function Dashboard() {
   const [showApifyConfig, setShowApifyConfig] = useState(false);
   const [filterOnlyObservations, setFilterOnlyObservations] = useState(true);
   const [copiedLink, setCopiedLink] = useState('');
+  const [editingPlatform, setEditingPlatform] = useState(null); // 'substack' | 'instagram' | 'threads' | 'facebook' | null
+  const [tempEditVal, setTempEditVal] = useState('');
 
   const [apifyToken, setApifyToken] = useState(() => {
     if (typeof window === 'undefined') return '';
@@ -830,6 +834,11 @@ export default function Dashboard() {
       const updated = { ...ledger, substackSubscribers: num };
       setLedger(updated);
       saveChannelLedger(updated);
+      setSubstackState((prev) => ({ ...prev, subscribers: num }));
+      return;
+    }
+    if (platform === 'threads') {
+      setThreadsState((prev) => ({ ...prev, followers: num }));
       return;
     }
     const updated = {
@@ -841,6 +850,21 @@ export default function Dashboard() {
     };
     setLedger(updated);
     saveChannelLedger(updated);
+    if (platform === 'instagram') {
+      setInstagramState((prev) => ({ ...prev, followers: num }));
+    } else if (platform === 'facebook') {
+      setFacebookState((prev) => ({ ...prev, followers: num }));
+    }
+  };
+
+  const handleStartEditFollower = (platform, currentVal) => {
+    setEditingPlatform(platform);
+    setTempEditVal(String(currentVal || ''));
+  };
+
+  const handleSaveEditFollower = (platform) => {
+    updateFollowerCount(platform, tempEditVal);
+    setEditingPlatform(null);
   };
 
   // Quick-edit Story Funnel Metrics per dispatch (Instagram & Facebook)
@@ -1469,14 +1493,60 @@ export default function Dashboard() {
 
             <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
               <span className="text-slate-400">Subscribers:</span>
-              <div className="flex items-center gap-1.5">
-                <span className="font-mono text-[12px] font-bold text-[#67e8f9] tabular-nums">
-                  {(substackState.subscribers || ledger.substackSubscribers || 0).toLocaleString()}
-                </span>
-                <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#67e8f9]/40 bg-[#67e8f9]/10 text-[#67e8f9] rounded-none">
-                  {substackState.subscribers > 0 ? 'Scraped' : 'Live'}
-                </span>
-              </div>
+              {editingPlatform === 'substack' ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="0"
+                    autoFocus
+                    value={tempEditVal}
+                    onChange={(e) => setTempEditVal(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveEditFollower('substack');
+                      if (e.key === 'Escape') setEditingPlatform(null);
+                    }}
+                    className="w-16 bg-[#0b0d10] border border-[#67e8f9] px-1.5 py-0.5 text-[11px] font-mono text-[#67e8f9] font-bold text-right outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSaveEditFollower('substack')}
+                    className="p-1 hover:bg-[#67e8f9]/20 text-[#67e8f9] rounded-none cursor-pointer"
+                    title="Save"
+                  >
+                    <Check className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPlatform(null)}
+                    className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-none cursor-pointer"
+                    title="Cancel"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[12px] font-bold text-[#67e8f9] tabular-nums">
+                    {(substackState.subscribers || ledger.substackSubscribers || 0).toLocaleString()}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#67e8f9]/40 bg-[#67e8f9]/10 text-[#67e8f9] rounded-none">
+                    {substackState.subscribers > 0 ? 'Scraped' : 'Live'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleStartEditFollower(
+                        'substack',
+                        substackState.subscribers || ledger.substackSubscribers || 0
+                      )
+                    }
+                    className="p-0.5 text-slate-500 hover:text-[#67e8f9] transition-colors cursor-pointer"
+                    title="Edit Baseline Subscribers"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
             </div>
           </CyberPanel>
 
@@ -1504,14 +1574,60 @@ export default function Dashboard() {
 
             <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
               <span className="text-slate-400">Followers:</span>
-              <div className="flex items-center gap-1.5">
-                <span className="font-mono text-[12px] font-bold text-[#fda4af] tabular-nums">
-                  {(instagramState.followers || ledger.instagram.followers || 0).toLocaleString()}
-                </span>
-                <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#fda4af]/40 bg-[#fda4af]/10 text-[#fda4af] rounded-none">
-                  {instagramState.followers > 0 ? 'Scraped' : 'Live'}
-                </span>
-              </div>
+              {editingPlatform === 'instagram' ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="0"
+                    autoFocus
+                    value={tempEditVal}
+                    onChange={(e) => setTempEditVal(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveEditFollower('instagram');
+                      if (e.key === 'Escape') setEditingPlatform(null);
+                    }}
+                    className="w-16 bg-[#0b0d10] border border-[#fda4af] px-1.5 py-0.5 text-[11px] font-mono text-[#fda4af] font-bold text-right outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSaveEditFollower('instagram')}
+                    className="p-1 hover:bg-[#fda4af]/20 text-[#fda4af] rounded-none cursor-pointer"
+                    title="Save"
+                  >
+                    <Check className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPlatform(null)}
+                    className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-none cursor-pointer"
+                    title="Cancel"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[12px] font-bold text-[#fda4af] tabular-nums">
+                    {(instagramState.followers || ledger.instagram.followers || 0).toLocaleString()}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#fda4af]/40 bg-[#fda4af]/10 text-[#fda4af] rounded-none">
+                    {instagramState.followers > 0 ? 'Scraped' : 'Live'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleStartEditFollower(
+                        'instagram',
+                        instagramState.followers || ledger.instagram.followers || 0
+                      )
+                    }
+                    className="p-0.5 text-slate-500 hover:text-[#fda4af] transition-colors cursor-pointer"
+                    title="Edit Baseline Followers"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
             </div>
           </CyberPanel>
 
@@ -1539,14 +1655,60 @@ export default function Dashboard() {
 
             <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between font-mono text-[10px]">
               <span className="text-slate-400">Followers:</span>
-              <div className="flex items-center gap-1.5">
-                <span className="font-mono text-[12px] font-bold text-[#c084fc] tabular-nums">
-                  {(threadsState.followers || 0).toLocaleString()}
-                </span>
-                <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#c084fc]/40 bg-[#c084fc]/10 text-[#c084fc] rounded-none">
-                  {threadsState.followers > 0 ? 'Scraped' : 'Live'}
-                </span>
-              </div>
+              {editingPlatform === 'threads' ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="0"
+                    autoFocus
+                    value={tempEditVal}
+                    onChange={(e) => setTempEditVal(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveEditFollower('threads');
+                      if (e.key === 'Escape') setEditingPlatform(null);
+                    }}
+                    className="w-16 bg-[#0b0d10] border border-[#c084fc] px-1.5 py-0.5 text-[11px] font-mono text-[#c084fc] font-bold text-right outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSaveEditFollower('threads')}
+                    className="p-1 hover:bg-[#c084fc]/20 text-[#c084fc] rounded-none cursor-pointer"
+                    title="Save"
+                  >
+                    <Check className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPlatform(null)}
+                    className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-none cursor-pointer"
+                    title="Cancel"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[12px] font-bold text-[#c084fc] tabular-nums">
+                    {(threadsState.followers || 0).toLocaleString()}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#c084fc]/40 bg-[#c084fc]/10 text-[#c084fc] rounded-none">
+                    {threadsState.followers > 0 ? 'Scraped' : 'Live'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleStartEditFollower(
+                        'threads',
+                        threadsState.followers || 0
+                      )
+                    }
+                    className="p-0.5 text-slate-500 hover:text-[#c084fc] transition-colors cursor-pointer"
+                    title="Edit Baseline Followers"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
             </div>
           </CyberPanel>
 
@@ -1574,14 +1736,60 @@ export default function Dashboard() {
 
             <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
               <span className="text-slate-400">Followers:</span>
-              <div className="flex items-center gap-1.5">
-                <span className="font-mono text-[12px] font-bold text-[#86efac] tabular-nums">
-                  {(facebookState.followers || ledger.facebook.followers || 0).toLocaleString()}
-                </span>
-                <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] rounded-none">
-                  {facebookState.followers > 0 ? 'Scraped' : 'Live'}
-                </span>
-              </div>
+              {editingPlatform === 'facebook' ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="0"
+                    autoFocus
+                    value={tempEditVal}
+                    onChange={(e) => setTempEditVal(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveEditFollower('facebook');
+                      if (e.key === 'Escape') setEditingPlatform(null);
+                    }}
+                    className="w-16 bg-[#0b0d10] border border-[#86efac] px-1.5 py-0.5 text-[11px] font-mono text-[#86efac] font-bold text-right outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSaveEditFollower('facebook')}
+                    className="p-1 hover:bg-[#86efac]/20 text-[#86efac] rounded-none cursor-pointer"
+                    title="Save"
+                  >
+                    <Check className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPlatform(null)}
+                    className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-none cursor-pointer"
+                    title="Cancel"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[12px] font-bold text-[#86efac] tabular-nums">
+                    {(facebookState.followers || ledger.facebook.followers || 0).toLocaleString()}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] rounded-none">
+                    {facebookState.followers > 0 ? 'Scraped' : 'Live'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleStartEditFollower(
+                        'facebook',
+                        facebookState.followers || ledger.facebook.followers || 0
+                      )
+                    }
+                    className="p-0.5 text-slate-500 hover:text-[#86efac] transition-colors cursor-pointer"
+                    title="Edit Baseline Followers"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
             </div>
           </CyberPanel>
 
