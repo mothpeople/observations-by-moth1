@@ -97,7 +97,7 @@ const DEFAULT_CHANNEL_LEDGER = {
   },
   substackSubscribers: 0,
   storyFunnel: {
-    defaultImpressions: 100,
+    defaultImpressions: 0,
     dispatches: [
       {
         id: '02',
@@ -105,12 +105,12 @@ const DEFAULT_CHANNEL_LEDGER = {
         slug: 'the-meat-grinder',
         title: 'Issue #02: The Meat Grinder Needs More Meat',
         instagram: {
-          impressions: 100, // 24h IG Story views
+          impressions: 0, // 24h IG Story views (starts at 0)
           clicks: 0, // utm_source = 'instagram' & utm_medium = 'story'
           subscribers: 0, // IG story clickers who hit submit
         },
         facebook: {
-          impressions: 100, // 24h FB Story views
+          impressions: 0, // 24h FB Story views (starts at 0)
           clicks: 0, // utm_source = 'facebook' & utm_medium = 'story'
           subscribers: 0, // FB story clickers who hit submit
         },
@@ -121,12 +121,12 @@ const DEFAULT_CHANNEL_LEDGER = {
         slug: 'watering-grass-in-a-thunderstorm',
         title: 'Issue #01: Watering Grass in a Thunderstorm',
         instagram: {
-          impressions: 100,
+          impressions: 0,
           clicks: 0,
           subscribers: 0,
         },
         facebook: {
-          impressions: 100,
+          impressions: 0,
           clicks: 0,
           subscribers: 0,
         },
@@ -151,16 +151,19 @@ export function loadChannelLedger() {
       );
       if (!found) return def;
 
-      // Gracefully migrate legacy single-counter fields if present
-      const legacyImpressions = Number(found.storyImpressions) || 100;
+      // Gracefully migrate legacy single-counter fields if present (treat initial placeholder 100 as 0)
+      const rawLegacyImp = Number(found.storyImpressions);
+      const legacyImpressions = rawLegacyImp === 100 && !found.storyClicks ? 0 : (Number.isFinite(rawLegacyImp) ? rawLegacyImp : 0);
       const legacyClicks = Number(found.storyClicks) || 0;
       const legacySubs = Number(found.storySubscribers) || 0;
 
-      const igImpressions = Number(found.instagram?.impressions) || legacyImpressions;
+      const rawIgImp = Number(found.instagram?.impressions);
+      const igImpressions = rawIgImp === 100 && !found.instagram?.clicks ? 0 : (Number.isFinite(rawIgImp) ? rawIgImp : legacyImpressions);
       const igClicks = Number(found.instagram?.clicks) || legacyClicks;
       const igSubs = Number(found.instagram?.subscribers) || legacySubs;
 
-      const fbImpressions = Number(found.facebook?.impressions) || 100;
+      const rawFbImp = Number(found.facebook?.impressions);
+      const fbImpressions = rawFbImp === 100 && !found.facebook?.clicks ? 0 : (Number.isFinite(rawFbImp) ? rawFbImp : 0);
       const fbClicks = Number(found.facebook?.clicks) || 0;
       const fbSubs = Number(found.facebook?.subscribers) || 0;
 

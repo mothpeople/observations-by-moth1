@@ -760,7 +760,7 @@ export default function Dashboard() {
         ...ledger.storyFunnel,
         dispatches: (ledger.storyFunnel?.dispatches || []).map((d) => {
           if (d.id === dispatchId || d.issueId === dispatchId) {
-            const currentPlatformData = d[platform] || { impressions: 100, clicks: 0, subscribers: 0 };
+            const currentPlatformData = d[platform] || { impressions: 0, clicks: 0, subscribers: 0 };
             return {
               ...d,
               [platform]: {
@@ -778,7 +778,7 @@ export default function Dashboard() {
   };
 
   const updateGlobalStoryImpressions = (value) => {
-    const num = Math.max(1, Number(value) || 0);
+    const num = Math.max(0, Number(value) || 0);
     const updated = {
       ...ledger,
       storyFunnel: {
@@ -850,7 +850,7 @@ export default function Dashboard() {
 
   // Story Conversion Funnel Aggregates (Instagram & Facebook Breakdown)
   const storyDispatches = ledger.storyFunnel?.dispatches || [];
-  const defaultImpressions = ledger.storyFunnel?.defaultImpressions ?? 100;
+  const defaultImpressions = ledger.storyFunnel?.defaultImpressions ?? 0;
 
   // Instagram Story Aggregates
   const igStoryImpressions = storyDispatches.reduce(
@@ -1317,13 +1317,188 @@ export default function Dashboard() {
           </CyberPanel>
         )}
 
-        {/* 6-Channel Executive Summary KPI Grid (Includes Story to Essay Conversion) */}
+        {/* 6-Channel Executive Summary KPI Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          {/* KPI 1: Story to Essay Conversion (TASK REQUIREMENT) */}
+          {/* KPI 1: Website (Vercel Analytics) */}
+          <CyberPanel
+            label="Website • Vercel"
+            accent="#86efac"
+            className="p-4 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[11px] text-slate-400 truncate">
+                  observations.moth1.xyz
+                </span>
+                <Globe className="w-4 h-4 text-[#86efac] shrink-0" />
+              </div>
+              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
+                {totalWebViews.toLocaleString()}
+              </div>
+              <div className="text-xs text-slate-400 mt-0.5">
+                Views • {totalWebShares.toLocaleString()} Shares
+              </div>
+            </div>
+
+            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between font-mono text-[10px]">
+              <span className="inline-flex items-center gap-1 text-[#86efac]">
+                <CheckCircle2 className="w-3 h-3" />
+                Active
+              </span>
+              <a
+                href="https://vercel.com/dashboard"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-300 hover:text-[#86efac]"
+              >
+                Vercel ↗
+              </a>
+            </div>
+          </CyberPanel>
+
+          {/* KPI 2: Substack (automation-lab/substack-scraper) */}
+          <CyberPanel
+            label="Substack • Apify"
+            accent="#67e8f9"
+            className="p-4 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[11px] text-slate-400 truncate">
+                  substack-scraper
+                </span>
+                <BookOpen className="w-4 h-4 text-[#67e8f9] shrink-0" />
+              </div>
+              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
+                {substackPosts.length} Posts
+              </div>
+              <div className="text-xs text-slate-400 mt-0.5">
+                {totalSubstackLikes} Likes • {totalSubstackComments} Comments
+              </div>
+            </div>
+
+            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
+              <span className="text-slate-400">Subs:</span>
+              <input
+                type="number"
+                min="0"
+                value={ledger.substackSubscribers || 0}
+                onChange={(e) =>
+                  updateFollowerCount('substack', e.target.value)
+                }
+                className="w-16 bg-[#0b0d10] border border-slate-800 px-1.5 py-0.5 text-[11px] font-mono text-[#67e8f9] font-bold text-right"
+              />
+            </div>
+          </CyberPanel>
+
+          {/* KPI 3: Instagram (apify/instagram-scraper) */}
+          <CyberPanel
+            label="Instagram • Apify"
+            accent="#fda4af"
+            className="p-4 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[11px] text-slate-400 truncate">
+                  @{targets.instagramHandle}
+                </span>
+                <Film className="w-4 h-4 text-[#fda4af] shrink-0" />
+              </div>
+              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
+                {totalIgViews.toLocaleString()}
+              </div>
+              <div className="text-xs text-slate-400 mt-0.5">
+                Plays • {totalIgEngagement.toLocaleString()} Engagements (
+                {visibleInstagramItems.length} {activeFilterTag})
+              </div>
+            </div>
+
+            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
+              <span className="text-slate-400">Followers:</span>
+              <input
+                type="number"
+                min="0"
+                value={ledger.instagram.followers || 0}
+                onChange={(e) =>
+                  updateFollowerCount('instagram', e.target.value)
+                }
+                className="w-16 bg-[#0b0d10] border border-slate-800 px-1.5 py-0.5 text-[11px] font-mono text-[#fda4af] font-bold text-right"
+              />
+            </div>
+          </CyberPanel>
+
+          {/* KPI 4: Threads (automation-lab/threads-scraper) */}
+          <CyberPanel
+            label="Threads • Apify"
+            accent="#c084fc"
+            className="p-4 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[11px] text-slate-400 truncate">
+                  @{targets.threadsHandle}
+                </span>
+                <MessageSquare className="w-4 h-4 text-[#c084fc] shrink-0" />
+              </div>
+              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
+                {visibleThreadsItems.length} Threads
+              </div>
+              <div className="text-xs text-slate-400 mt-0.5">
+                {totalThreadsLikes} Likes • {totalThreadsReplies} Replies •{' '}
+                {totalThreadsReposts} Reposts
+              </div>
+            </div>
+
+            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between font-mono text-[10px]">
+              <span className="text-[#c084fc]">
+                {threadsState.items.length > 0
+                  ? `${visibleThreadsItems.length}/${threadsState.items.length} ${activeFilterTag}`
+                  : 'Ready to Scrape'}
+              </span>
+            </div>
+          </CyberPanel>
+
+          {/* KPI 5: Facebook (apify/facebook-posts-scraper) */}
+          <CyberPanel
+            label="Facebook • Apify"
+            accent="#86efac"
+            className="p-4 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[11px] text-slate-400 truncate">
+                  sivaraj.pragasm
+                </span>
+                <Share2 className="w-4 h-4 text-[#86efac] shrink-0" />
+              </div>
+              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
+                {totalFbViews.toLocaleString()}
+              </div>
+              <div className="text-xs text-slate-400 mt-0.5">
+                Views • {totalFbEngagement.toLocaleString()} Engagements (
+                {visibleFacebookItems.length} {activeFilterTag})
+              </div>
+            </div>
+
+            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
+              <span className="text-slate-400">Followers:</span>
+              <input
+                type="number"
+                min="0"
+                value={ledger.facebook.followers || 0}
+                onChange={(e) =>
+                  updateFollowerCount('facebook', e.target.value)
+                }
+                className="w-16 bg-[#0b0d10] border border-slate-800 px-1.5 py-0.5 text-[11px] font-mono text-[#86efac] font-bold text-right"
+              />
+            </div>
+          </CyberPanel>
+
+          {/* KPI 6: Story to Essay Conversion (Instagram & Facebook Breakdown) */}
           <CyberPanel
             label="Story Funnel • Conversion"
             accent="#f472b6"
-            className="p-4 flex flex-col justify-between border-2 border-[#f472b6]/40 bg-[#121316]"
+            className="p-4 flex flex-col justify-between border border-[#f472b6]/40 bg-[#121316]"
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -1363,486 +1538,106 @@ export default function Dashboard() {
               </div>
             </div>
           </CyberPanel>
-
-          {/* KPI 2: Website (Vercel Analytics) */}
-          <CyberPanel
-            label="Website • Vercel"
-            accent="#86efac"
-            className="p-4 flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-[11px] text-slate-400 truncate">
-                  observations.moth1.xyz
-                </span>
-                <Globe className="w-4 h-4 text-[#86efac] shrink-0" />
-              </div>
-              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
-                {totalWebViews.toLocaleString()}
-              </div>
-              <div className="text-xs text-slate-400 mt-0.5">
-                Views • {totalWebShares.toLocaleString()} Shares
-              </div>
-            </div>
-
-            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between font-mono text-[10px]">
-              <span className="inline-flex items-center gap-1 text-[#86efac]">
-                <CheckCircle2 className="w-3 h-3" />
-                Active
-              </span>
-              <a
-                href="https://vercel.com/dashboard"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-300 hover:text-[#86efac]"
-              >
-                Vercel ↗
-              </a>
-            </div>
-          </CyberPanel>
-
-          {/* KPI 3: Substack (automation-lab/substack-scraper) */}
-          <CyberPanel
-            label="Substack • Apify"
-            accent="#67e8f9"
-            className="p-4 flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-[11px] text-slate-400 truncate">
-                  substack-scraper
-                </span>
-                <BookOpen className="w-4 h-4 text-[#67e8f9] shrink-0" />
-              </div>
-              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
-                {substackPosts.length} Posts
-              </div>
-              <div className="text-xs text-slate-400 mt-0.5">
-                {totalSubstackLikes} Likes • {totalSubstackComments} Comments
-              </div>
-            </div>
-
-            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
-              <span className="text-slate-400">Subs:</span>
-              <input
-                type="number"
-                min="0"
-                value={ledger.substackSubscribers || 0}
-                onChange={(e) =>
-                  updateFollowerCount('substack', e.target.value)
-                }
-                className="w-16 bg-[#0b0d10] border border-slate-800 px-1.5 py-0.5 text-[11px] font-mono text-[#67e8f9] font-bold text-right"
-              />
-            </div>
-          </CyberPanel>
-
-          {/* KPI 4: Instagram (apify/instagram-scraper) */}
-          <CyberPanel
-            label="Instagram • Apify"
-            accent="#fda4af"
-            className="p-4 flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-[11px] text-slate-400 truncate">
-                  @{targets.instagramHandle}
-                </span>
-                <Film className="w-4 h-4 text-[#fda4af] shrink-0" />
-              </div>
-              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
-                {totalIgViews.toLocaleString()}
-              </div>
-              <div className="text-xs text-slate-400 mt-0.5">
-                Plays • {totalIgEngagement.toLocaleString()} Engagements (
-                {visibleInstagramItems.length} {activeFilterTag})
-              </div>
-            </div>
-
-            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
-              <span className="text-slate-400">Followers:</span>
-              <input
-                type="number"
-                min="0"
-                value={ledger.instagram.followers || 0}
-                onChange={(e) =>
-                  updateFollowerCount('instagram', e.target.value)
-                }
-                className="w-16 bg-[#0b0d10] border border-slate-800 px-1.5 py-0.5 text-[11px] font-mono text-[#fda4af] font-bold text-right"
-              />
-            </div>
-          </CyberPanel>
-
-          {/* KPI 5: Threads (automation-lab/threads-scraper) */}
-          <CyberPanel
-            label="Threads • Apify"
-            accent="#c084fc"
-            className="p-4 flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-[11px] text-slate-400 truncate">
-                  @{targets.threadsHandle}
-                </span>
-                <MessageSquare className="w-4 h-4 text-[#c084fc] shrink-0" />
-              </div>
-              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
-                {visibleThreadsItems.length} Threads
-              </div>
-              <div className="text-xs text-slate-400 mt-0.5">
-                {totalThreadsLikes} Likes • {totalThreadsReplies} Replies •{' '}
-                {totalThreadsReposts} Reposts
-              </div>
-            </div>
-
-            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between font-mono text-[10px]">
-              <span className="text-[#c084fc]">
-                {threadsState.items.length > 0
-                  ? `${visibleThreadsItems.length}/${threadsState.items.length} ${activeFilterTag}`
-                  : 'Ready to Scrape'}
-              </span>
-            </div>
-          </CyberPanel>
-
-          {/* KPI 6: Facebook (apify/facebook-posts-scraper) */}
-          <CyberPanel
-            label="Facebook • Apify"
-            accent="#86efac"
-            className="p-4 flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-[11px] text-slate-400 truncate">
-                  sivaraj.pragasm
-                </span>
-                <Share2 className="w-4 h-4 text-[#86efac] shrink-0" />
-              </div>
-              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
-                {totalFbViews.toLocaleString()}
-              </div>
-              <div className="text-xs text-slate-400 mt-0.5">
-                Views • {totalFbEngagement.toLocaleString()} Engagements (
-                {visibleFacebookItems.length} {activeFilterTag})
-              </div>
-            </div>
-
-            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
-              <span className="text-slate-400">Followers:</span>
-              <input
-                type="number"
-                min="0"
-                value={ledger.facebook.followers || 0}
-                onChange={(e) =>
-                  updateFollowerCount('facebook', e.target.value)
-                }
-                className="w-16 bg-[#0b0d10] border border-slate-800 px-1.5 py-0.5 text-[11px] font-mono text-[#86efac] font-bold text-right"
-              />
-            </div>
-          </CyberPanel>
         </div>
 
-        {/* SECTION 1: Story to Essay Conversion Funnel (Instagram & Facebook Breakdown) */}
+        {/* SECTION 1: Website Route Breakdown & Vercel Web Analytics Sync */}
         <CyberPanel
-          label="Story to Essay Conversion Funnel • Instagram & Facebook"
-          accent="#f472b6"
+          label="Website Telemetry • observations.moth1.xyz"
+          accent="#86efac"
           className="p-5 sm:p-6"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#e2e8f0] flex items-center gap-2">
-                <span>Story Conversion Funnel by Platform</span>
-                <span className="px-2 py-0.5 border border-[#f472b6]/40 bg-[#f472b6]/10 text-[#f472b6] text-[10px] font-mono uppercase font-bold">
-                  IG &amp; FB Breakdown
-                </span>
+              <h2 className="text-lg sm:text-xl font-bold text-[#e2e8f0]">
+                Interactive Web Essay Traffic by Route
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Separate counters for Instagram (<code className="text-[#fda4af]">utm_source=instagram</code>) and Facebook (<code className="text-[#60a5fa]">utm_source=facebook</code>) with <code className="text-[#f472b6]">utm_medium=story</code>.
-                Log your final 24h Story views below to compute verified CTR &amp; Substack subscriber conversions.
+                Live pageviews and share clicks are streamed automatically to
+                Vercel Web Analytics via{' '}
+                <code className="text-[#86efac]">&lt;Analytics /&gt;</code>. You
+                can also sync your Vercel dashboard numbers below.
               </p>
             </div>
-
-            <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
-              <span className="px-2 py-1 bg-[#fda4af]/10 border border-[#fda4af]/30 text-[#fda4af]">
-                IG CTR: <strong>{igStoryCtrPct}%</strong> ({igStoryClicks}c / {igStorySubscribers}s)
-              </span>
-              <span className="px-2 py-1 bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa]">
-                FB CTR: <strong>{fbStoryCtrPct}%</strong> ({fbStoryClicks}c / {fbStorySubscribers}s)
-              </span>
-            </div>
+            <a
+              href="https://vercel.com/dashboard"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 px-3.5 py-2 font-mono text-xs text-[#86efac] font-bold hover:bg-[#86efac]/20 transition-colors"
+            >
+              <span>Open Vercel Web Analytics</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
           </div>
 
-          <div className="space-y-6">
-            {storyDispatches.map((dispatch) => {
-              const igImpressions = Number(dispatch.instagram?.impressions ?? dispatch.storyImpressions) || 100;
-              const igClicks = Number(dispatch.instagram?.clicks ?? dispatch.storyClicks) || 0;
-              const igSubs = Number(dispatch.instagram?.subscribers ?? dispatch.storySubscribers) || 0;
-              const igCtr = igImpressions > 0 ? ((igClicks / igImpressions) * 100).toFixed(1) : '0.0';
-              const igConv = igClicks > 0 ? ((igSubs / igClicks) * 100).toFixed(1) : '0.0';
-
-              const fbImpressions = Number(dispatch.facebook?.impressions) || 100;
-              const fbClicks = Number(dispatch.facebook?.clicks) || 0;
-              const fbSubs = Number(dispatch.facebook?.subscribers) || 0;
-              const fbCtr = fbImpressions > 0 ? ((fbClicks / fbImpressions) * 100).toFixed(1) : '0.0';
-              const fbConv = fbClicks > 0 ? ((fbSubs / fbClicks) * 100).toFixed(1) : '0.0';
-
-              const issueTag = dispatch.issueId || dispatch.id;
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {ledger.website.routes.map((route) => {
+              const maxViews = Math.max(
+                10,
+                ...ledger.website.routes.map((r) => Number(r.views) || 0)
+              );
+              const barPct = Math.min(
+                100,
+                Math.round(((Number(route.views) || 0) / maxViews) * 100)
+              );
 
               return (
                 <div
-                  key={dispatch.id}
-                  className="p-5 bg-[#0b0d10] border border-slate-800 space-y-4"
+                  key={route.id}
+                  className="p-4 bg-[#0b0d10] border border-slate-800 space-y-3"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+                  <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="font-mono text-[10px] text-[#f472b6] font-bold tracking-widest uppercase">
-                        Issue #{issueTag}
+                      <div className="font-mono text-[11px] text-[#86efac] font-bold">
+                        {route.path}
                       </div>
-                      <div className="text-base font-bold text-[#e2e8f0] mt-0.5">
-                        {dispatch.title}
+                      <div className="text-sm font-bold text-[#e2e8f0] mt-0.5">
+                        {route.title}
                       </div>
+                    </div>
+                    <Link
+                      to={route.path}
+                      className="font-mono text-[10px] text-slate-400 hover:text-white border border-slate-800 px-2 py-0.5 shrink-0"
+                    >
+                      Visit ↗
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80 font-mono text-xs">
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">
+                        PAGEVIEWS
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={route.views}
+                        onChange={(e) =>
+                          updateRouteMetric(route.id, 'views', e.target.value)
+                        }
+                        className="w-full bg-[#121316] border border-slate-800 px-2.5 py-1 text-sm font-bold text-[#86efac]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">
+                        SHARES
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={route.shares}
+                        onChange={(e) =>
+                          updateRouteMetric(route.id, 'shares', e.target.value)
+                        }
+                        className="w-full bg-[#121316] border border-slate-800 px-2.5 py-1 text-sm font-bold text-[#67e8f9]"
+                      />
                     </div>
                   </div>
 
-                  {/* Dual Platform Columns: Instagram (Pink) vs Facebook (Blue) */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Platform Card 1: Instagram Story */}
-                    <div className="p-4 bg-[#121316] border border-[#fda4af]/30 rounded-none space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[#fda4af]" />
-                          <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#fda4af]">
-                            Instagram Story
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => copyUtmLink(dispatch.slug, issueTag, 'instagram')}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#fda4af]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#fda4af] hover:text-[#fda4af] transition-colors cursor-pointer shrink-0"
-                          title="Copy IG Story Link with utm_source=instagram&utm_medium=story"
-                        >
-                          {copiedLink === `${issueTag}-instagram` ? (
-                            <>
-                              <Check className="w-3 h-3 text-[#86efac]" />
-                              <span className="text-[#86efac]">Copied IG Link!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3 h-3 text-[#fda4af]" />
-                              <span>Copy IG Story Link</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-
-                      {/* 3 Quick-Edit Inputs for Instagram */}
-                      <div className="grid grid-cols-3 gap-2 font-mono text-xs">
-                        <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
-                            24H VIEWS
-                          </label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={igImpressions}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'instagram',
-                                'impressions',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#fda4af]"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
-                            CLICKS
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={igClicks}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'instagram',
-                                'clicks',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#e2e8f0]"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
-                            SUBS
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={igSubs}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'instagram',
-                                'subscribers',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#86efac]"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Visual Funnel Bar */}
-                      <div className="space-y-1 pt-1">
-                        <div className="flex items-center justify-between text-[11px] font-mono">
-                          <span className="text-slate-400">
-                            CTR: <strong className="text-[#fda4af]">{igCtr}%</strong>
-                          </span>
-                          <span className="text-slate-400">
-                            Substack Conv: <strong className="text-[#86efac]">{igConv}%</strong>
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
-                          <div
-                            className="h-full bg-[#fda4af] transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, Math.max(4, Number(igCtr) || 0))}%`,
-                            }}
-                          />
-                          <div
-                            className="h-full bg-[#86efac] transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, Math.max(2, (Number(igConv) * Number(igCtr)) / 100 || 0))}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Platform Card 2: Facebook Story */}
-                    <div className="p-4 bg-[#121316] border border-[#60a5fa]/30 rounded-none space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[#60a5fa]" />
-                          <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#60a5fa]">
-                            Facebook Story
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => copyUtmLink(dispatch.slug, issueTag, 'facebook')}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#60a5fa]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#60a5fa] hover:text-[#60a5fa] transition-colors cursor-pointer shrink-0"
-                          title="Copy FB Story Link with utm_source=facebook&utm_medium=story"
-                        >
-                          {copiedLink === `${issueTag}-facebook` ? (
-                            <>
-                              <Check className="w-3 h-3 text-[#86efac]" />
-                              <span className="text-[#86efac]">Copied FB Link!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3 h-3 text-[#60a5fa]" />
-                              <span>Copy FB Story Link</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-
-                      {/* 3 Quick-Edit Inputs for Facebook */}
-                      <div className="grid grid-cols-3 gap-2 font-mono text-xs">
-                        <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
-                            24H VIEWS
-                          </label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={fbImpressions}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'facebook',
-                                'impressions',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#60a5fa]"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
-                            CLICKS
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={fbClicks}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'facebook',
-                                'clicks',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#e2e8f0]"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
-                            SUBS
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={fbSubs}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'facebook',
-                                'subscribers',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#86efac]"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Visual Funnel Bar */}
-                      <div className="space-y-1 pt-1">
-                        <div className="flex items-center justify-between text-[11px] font-mono">
-                          <span className="text-slate-400">
-                            CTR: <strong className="text-[#60a5fa]">{fbCtr}%</strong>
-                          </span>
-                          <span className="text-slate-400">
-                            Substack Conv: <strong className="text-[#86efac]">{fbConv}%</strong>
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
-                          <div
-                            className="h-full bg-[#60a5fa] transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, Math.max(4, Number(fbCtr) || 0))}%`,
-                            }}
-                          />
-                          <div
-                            className="h-full bg-[#86efac] transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, Math.max(2, (Number(fbConv) * Number(fbCtr)) / 100 || 0))}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
+                  <div className="h-1.5 w-full bg-slate-900 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#86efac] to-[#67e8f9] transition-all duration-500"
+                      style={{ width: `${Math.max(4, barPct)}%` }}
+                    />
                   </div>
                 </div>
               );
@@ -2476,104 +2271,311 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* SECTION 4: Website Route Breakdown & Vercel Web Analytics Sync */}
+        {/* SECTION 4: Story to Essay Conversion Funnel (Instagram & Facebook Breakdown) */}
         <CyberPanel
-          label="Website Telemetry • observations.moth1.xyz"
-          accent="#86efac"
+          label="Story to Essay Conversion Funnel • Instagram & Facebook"
+          accent="#f472b6"
           className="p-5 sm:p-6"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#e2e8f0]">
-                Interactive Web Essay Traffic by Route
+              <h2 className="text-lg sm:text-xl font-bold text-[#e2e8f0] flex items-center gap-2">
+                <span>Story Conversion Funnel by Platform</span>
+                <span className="px-2 py-0.5 border border-[#f472b6]/40 bg-[#f472b6]/10 text-[#f472b6] text-[10px] font-mono uppercase font-bold">
+                  IG &amp; FB Breakdown
+                </span>
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Live pageviews and share clicks are streamed automatically to
-                Vercel Web Analytics via{' '}
-                <code className="text-[#86efac]">&lt;Analytics /&gt;</code>. You
-                can also sync your Vercel dashboard numbers below.
+                Separate counters for Instagram (<code className="text-[#fda4af]">utm_source=instagram</code>) and Facebook (<code className="text-[#60a5fa]">utm_source=facebook</code>) with <code className="text-[#f472b6]">utm_medium=story</code>.
+                Log your final 24h Story views below to compute verified CTR &amp; Substack subscriber conversions.
               </p>
             </div>
-            <a
-              href="https://vercel.com/dashboard"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 px-3.5 py-2 font-mono text-xs text-[#86efac] font-bold hover:bg-[#86efac]/20 transition-colors"
-            >
-              <span>Open Vercel Web Analytics</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+
+            <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+              <span className="px-2 py-1 bg-[#fda4af]/10 border border-[#fda4af]/30 text-[#fda4af]">
+                IG CTR: <strong>{igStoryCtrPct}%</strong> ({igStoryClicks}c / {igStorySubscribers}s)
+              </span>
+              <span className="px-2 py-1 bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa]">
+                FB CTR: <strong>{fbStoryCtrPct}%</strong> ({fbStoryClicks}c / {fbStorySubscribers}s)
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {ledger.website.routes.map((route) => {
-              const maxViews = Math.max(
-                10,
-                ...ledger.website.routes.map((r) => Number(r.views) || 0)
-              );
-              const barPct = Math.min(
-                100,
-                Math.round(((Number(route.views) || 0) / maxViews) * 100)
-              );
+          <div className="space-y-6">
+            {storyDispatches.map((dispatch) => {
+              const rawIgImp = Number(dispatch.instagram?.impressions ?? dispatch.storyImpressions);
+              const igImpressions = Number.isFinite(rawIgImp) ? rawIgImp : 0;
+              const igClicks = Number(dispatch.instagram?.clicks ?? dispatch.storyClicks) || 0;
+              const igSubs = Number(dispatch.instagram?.subscribers ?? dispatch.storySubscribers) || 0;
+              const igCtr = igImpressions > 0 ? ((igClicks / igImpressions) * 100).toFixed(1) : '0.0';
+              const igConv = igClicks > 0 ? ((igSubs / igClicks) * 100).toFixed(1) : '0.0';
+
+              const rawFbImp = Number(dispatch.facebook?.impressions);
+              const fbImpressions = Number.isFinite(rawFbImp) ? rawFbImp : 0;
+              const fbClicks = Number(dispatch.facebook?.clicks) || 0;
+              const fbSubs = Number(dispatch.facebook?.subscribers) || 0;
+              const fbCtr = fbImpressions > 0 ? ((fbClicks / fbImpressions) * 100).toFixed(1) : '0.0';
+              const fbConv = fbClicks > 0 ? ((fbSubs / fbClicks) * 100).toFixed(1) : '0.0';
+
+              const issueTag = dispatch.issueId || dispatch.id;
 
               return (
                 <div
-                  key={route.id}
-                  className="p-4 bg-[#0b0d10] border border-slate-800 space-y-3"
+                  key={dispatch.id}
+                  className="p-5 bg-[#0b0d10] border border-slate-800 space-y-4"
                 >
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
                     <div>
-                      <div className="font-mono text-[11px] text-[#86efac] font-bold">
-                        {route.path}
+                      <div className="font-mono text-[10px] text-[#f472b6] font-bold tracking-widest uppercase">
+                        Issue #{issueTag}
                       </div>
-                      <div className="text-sm font-bold text-[#e2e8f0] mt-0.5">
-                        {route.title}
+                      <div className="text-base font-bold text-[#e2e8f0] mt-0.5">
+                        {dispatch.title}
                       </div>
-                    </div>
-                    <Link
-                      to={route.path}
-                      className="font-mono text-[10px] text-slate-400 hover:text-white border border-slate-800 px-2 py-0.5 shrink-0"
-                    >
-                      Visit ↗
-                    </Link>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80 font-mono text-xs">
-                    <div>
-                      <label className="block text-[10px] text-slate-400 mb-1">
-                        PAGEVIEWS
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={route.views}
-                        onChange={(e) =>
-                          updateRouteMetric(route.id, 'views', e.target.value)
-                        }
-                        className="w-full bg-[#121316] border border-slate-800 px-2.5 py-1 text-sm font-bold text-[#86efac]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] text-slate-400 mb-1">
-                        SHARES
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={route.shares}
-                        onChange={(e) =>
-                          updateRouteMetric(route.id, 'shares', e.target.value)
-                        }
-                        className="w-full bg-[#121316] border border-slate-800 px-2.5 py-1 text-sm font-bold text-[#67e8f9]"
-                      />
                     </div>
                   </div>
 
-                  <div className="h-1.5 w-full bg-slate-900 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#86efac] to-[#67e8f9] transition-all duration-500"
-                      style={{ width: `${Math.max(4, barPct)}%` }}
-                    />
+                  {/* Dual Platform Columns: Instagram (Pink) vs Facebook (Blue) */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Platform Card 1: Instagram Story */}
+                    <div className="p-4 bg-[#121316] border border-[#fda4af]/30 rounded-none space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-[#fda4af]" />
+                          <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#fda4af]">
+                            Instagram Story
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => copyUtmLink(dispatch.slug, issueTag, 'instagram')}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#fda4af]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#fda4af] hover:text-[#fda4af] transition-colors cursor-pointer shrink-0"
+                          title="Copy IG Story Link with utm_source=instagram&utm_medium=story"
+                        >
+                          {copiedLink === `${issueTag}-instagram` ? (
+                            <>
+                              <Check className="w-3 h-3 text-[#86efac]" />
+                              <span className="text-[#86efac]">Copied IG Link!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3 text-[#fda4af]" />
+                              <span>Copy IG Story Link</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* 3 Quick-Edit Inputs for Instagram */}
+                      <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+                        <div>
+                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                            24H VIEWS
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={igImpressions}
+                            onChange={(e) =>
+                              updateDispatchPlatformMetric(
+                                dispatch.id,
+                                'instagram',
+                                'impressions',
+                                e.target.value
+                              )
+                            }
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#fda4af]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                            CLICKS
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={igClicks}
+                            onChange={(e) =>
+                              updateDispatchPlatformMetric(
+                                dispatch.id,
+                                'instagram',
+                                'clicks',
+                                e.target.value
+                              )
+                            }
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#e2e8f0]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                            SUBS
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={igSubs}
+                            onChange={(e) =>
+                              updateDispatchPlatformMetric(
+                                dispatch.id,
+                                'instagram',
+                                'subscribers',
+                                e.target.value
+                              )
+                            }
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#86efac]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Visual Funnel Bar */}
+                      <div className="space-y-1 pt-1">
+                        <div className="flex items-center justify-between text-[11px] font-mono">
+                          <span className="text-slate-400">
+                            CTR: <strong className="text-[#fda4af]">{igCtr}%</strong>
+                          </span>
+                          <span className="text-slate-400">
+                            Substack Conv: <strong className="text-[#86efac]">{igConv}%</strong>
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
+                          <div
+                            className="h-full bg-[#fda4af] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, Number(igCtr) || 0))}%`,
+                            }}
+                          />
+                          <div
+                            className="h-full bg-[#86efac] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, (Number(igConv) * Number(igCtr)) / 100 || 0))}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Platform Card 2: Facebook Story */}
+                    <div className="p-4 bg-[#121316] border border-[#60a5fa]/30 rounded-none space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-[#60a5fa]" />
+                          <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#60a5fa]">
+                            Facebook Story
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => copyUtmLink(dispatch.slug, issueTag, 'facebook')}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#60a5fa]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#60a5fa] hover:text-[#60a5fa] transition-colors cursor-pointer shrink-0"
+                          title="Copy FB Story Link with utm_source=facebook&utm_medium=story"
+                        >
+                          {copiedLink === `${issueTag}-facebook` ? (
+                            <>
+                              <Check className="w-3 h-3 text-[#86efac]" />
+                              <span className="text-[#86efac]">Copied FB Link!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3 text-[#60a5fa]" />
+                              <span>Copy FB Story Link</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* 3 Quick-Edit Inputs for Facebook */}
+                      <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+                        <div>
+                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                            24H VIEWS
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={fbImpressions}
+                            onChange={(e) =>
+                              updateDispatchPlatformMetric(
+                                dispatch.id,
+                                'facebook',
+                                'impressions',
+                                e.target.value
+                              )
+                            }
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#60a5fa]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                            CLICKS
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={fbClicks}
+                            onChange={(e) =>
+                              updateDispatchPlatformMetric(
+                                dispatch.id,
+                                'facebook',
+                                'clicks',
+                                e.target.value
+                              )
+                            }
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#e2e8f0]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                            SUBS
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={fbSubs}
+                            onChange={(e) =>
+                              updateDispatchPlatformMetric(
+                                dispatch.id,
+                                'facebook',
+                                'subscribers',
+                                e.target.value
+                              )
+                            }
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#86efac]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Visual Funnel Bar */}
+                      <div className="space-y-1 pt-1">
+                        <div className="flex items-center justify-between text-[11px] font-mono">
+                          <span className="text-slate-400">
+                            CTR: <strong className="text-[#60a5fa]">{fbCtr}%</strong>
+                          </span>
+                          <span className="text-slate-400">
+                            Substack Conv: <strong className="text-[#86efac]">{fbConv}%</strong>
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
+                          <div
+                            className="h-full bg-[#60a5fa] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, Number(fbCtr) || 0))}%`,
+                            }}
+                          />
+                          <div
+                            className="h-full bg-[#86efac] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, (Number(fbConv) * Number(fbCtr)) / 100 || 0))}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
