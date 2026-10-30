@@ -2,12 +2,18 @@ import React, { useState } from 'react';
 import PinnedStage from '../PinnedStage';
 import CyberPanel from './CyberPanel';
 import { clamp, remap } from '../../utils/math';
+import { recordSiteEvent } from '../../utils/telemetry';
 
 export default function QuietEarthConclusion({ data, sources }) {
   const [email, setEmail] = useState('');
 
   const handleSubscribe = (e) => {
     e.preventDefault();
+    recordSiteEvent('substack_subscribe', {
+      path: '/the-meat-grinder',
+      issueId: '02',
+      email: email.trim(),
+    });
     const targetUrl = email.trim()
       ? `https://observationsbymoth1.substack.com/subscribe?email=${encodeURIComponent(email.trim())}`
       : 'https://observationsbymoth1.substack.com/subscribe';

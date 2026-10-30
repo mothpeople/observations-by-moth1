@@ -17,7 +17,7 @@ export const RemotionRoot = () => {
       <Composition
         id="MeatGrinderReel"
         component={MeatGrinderReel}
-        durationInFrames={1260}
+        durationInFrames={1080}
         fps={30}
         width={1080}
         height={1920}

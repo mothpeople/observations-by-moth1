@@ -11,23 +11,36 @@ import { dispatches, findDispatchByParam } from './data/dispatches';
 import Masthead from './components/Masthead';
 import ArchiveDrawer from './components/ArchiveDrawer';
 import LandingPage from './components/LandingPage';
-import AnalyticsDashboard from './components/AnalyticsDashboard';
+import Dashboard from './pages/Dashboard';
 import { recordSiteEvent } from './utils/telemetry';
 
 function PublicationLayout({ dispatch = null, children }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
+    const searchParams =
+      typeof window !== 'undefined' && window.location.search
+        ? new URLSearchParams(window.location.search)
+        : null;
+    const utmMedium = searchParams ? searchParams.get('utm_medium') : null;
+    const utmSource = searchParams ? searchParams.get('utm_source') : null;
+
     if (dispatch) {
       document.title = `Issue #${dispatch.id}: ${dispatch.title}, Observations by Moth1`;
       recordSiteEvent('page_view', {
         path: `/${dispatch.slug}`,
         issueId: dispatch.id,
+        utm_medium: utmMedium,
+        utm_source: utmSource,
       });
     } else {
       document.title = 'Observations by Moth1 | Interactive Visual Essays';
       if (typeof window !== 'undefined' && window.location.pathname === '/') {
-        recordSiteEvent('page_view', { path: '/' });
+        recordSiteEvent('page_view', {
+          path: '/',
+          utm_medium: utmMedium,
+          utm_source: utmSource,
+        });
       }
     }
   }, [dispatch]);
@@ -145,7 +158,7 @@ export default function App() {
           path="/analytics"
           element={
             <PublicationLayout dispatch={null}>
-              <AnalyticsDashboard />
+              <Dashboard />
             </PublicationLayout>
           }
         />

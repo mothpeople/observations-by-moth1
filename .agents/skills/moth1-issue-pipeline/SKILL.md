@@ -35,16 +35,18 @@ Use this workflow whenever the user introduces a new topic, script, or issue for
 2. **Verify Substack Subscription Hook**:
    - Ensure the conclusion form opens `https://observationsbymoth1.substack.com/subscribe?email=...`.
 
-## Deliverable 3: 9:16 Instagram / Facebook Reel (`1080x1920`, `30fps`, `35s`)
+## Deliverable 3: 9:16 Instagram / Facebook Reel (`1080x1920`, `30fps`, `36s`)
 
-1. **Remotion Composition (`src/remotion/`)**:
-   - Canvas: `1080x1920`, `30fps`, `1050 frames` (`35 seconds`).
-   - Safe Zones: Enforce `paddingTop: 220`, `paddingBottom: 320`, `paddingLeft/Right: 64` so all text and panels stay clear of Instagram/Facebook Reels UI icons.
-   - **4-Scene Timeline**:
-     - `Frames 0–180 (0–6s)`: Hook quote with `spring` entrance over looping ink rain & Ken Burns backdrop.
-     - `Frames 181–420 (6–14s)`: Split-screen visual comparison + 3 staggered data captions.
-     - `Frames 421–750 (14–25s)`: Rapid 4-stage sequence (`~82 frames` each) with `spring` slam cuts + subtext panel.
-     - `Frames 751–1050 (25–35s)`: Framed scale visual + kinetic title (`WATERING GRASS IN A THUNDERSTORM`) + CTA badge (`observations.moth1.xyz`).
+1. **Remotion Composition (`src/remotion/`, modeled on `MeatGrinderReel.jsx`)**:
+   - **Visual-First & Giant Typography Rule**: Never copy multi-sentence website paragraphs into the Reel. Every scene must feature an **`800px+` tall hero illustration window** (with smooth Ken Burns zoom) over a full-bleed animated background, paired with **giant `60px–74px` poster headlines / stat callouts** and **short 6–10 word punchlines (`36px–40px`)**.
+   - Canvas: `1080x1920`, `30fps`, `1080 frames` (`36 seconds`).
+   - Safe Zones: Enforce `top: 185`, `bottom: 265`, `left/right: 48` so all HUD bars and poster cards stay clear of Instagram/Facebook Reels UI overlays.
+   - **5-Beat Visual Timeline**:
+     - `Frames 0–180 (0–6s)`: Giant `800px` hero visual + poster hook (`72px` title -> `64px` thesis + 3 bold `36px` stat badges).
+     - `Frames 180–390 (6–13s)`: `820px` animated diagram/visual stage + `60px` before/after poster headline.
+     - `Frames 390–670 (13–22.3s)`: 4 rapid visual slides (`70 frames` each) with `820px` artwork + `74px` stat callout + 8-word punchline (`40px`).
+     - `Frames 670–880 (22.3–29.3s)`: 3 rapid counter-proposal slides (`70 frames` each) with `820px` artwork + `64px` title + 8-word punchline (`38px`).
+     - `Frames 880–1080 (29.3–36s)`: Unobstructed `740px` finale artwork showcase + `64px` closing poster headline + `observations.moth1.xyz` CTA bar.
 2. **ESM Import Rule & Render Command**:
    - Because `package.json` uses `"type": "module"`, always include explicit `.jsx` extensions on relative imports in `src/remotion/index.js` (`./Root.jsx`) and `src/remotion/Root.jsx` (`./WateringGrassReel.jsx`).
    - Run the render outside the sandbox (`BypassSandbox: true` required for headless Chromium Mach port IPC):

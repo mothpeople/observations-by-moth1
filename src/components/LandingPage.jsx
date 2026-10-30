@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
+import { recordSiteEvent } from '../utils/telemetry';
 
 const BACKGROUND_SCENES = [
   {
@@ -55,6 +56,11 @@ export default function LandingPage({ dispatches = [] }) {
 
   const handleSubscribe = (e) => {
     e.preventDefault();
+    recordSiteEvent('substack_subscribe', {
+      path: '/',
+      issueId: 'home',
+      email: email.trim(),
+    });
     const targetUrl = email.trim()
       ? `https://observationsbymoth1.substack.com/subscribe?email=${encodeURIComponent(email.trim())}`
       : 'https://observationsbymoth1.substack.com/subscribe';

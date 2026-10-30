@@ -15,6 +15,7 @@
 - **Universal Imagery**: Ensure any text inside generated illustrations (e.g., protest banners) uses English only or universal symbols, avoiding nationality-specific scripts.
 - **Empirical Citations**: Every chart, metric bar, and simulator must include an inline empirical source citation (`Ref: ...`) plus a consolidated **Sources & Empirical References** ledger in the conclusion.
 - **All-Animated Illustrations**: Every illustration in the article (`public/issues/issue-XX/*.webp` and `public/assets/*.webp`) must be a seamless 24-frame animated WebP loop rather than a static image.
+- **Visual-First 9:16 Reels (`src/remotion/`)**: Never lift multi-sentence website paragraphs into Reels. Every Reel must follow the visual-first poster format (`MeatGrinderReel.jsx`): `800px+` tall hero artwork windows + full-bleed animated background, massive `60px–74px` headlines/stat callouts, and punchy 6–10 word single-line sentences (`36px–40px`).
 
 ## 3. Scrollytelling & Mobile Layout Invariants
 - **Sticky Viewport Pinning (`PinnedStage.jsx`)**:

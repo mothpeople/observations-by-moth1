@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, ArrowUpRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import PinnedStage from './PinnedStage';
+import { recordSiteEvent } from '../utils/telemetry';
 
 const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 const invLerp = (a, b, v) => clamp((v - a) / (b - a));
@@ -51,6 +52,11 @@ export default function ConclusionSection({ data, meta }) {
     }
     setErrorMessage('');
     setIsSubmitted(true);
+    recordSiteEvent('substack_subscribe', {
+      path: '/watering-grass-in-a-thunderstorm',
+      issueId: '01',
+      email: email.trim(),
+    });
     window.open(
       `https://observationsbymoth1.substack.com/subscribe?email=${encodeURIComponent(email.trim())}`,
       '_blank',
