@@ -23,6 +23,7 @@ import CyberPanel from '../components/issue02/CyberPanel';
 import { loadChannelLedger, saveChannelLedger } from '../utils/telemetry';
 
 const APIFY_TOKEN_STORAGE_KEY = 'moth1_apify_token';
+const VERCEL_TOKEN_STORAGE_KEY = 'moth1_vercel_token_v1';
 const APIFY_TARGETS_STORAGE_KEY = 'moth1_apify_targets_v2';
 const OWNER_UNLOCK_STORAGE_KEY = 'moth1_owner_unlocked_v1';
 
@@ -451,6 +452,13 @@ export default function Dashboard() {
     return window.localStorage.getItem(APIFY_TOKEN_STORAGE_KEY) || '';
   });
 
+  const [vercelToken, setVercelToken] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem(VERCEL_TOKEN_STORAGE_KEY) || '';
+  });
+
+  const [vercelAnalytics, setVercelAnalytics] = useState(null);
+
   const [isOwnerUnlocked, setIsOwnerUnlocked] = useState(() => {
     if (typeof window === 'undefined') return false;
     const isLocal =
@@ -502,15 +510,19 @@ export default function Dashboard() {
   });
 
   const syncAllTelemetry = useCallback(
-    async (tokenOverride) => {
+    async (tokenOverride, vercelTokenOverride) => {
       setLoadingSync(true);
       const activeToken = (
         tokenOverride !== undefined ? tokenOverride : apifyToken
+      ).trim();
+      const activeVercelToken = (
+        vercelTokenOverride !== undefined ? vercelTokenOverride : vercelToken
       ).trim();
 
       try {
         const headers = {};
         if (activeToken) headers['X-Apify-Token'] = activeToken;
+        if (activeVercelToken) headers['X-Vercel-Token'] = activeVercelToken;
 
         // Fetch server /api/analytics + direct browser Apify datasets for all 4 actors in parallel
         const [
@@ -650,6 +662,11 @@ export default function Dashboard() {
           followers: fbScrapedFollowers,
         });
 
+        // 5. Vercel Web Analytics Cloud Metrics
+        if (serverJson?.vercel?.connected) {
+          setVercelAnalytics(serverJson.vercel);
+        }
+
         // Automatically persist scraped followers / subscribers & Issue Reels to local ledger
         setLedger((prev) => {
           let changed = false;
@@ -777,7 +794,7 @@ export default function Dashboard() {
         setLoadingSync(false);
       }
     },
-    [apifyToken]
+    [apifyToken, vercelToken]
   );
 
   useEffect(() => {
@@ -787,17 +804,19 @@ export default function Dashboard() {
   const handleSaveConfig = (e) => {
     e.preventDefault();
     const cleanedToken = apifyToken.trim();
+    const cleanedVercel = vercelToken.trim();
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(APIFY_TOKEN_STORAGE_KEY, cleanedToken);
+      window.localStorage.setItem(VERCEL_TOKEN_STORAGE_KEY, cleanedVercel);
       window.localStorage.setItem(
         APIFY_TARGETS_STORAGE_KEY,
         JSON.stringify(targets)
       );
     }
     setStatusMessage(
-      'Saved Apify token, channel handles & #observations filter! Syncing datasets...'
+      'Saved telemetry credentials, Vercel token & channels! Syncing metrics...'
     );
-    syncAllTelemetry(cleanedToken);
+    syncAllTelemetry(cleanedToken, cleanedVercel);
     setTimeout(() => setStatusMessage(''), 4000);
   };
 
@@ -1098,10 +1117,10 @@ export default function Dashboard() {
     : facebookState.items;
 
   // Computed Aggregates
-  const totalWebViews = ledger.website.routes.reduce(
-    (sum, r) => sum + (Number(r.views) || 0),
-    0
-  );
+  const totalWebViews =
+    vercelAnalytics?.totalPageviews ||
+    ledger.website.routes.reduce((sum, r) => sum + (Number(r.views) || 0), 0);
+  const totalWebVisitors = vercelAnalytics?.totalVisitors || 0;
   const totalWebShares = ledger.website.routes.reduce(
     (sum, r) => sum + (Number(r.shares) || 0),
     0
@@ -1390,7 +1409,9 @@ export default function Dashboard() {
             >
               <KeyRound className="w-3.5 h-3.5 text-[#67e8f9] shrink-0" />
               <span className="truncate">
-                {apifyToken.trim() ? 'Apify Token' : 'Connect Apify'}
+                {vercelToken.trim() && apifyToken.trim()
+                  ? 'APIs Connected'
+                  : 'API Tokens'}
               </span>
             </button>
 
@@ -1440,7 +1461,7 @@ export default function Dashboard() {
             className="p-4 sm:p-6"
           >
             <form onSubmit={handleSaveConfig} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3.5">
                 <div className="space-y-1">
                   <label className="block font-mono text-[11px] text-[#67e8f9] font-bold uppercase">
                     Apify API Token
@@ -1451,6 +1472,19 @@ export default function Dashboard() {
                     onChange={(e) => setApifyToken(e.target.value)}
                     placeholder="apify_api_..."
                     className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-[#67e8f9]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block font-mono text-[11px] text-[#86efac] font-bold uppercase">
+                    Vercel Read Token
+                  </label>
+                  <input
+                    type="password"
+                    value={vercelToken}
+                    onChange={(e) => setVercelToken(e.target.value)}
+                    placeholder="Vercel Access Token..."
+                    className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#86efac] focus:outline-none focus:border-[#86efac]"
                   />
                 </div>
 
@@ -1603,14 +1637,20 @@ export default function Dashboard() {
                 {totalWebViews.toLocaleString()}
               </div>
               <div className="text-xs text-slate-400 mt-0.5">
-                Views • {totalWebShares.toLocaleString()} Shares
+                {totalWebVisitors > 0 ? (
+                  <span>
+                    <strong className="text-[#86efac]">{totalWebVisitors.toLocaleString()}</strong> Visitors • {totalWebShares} Shares
+                  </span>
+                ) : (
+                  <span>Views • {totalWebShares.toLocaleString()} Shares</span>
+                )}
               </div>
             </div>
 
             <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between font-mono text-[10px]">
               <span className="inline-flex items-center gap-1 text-[#86efac]">
                 <CheckCircle2 className="w-3 h-3" />
-                Active
+                {vercelAnalytics?.connected ? 'Live Vercel API' : 'Active'}
               </span>
               <a
                 href="https://vercel.com/dashboard"
@@ -2056,32 +2096,20 @@ export default function Dashboard() {
 
                   <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80 font-mono text-xs">
                     <div>
-                      <label className="block text-[10px] text-slate-400 mb-1">
+                      <div className="text-[10px] text-slate-400 mb-0.5">
                         PAGEVIEWS
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={route.views}
-                        onChange={(e) =>
-                          updateRouteMetric(route.id, 'views', e.target.value)
-                        }
-                        className="w-full bg-[#121316] border border-slate-800 px-2.5 py-1 text-sm font-bold text-[#86efac]"
-                      />
+                      </div>
+                      <div className="text-sm font-bold text-[#86efac]">
+                        {(vercelAnalytics?.paths?.find((p) => p.requestPath === route.path)?.pageviews || route.views || 0).toLocaleString()}
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-[10px] text-slate-400 mb-1">
-                        SHARES
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={route.shares}
-                        onChange={(e) =>
-                          updateRouteMetric(route.id, 'shares', e.target.value)
-                        }
-                        className="w-full bg-[#121316] border border-slate-800 px-2.5 py-1 text-sm font-bold text-[#67e8f9]"
-                      />
+                      <div className="text-[10px] text-slate-400 mb-0.5">
+                        VISITORS
+                      </div>
+                      <div className="text-sm font-bold text-[#67e8f9]">
+                        {(vercelAnalytics?.paths?.find((p) => p.requestPath === route.path)?.visitors || 0).toLocaleString()}
+                      </div>
                     </div>
                   </div>
 
@@ -2095,6 +2123,107 @@ export default function Dashboard() {
               );
             })}
           </div>
+
+          {/* Vercel Cloud Intelligence Grids: Referrers, Countries, Devices & OS */}
+          {vercelAnalytics?.connected && (
+            <div className="mt-6 pt-6 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
+              {/* 1. Referrers */}
+              <div className="p-3.5 bg-[#0b0d10] border border-slate-800">
+                <div className="text-[11px] text-[#86efac] font-bold uppercase mb-2 flex items-center justify-between">
+                  <span>Top Referrers</span>
+                  <span className="text-[10px] text-slate-400">Visitors</span>
+                </div>
+                {vercelAnalytics.referrers?.length > 0 ? (
+                  <div className="space-y-1.5 text-xs">
+                    {vercelAnalytics.referrers.slice(0, 6).map((ref, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span className="truncate text-slate-300 max-w-[130px]">
+                          {ref.referrerHostname || 'Direct / Bookmark'}
+                        </span>
+                        <span className="font-bold text-[#86efac]">
+                          {ref.visitors || ref.pageviews || 0}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-slate-500 italic">No referrer data yet</div>
+                )}
+              </div>
+
+              {/* 2. Countries */}
+              <div className="p-3.5 bg-[#0b0d10] border border-slate-800">
+                <div className="text-[11px] text-[#67e8f9] font-bold uppercase mb-2 flex items-center justify-between">
+                  <span>Top Countries</span>
+                  <span className="text-[10px] text-slate-400">Visitors</span>
+                </div>
+                {vercelAnalytics.countries?.length > 0 ? (
+                  <div className="space-y-1.5 text-xs">
+                    {vercelAnalytics.countries.slice(0, 6).map((c, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span className="truncate text-slate-300">
+                          {c.country || 'Unknown'}
+                        </span>
+                        <span className="font-bold text-[#67e8f9]">
+                          {c.visitors || c.pageviews || 0}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-slate-500 italic">No country data yet</div>
+                )}
+              </div>
+
+              {/* 3. Devices */}
+              <div className="p-3.5 bg-[#0b0d10] border border-slate-800">
+                <div className="text-[11px] text-[#fda4af] font-bold uppercase mb-2 flex items-center justify-between">
+                  <span>Devices</span>
+                  <span className="text-[10px] text-slate-400">Visitors</span>
+                </div>
+                {vercelAnalytics.devices?.length > 0 ? (
+                  <div className="space-y-1.5 text-xs">
+                    {vercelAnalytics.devices.slice(0, 6).map((d, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span className="truncate text-slate-300 capitalize">
+                          {d.deviceType || 'Desktop'}
+                        </span>
+                        <span className="font-bold text-[#fda4af]">
+                          {d.visitors || d.pageviews || 0}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-slate-500 italic">No device data yet</div>
+                )}
+              </div>
+
+              {/* 4. Operating Systems */}
+              <div className="p-3.5 bg-[#0b0d10] border border-slate-800">
+                <div className="text-[11px] text-[#c084fc] font-bold uppercase mb-2 flex items-center justify-between">
+                  <span>Operating Systems</span>
+                  <span className="text-[10px] text-slate-400">Visitors</span>
+                </div>
+                {vercelAnalytics.osList?.length > 0 ? (
+                  <div className="space-y-1.5 text-xs">
+                    {vercelAnalytics.osList.slice(0, 6).map((os, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span className="truncate text-slate-300">
+                          {os.osName || 'Unknown OS'}
+                        </span>
+                        <span className="font-bold text-[#c084fc]">
+                          {os.visitors || os.pageviews || 0}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-slate-500 italic">No OS data yet</div>
+                )}
+              </div>
+            </div>
+          )}
         </CyberPanel>
 
         {/* SECTION 2: Substack Scraper (automation-lab/substack-scraper) */}

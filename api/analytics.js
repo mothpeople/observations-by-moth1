@@ -369,12 +369,98 @@ async function fetchActorLastDataset(actorId, token) {
   }
 }
 
+async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) {
+  if (!vercelToken) {
+    return { connected: false, error: 'No Vercel Token provided' };
+  }
+
+  const headers = {
+    Authorization: `Bearer ${vercelToken}`,
+    Accept: 'application/json',
+  };
+
+  try {
+    let resolvedProjectId = vercelProjectId;
+
+    // Auto-discover Project ID if not explicitly specified
+    if (!resolvedProjectId) {
+      const projUrl = new URL('https://api.vercel.com/v9/projects');
+      if (vercelTeamId) projUrl.searchParams.set('teamId', vercelTeamId);
+      const projRes = await fetch(projUrl.toString(), { headers });
+      if (projRes.ok) {
+        const projData = await projRes.json();
+        const found = (projData.projects || []).find(
+          (p) =>
+            p.name === 'observations-by-moth1' ||
+            p.name?.includes('observations') ||
+            p.targets?.production?.domain === 'observations.moth1.xyz' ||
+            (p.domains || []).some((d) => d.name === 'observations.moth1.xyz')
+        ) || projData.projects?.[0];
+        if (found) resolvedProjectId = found.id;
+      }
+    }
+
+    if (!resolvedProjectId) {
+      return { connected: false, error: 'Could not resolve Vercel project ID' };
+    }
+
+    // Date range: last 30 days
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const since = thirtyDaysAgo.toISOString();
+    const until = now.toISOString();
+
+    const fetchDimension = async (byField) => {
+      try {
+        const u = new URL('https://api.vercel.com/v1/query/web-analytics/visits/aggregate');
+        u.searchParams.set('projectId', resolvedProjectId);
+        if (vercelTeamId) u.searchParams.set('teamId', vercelTeamId);
+        u.searchParams.set('since', since);
+        u.searchParams.set('until', until);
+        u.searchParams.set('by', byField);
+
+        const r = await fetch(u.toString(), { headers });
+        if (!r.ok) return [];
+        const resJson = await r.json();
+        return Array.isArray(resJson.data) ? resJson.data : [];
+      } catch {
+        return [];
+      }
+    };
+
+    const [paths, referrers, countries, devices, osList] = await Promise.all([
+      fetchDimension('requestPath'),
+      fetchDimension('referrerHostname'),
+      fetchDimension('country'),
+      fetchDimension('deviceType'),
+      fetchDimension('osName'),
+    ]);
+
+    const totalPageviews = paths.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0);
+    const totalVisitors = paths.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0);
+
+    return {
+      connected: true,
+      projectId: resolvedProjectId,
+      totalPageviews,
+      totalVisitors,
+      paths,
+      referrers,
+      countries,
+      devices,
+      osList,
+    };
+  } catch (err) {
+    return { connected: false, error: err.message };
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Content-Type, X-Apify-Token'
+    'Content-Type, X-Apify-Token, X-Vercel-Token, X-Vercel-Project-Id, X-Vercel-Team-Id'
   );
 
   if (req.method === 'OPTIONS') {
@@ -390,18 +476,37 @@ export default async function handler(req, res) {
     process.env.APIFY_API_TOKEN ||
     '';
 
+  const vercelToken =
+    req.headers['x-vercel-token'] ||
+    req.query?.vercelToken ||
+    process.env.VERCEL_TOKEN ||
+    process.env.VERCEL_ACCESS_TOKEN ||
+    '';
+  const vercelProjectId =
+    req.headers['x-vercel-project-id'] ||
+    req.query?.vercelProjectId ||
+    process.env.VERCEL_PROJECT_ID ||
+    '';
+  const vercelTeamId =
+    req.headers['x-vercel-team-id'] ||
+    req.query?.vercelTeamId ||
+    process.env.VERCEL_TEAM_ID ||
+    '';
+
   const [
     liveSubstack,
     apifySubstack,
     apifyInstagram,
     apifyThreads,
     apifyFacebook,
+    vercelAnalytics,
   ] = await Promise.all([
     fetchLiveSubstackArchive(),
     fetchActorLastDataset(ACTORS.substack, apifyToken),
     fetchActorLastDataset(ACTORS.instagram, apifyToken),
     fetchActorLastDataset(ACTORS.threads, apifyToken),
     fetchActorLastDataset(ACTORS.facebook, apifyToken),
+    fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId),
   ]);
 
   // Merge Substack live + Apify Substack
@@ -488,5 +593,6 @@ export default async function handler(req, res) {
       followers: facebookFollowers,
       items: facebookItems,
     },
+    vercel: vercelAnalytics,
   });
 }
