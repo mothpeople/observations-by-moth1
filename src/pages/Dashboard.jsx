@@ -1062,7 +1062,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0c0d10] text-[#e2e8f0] pt-16 pb-20 px-4 sm:px-8">
+    <div className="min-h-screen bg-[#0c0d10] text-[#e2e8f0] pt-14 sm:pt-20 pb-20 px-3 sm:px-6 lg:px-8 overflow-x-hidden">
       {/* Subtle Cyberpunk Grid Backdrop */}
       <div
         className="pointer-events-none fixed inset-0 opacity-15"
@@ -1073,17 +1073,17 @@ export default function Dashboard() {
         }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto space-y-8">
+      <div className="relative z-10 max-w-7xl mx-auto space-y-6 sm:space-y-8">
         {/* Top Command Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-slate-800 pb-6">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-slate-800 pb-5 sm:pb-6">
           <div>
-            <div className="inline-flex items-center gap-2 border border-slate-800 bg-[#121316] px-3 py-1 mb-3">
-              <span className="h-2 w-2 rounded-full bg-[#86efac] animate-pulse" />
-              <span className="font-mono text-[10px] tracking-[0.22em] text-[#86efac] uppercase font-bold">
+            <div className="inline-flex items-center gap-2 border border-slate-800 bg-[#121316] px-2.5 py-1 mb-2.5 sm:mb-3">
+              <span className="h-2 w-2 rounded-full bg-[#86efac] animate-pulse shrink-0" />
+              <span className="font-mono text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.22em] text-[#86efac] uppercase font-bold truncate">
                 Publication Telemetry &amp; Multi-Channel Command
               </span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-[#e2e8f0] uppercase">
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#e2e8f0] uppercase break-words">
               Observations by Moth1{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#86efac] via-[#67e8f9] to-[#f472b6]">
                 Analytics
@@ -1094,36 +1094,34 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full lg:w-auto">
             {/* #observations Filter Toggle Button */}
             <button
               type="button"
               onClick={() => setFilterOnlyObservations((prev) => !prev)}
-              className={`inline-flex items-center gap-2 border px-3.5 py-2 font-mono text-xs font-bold transition-colors cursor-pointer ${
+              className={`inline-flex items-center justify-center gap-1.5 sm:gap-2 border px-2.5 sm:px-3.5 py-2 font-mono text-[11px] sm:text-xs font-bold transition-colors cursor-pointer text-center ${
                 filterOnlyObservations
                   ? 'border-[#86efac] bg-[#86efac]/15 text-[#86efac]'
                   : 'border-slate-700 bg-[#121316] text-slate-400 hover:border-slate-500'
               }`}
               title="Toggle filtering social scrapers for #observations posts only"
             >
-              <Filter className="w-3.5 h-3.5" />
-              <span>
+              <Filter className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">
                 {filterOnlyObservations
-                  ? `Filter: ${activeFilterTag} Only`
-                  : 'Showing All Posts (Unfiltered)'}
+                  ? `Filter: ${activeFilterTag}`
+                  : 'Showing All'}
               </span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowApifyConfig((prev) => !prev)}
-              className="inline-flex items-center gap-2 border border-slate-700 bg-[#121316] hover:border-[#67e8f9] px-3.5 py-2 font-mono text-xs text-[#e2e8f0] transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 border border-slate-700 bg-[#121316] hover:border-[#67e8f9] px-2.5 sm:px-3.5 py-2 font-mono text-[11px] sm:text-xs text-[#e2e8f0] transition-colors cursor-pointer text-center"
             >
-              <KeyRound className="w-3.5 h-3.5 text-[#67e8f9]" />
-              <span>
-                {apifyToken.trim()
-                  ? 'Apify Token & Handles'
-                  : 'Connect Apify Token'}
+              <KeyRound className="w-3.5 h-3.5 text-[#67e8f9] shrink-0" />
+              <span className="truncate">
+                {apifyToken.trim() ? 'Apify Token' : 'Connect Apify'}
               </span>
             </button>
 
@@ -1131,17 +1129,17 @@ export default function Dashboard() {
               type="button"
               onClick={() => syncAllTelemetry()}
               disabled={loadingSync}
-              className="inline-flex items-center gap-2 border border-[#67e8f9]/60 bg-[#67e8f9]/10 hover:bg-[#67e8f9]/20 px-3.5 py-2 font-mono text-xs text-[#67e8f9] font-bold transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 border border-[#67e8f9]/60 bg-[#67e8f9]/10 hover:bg-[#67e8f9]/20 px-2.5 sm:px-3.5 py-2 font-mono text-[11px] sm:text-xs text-[#67e8f9] font-bold transition-colors cursor-pointer text-center"
             >
               <RefreshCw
-                className={`w-3.5 h-3.5 ${loadingSync ? 'animate-spin' : ''}`}
+                className={`w-3.5 h-3.5 shrink-0 ${loadingSync ? 'animate-spin' : ''}`}
               />
               <span>Sync All</span>
             </button>
 
             <Link
               to="/"
-              className="inline-flex items-center gap-1.5 border border-slate-800 bg-[#121316] hover:border-slate-600 px-3.5 py-2 font-mono text-xs text-slate-300 transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 border border-slate-800 bg-[#121316] hover:border-slate-600 px-2.5 sm:px-3.5 py-2 font-mono text-[11px] sm:text-xs text-slate-300 transition-colors text-center"
             >
               <span>← Back to Site</span>
             </Link>
@@ -1544,11 +1542,11 @@ export default function Dashboard() {
         <CyberPanel
           label="Website Telemetry • observations.moth1.xyz"
           accent="#86efac"
-          className="p-5 sm:p-6"
+          className="p-4 sm:p-6"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#e2e8f0]">
+              <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
                 Interactive Web Essay Traffic by Route
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -1562,14 +1560,14 @@ export default function Dashboard() {
               href="https://vercel.com/dashboard"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 px-3.5 py-2 font-mono text-xs text-[#86efac] font-bold hover:bg-[#86efac]/20 transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 px-3.5 py-2 font-mono text-xs text-[#86efac] font-bold hover:bg-[#86efac]/20 transition-colors w-full sm:w-auto shrink-0"
             >
               <span>Open Vercel Web Analytics</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
             {ledger.website.routes.map((route) => {
               const maxViews = Math.max(
                 10,
@@ -1583,7 +1581,7 @@ export default function Dashboard() {
               return (
                 <div
                   key={route.id}
-                  className="p-4 bg-[#0b0d10] border border-slate-800 space-y-3"
+                  className="p-3.5 sm:p-4 bg-[#0b0d10] border border-slate-800 space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -1649,11 +1647,11 @@ export default function Dashboard() {
         <CyberPanel
           label="Substack Telemetry • automation-lab/substack-scraper"
           accent="#67e8f9"
-          className="p-5 sm:p-6"
+          className="p-4 sm:p-6"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#e2e8f0]">
+              <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
                 Published Substack Dispatches ({targets.substackUrl})
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -1664,12 +1662,12 @@ export default function Dashboard() {
                 merged with live Substack archive endpoints.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => triggerActorRun('substack')}
                 disabled={runningActor !== null}
-                className="inline-flex items-center gap-1.5 border border-[#67e8f9]/60 bg-[#67e8f9]/10 hover:bg-[#67e8f9]/20 px-3 py-1.5 font-mono text-xs text-[#67e8f9] font-bold transition-colors cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-1.5 border border-[#67e8f9]/60 bg-[#67e8f9]/10 hover:bg-[#67e8f9]/20 px-3.5 py-2 font-mono text-xs text-[#67e8f9] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
               >
                 <Play className="w-3.5 h-3.5" />
                 <span>
@@ -1691,8 +1689,8 @@ export default function Dashboard() {
               Scraper&rdquo; to pull from {targets.substackUrl}.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto -mx-1 sm:mx-0">
+              <table className="w-full text-left border-collapse min-w-[620px]">
                 <thead>
                   <tr className="border-b border-slate-800 font-mono text-[11px] text-slate-400 uppercase">
                     <th className="py-2.5 pr-4">Dispatch Title</th>
@@ -1771,20 +1769,20 @@ export default function Dashboard() {
         </CyberPanel>
 
         {/* SECTION 3: Instagram Scraper (apify/instagram-scraper) + Threads & Facebook Scrapers */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Instagram Apify Scraper Feed */}
           <CyberPanel
             label="Instagram Scraper • apify/instagram-scraper"
             accent="#fda4af"
-            className="p-5 sm:p-6 flex flex-col justify-between"
+            className="p-4 sm:p-6 flex flex-col justify-between"
           >
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-lg font-bold text-[#e2e8f0]">
+                  <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
                     Instagram Feed &amp; Reels (@{targets.instagramHandle})
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 mt-0.5">
                     Showing{' '}
                     <strong className="text-[#fda4af]">
                       {visibleInstagramItems.length}
@@ -1801,7 +1799,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => triggerActorRun('instagram')}
                   disabled={runningActor !== null}
-                  className="inline-flex items-center gap-1.5 border border-[#fda4af]/60 bg-[#fda4af]/10 hover:bg-[#fda4af]/20 px-3 py-1.5 font-mono text-xs text-[#fda4af] font-bold transition-colors cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-1.5 border border-[#fda4af]/60 bg-[#fda4af]/10 hover:bg-[#fda4af]/20 px-3.5 py-1.5 font-mono text-xs text-[#fda4af] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
                 >
                   <Play className="w-3.5 h-3.5" />
                   <span>
@@ -1844,8 +1842,8 @@ export default function Dashboard() {
                   )}
                 </div>
               ) : (
-                <div className="overflow-x-auto mb-5 max-h-[280px]">
-                  <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto mb-5 max-h-[280px] -mx-1 sm:mx-0">
+                  <table className="w-full text-left border-collapse min-w-[480px]">
                     <thead>
                       <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
                         <th className="py-2 pr-3">Post / Reel</th>
@@ -1964,18 +1962,18 @@ export default function Dashboard() {
           </CyberPanel>
 
           {/* Threads Scraper (automation-lab/threads-scraper) + Facebook Scraper (apify/facebook-posts-scraper) */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <CyberPanel
               label="Threads Scraper • automation-lab/threads-scraper"
               accent="#c084fc"
-              className="p-5 sm:p-6"
+              className="p-4 sm:p-6"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-lg font-bold text-[#e2e8f0]">
+                  <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
                     Threads Posts (@{targets.threadsHandle})
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 mt-0.5">
                     Showing{' '}
                     <strong className="text-[#c084fc]">
                       {visibleThreadsItems.length}
@@ -1992,7 +1990,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => triggerActorRun('threads')}
                   disabled={runningActor !== null}
-                  className="inline-flex items-center gap-1.5 border border-[#c084fc]/60 bg-[#c084fc]/10 hover:bg-[#c084fc]/20 px-3 py-1.5 font-mono text-xs text-[#c084fc] font-bold transition-colors cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-1.5 border border-[#c084fc]/60 bg-[#c084fc]/10 hover:bg-[#c084fc]/20 px-3.5 py-1.5 font-mono text-xs text-[#c084fc] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
                 >
                   <Play className="w-3.5 h-3.5" />
                   <span>
@@ -2035,8 +2033,8 @@ export default function Dashboard() {
                   )}
                 </div>
               ) : (
-                <div className="overflow-x-auto max-h-[260px]">
-                  <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto max-h-[260px] -mx-1 sm:mx-0">
+                  <table className="w-full text-left border-collapse min-w-[460px]">
                     <thead>
                       <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
                         <th className="py-2 pr-3">Thread Post</th>
@@ -2083,14 +2081,14 @@ export default function Dashboard() {
             <CyberPanel
               label="Facebook Scraper • apify/facebook-posts-scraper"
               accent="#86efac"
-              className="p-5 sm:p-6"
+              className="p-4 sm:p-6"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-lg font-bold text-[#e2e8f0]">
+                  <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
                     Facebook Posts &amp; Reels (sivaraj.pragasm)
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 mt-0.5">
                     Showing{' '}
                     <strong className="text-[#86efac]">
                       {visibleFacebookItems.length}
@@ -2107,7 +2105,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => triggerActorRun('facebook')}
                   disabled={runningActor !== null}
-                  className="inline-flex items-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 hover:bg-[#86efac]/20 px-3 py-1.5 font-mono text-xs text-[#86efac] font-bold transition-colors cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 hover:bg-[#86efac]/20 px-3.5 py-1.5 font-mono text-xs text-[#86efac] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
                 >
                   <Play className="w-3.5 h-3.5" />
                   <span>
@@ -2148,8 +2146,8 @@ export default function Dashboard() {
                   )}
                 </div>
               ) : (
-                <div className="overflow-x-auto mb-5 max-h-[240px]">
-                  <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto mb-5 max-h-[240px] -mx-1 sm:mx-0">
+                  <table className="w-full text-left border-collapse min-w-[480px]">
                     <thead>
                       <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
                         <th className="py-2 pr-3">Post / Reel</th>
@@ -2226,7 +2224,7 @@ export default function Dashboard() {
                       </select>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono">
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 sm:gap-2 font-mono">
                       {[
                         { key: 'views', label: 'VIEWS', color: '#86efac' },
                         { key: 'likes', label: 'LIKES', color: '#e2e8f0' },
@@ -2275,11 +2273,11 @@ export default function Dashboard() {
         <CyberPanel
           label="Story to Essay Conversion Funnel • Instagram & Facebook"
           accent="#f472b6"
-          className="p-5 sm:p-6"
+          className="p-4 sm:p-6"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#e2e8f0] flex items-center gap-2">
+              <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0] flex items-center gap-2">
                 <span>Story Conversion Funnel by Platform</span>
                 <span className="px-2 py-0.5 border border-[#f472b6]/40 bg-[#f472b6]/10 text-[#f472b6] text-[10px] font-mono uppercase font-bold">
                   IG &amp; FB Breakdown
@@ -2291,7 +2289,7 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
               <span className="px-2 py-1 bg-[#fda4af]/10 border border-[#fda4af]/30 text-[#fda4af]">
                 IG CTR: <strong>{igStoryCtrPct}%</strong> ({igStoryClicks}c / {igStorySubscribers}s)
               </span>
@@ -2301,7 +2299,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {storyDispatches.map((dispatch) => {
               const rawIgImp = Number(dispatch.instagram?.impressions ?? dispatch.storyImpressions);
               const igImpressions = Number.isFinite(rawIgImp) ? rawIgImp : 0;
@@ -2322,26 +2320,26 @@ export default function Dashboard() {
               return (
                 <div
                   key={dispatch.id}
-                  className="p-5 bg-[#0b0d10] border border-slate-800 space-y-4"
+                  className="p-3.5 sm:p-5 bg-[#0b0d10] border border-slate-800 space-y-4"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800/80">
                     <div>
                       <div className="font-mono text-[10px] text-[#f472b6] font-bold tracking-widest uppercase">
                         Issue #{issueTag}
                       </div>
-                      <div className="text-base font-bold text-[#e2e8f0] mt-0.5">
+                      <div className="text-sm sm:text-base font-bold text-[#e2e8f0] mt-0.5">
                         {dispatch.title}
                       </div>
                     </div>
                   </div>
 
                   {/* Dual Platform Columns: Instagram (Pink) vs Facebook (Blue) */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
                     {/* Platform Card 1: Instagram Story */}
-                    <div className="p-4 bg-[#121316] border border-[#fda4af]/30 rounded-none space-y-3">
-                      <div className="flex items-center justify-between gap-2">
+                    <div className="p-3 sm:p-4 bg-[#121316] border border-[#fda4af]/30 rounded-none space-y-3">
+                      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[#fda4af]" />
+                          <span className="w-2 h-2 rounded-full bg-[#fda4af] shrink-0" />
                           <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#fda4af]">
                             Instagram Story
                           </span>
@@ -2350,7 +2348,7 @@ export default function Dashboard() {
                         <button
                           type="button"
                           onClick={() => copyUtmLink(dispatch.slug, issueTag, 'instagram')}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#fda4af]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#fda4af] hover:text-[#fda4af] transition-colors cursor-pointer shrink-0"
+                          className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 border border-[#fda4af]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#fda4af] hover:text-[#fda4af] transition-colors cursor-pointer shrink-0 w-full xs:w-auto"
                           title="Copy IG Story Link with utm_source=instagram&utm_medium=story"
                         >
                           {copiedLink === `${issueTag}-instagram` ? (
@@ -2368,9 +2366,9 @@ export default function Dashboard() {
                       </div>
 
                       {/* 3 Quick-Edit Inputs for Instagram */}
-                      <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 font-mono text-xs">
                         <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
                             24H VIEWS
                           </label>
                           <input
@@ -2385,12 +2383,12 @@ export default function Dashboard() {
                                 e.target.value
                               )
                             }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#fda4af]"
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#fda4af] text-center sm:text-left"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
                             CLICKS
                           </label>
                           <input
@@ -2405,12 +2403,12 @@ export default function Dashboard() {
                                 e.target.value
                               )
                             }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#e2e8f0]"
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#e2e8f0] text-center sm:text-left"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
                             SUBS
                           </label>
                           <input
@@ -2425,14 +2423,14 @@ export default function Dashboard() {
                                 e.target.value
                               )
                             }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#86efac]"
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#86efac] text-center sm:text-left"
                           />
                         </div>
                       </div>
 
                       {/* Visual Funnel Bar */}
                       <div className="space-y-1 pt-1">
-                        <div className="flex items-center justify-between text-[11px] font-mono">
+                        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono">
                           <span className="text-slate-400">
                             CTR: <strong className="text-[#fda4af]">{igCtr}%</strong>
                           </span>
@@ -2458,10 +2456,10 @@ export default function Dashboard() {
                     </div>
 
                     {/* Platform Card 2: Facebook Story */}
-                    <div className="p-4 bg-[#121316] border border-[#60a5fa]/30 rounded-none space-y-3">
-                      <div className="flex items-center justify-between gap-2">
+                    <div className="p-3 sm:p-4 bg-[#121316] border border-[#60a5fa]/30 rounded-none space-y-3">
+                      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[#60a5fa]" />
+                          <span className="w-2 h-2 rounded-full bg-[#60a5fa] shrink-0" />
                           <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#60a5fa]">
                             Facebook Story
                           </span>
@@ -2470,7 +2468,7 @@ export default function Dashboard() {
                         <button
                           type="button"
                           onClick={() => copyUtmLink(dispatch.slug, issueTag, 'facebook')}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#60a5fa]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#60a5fa] hover:text-[#60a5fa] transition-colors cursor-pointer shrink-0"
+                          className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 border border-[#60a5fa]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#60a5fa] hover:text-[#60a5fa] transition-colors cursor-pointer shrink-0 w-full xs:w-auto"
                           title="Copy FB Story Link with utm_source=facebook&utm_medium=story"
                         >
                           {copiedLink === `${issueTag}-facebook` ? (
@@ -2488,9 +2486,9 @@ export default function Dashboard() {
                       </div>
 
                       {/* 3 Quick-Edit Inputs for Facebook */}
-                      <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 font-mono text-xs">
                         <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
                             24H VIEWS
                           </label>
                           <input
@@ -2505,12 +2503,12 @@ export default function Dashboard() {
                                 e.target.value
                               )
                             }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#60a5fa]"
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#60a5fa] text-center sm:text-left"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
                             CLICKS
                           </label>
                           <input
@@ -2525,12 +2523,12 @@ export default function Dashboard() {
                                 e.target.value
                               )
                             }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#e2e8f0]"
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#e2e8f0] text-center sm:text-left"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-[10px] text-slate-400 mb-1 truncate">
+                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
                             SUBS
                           </label>
                           <input
@@ -2545,14 +2543,14 @@ export default function Dashboard() {
                                 e.target.value
                               )
                             }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-2 py-1 text-xs font-bold text-[#86efac]"
+                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#86efac] text-center sm:text-left"
                           />
                         </div>
                       </div>
 
                       {/* Visual Funnel Bar */}
                       <div className="space-y-1 pt-1">
-                        <div className="flex items-center justify-between text-[11px] font-mono">
+                        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono">
                           <span className="text-slate-400">
                             CTR: <strong className="text-[#60a5fa]">{fbCtr}%</strong>
                           </span>
