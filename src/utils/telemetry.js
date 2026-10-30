@@ -67,7 +67,7 @@ const DEFAULT_CHANNEL_LEDGER = {
     ],
   },
   facebook: {
-    handle: 'sivaraj.pragasm',
+    handle: 'observationsbymoth1',
     platform: 'Facebook Reels & Page',
     followers: 0,
     reels: [

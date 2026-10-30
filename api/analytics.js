@@ -4,7 +4,7 @@
  *   1. Substack: `automation-lab/substack-scraper` + Live Substack Archive API
  *   2. Instagram: `apify/instagram-scraper` (@moth1.siv)
  *   3. Threads: `automation-lab/threads-scraper` (@moth1.siv)
- *   4. Facebook: `apify/facebook-posts-scraper` (sivaraj.pragasm)
+ *   4. Facebook: `apify/facebook-posts-scraper` (observationsbymoth1)
  */
 
 const SUBSTACK_PUBLICATION_URL = 'https://observationsbymoth1.substack.com';
@@ -257,18 +257,22 @@ export function normalizeFacebookItem(item, idx = 0) {
         item.likesCount ??
         item.reactionsCount ??
         item.reactionCount ??
+        item.likes_count ??
         0
     ) || 0;
   const comments =
-    Number(item.comments ?? item.commentsCount ?? item.commentCount ?? 0) || 0;
+    Number(item.comments ?? item.commentsCount ?? item.commentCount ?? item.comments_count ?? 0) || 0;
   const shares =
-    Number(item.shares ?? item.sharesCount ?? item.shareCount ?? 0) || 0;
+    Number(item.shares ?? item.sharesCount ?? item.shareCount ?? item.shares_count ?? 0) || 0;
   const views =
     Number(
       item.viewsCount ??
         item.videoViewCount ??
         item.playCount ??
         item.views ??
+        item.video_play_count ??
+        item.video_view_count ??
+        item.videoViews ??
         0
     ) || 0;
   const followers =

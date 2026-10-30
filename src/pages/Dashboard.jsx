@@ -30,7 +30,7 @@ const DEFAULT_TARGETS = {
   substackUrl: 'https://observationsbymoth1.substack.com',
   instagramHandle: 'moth1.siv',
   threadsHandle: 'moth1.siv',
-  facebookUrl: 'https://www.facebook.com/sivaraj.pragasm',
+  facebookUrl: 'https://www.facebook.com/observationsbymoth1',
   filterTag: '#observations',
 };
 
@@ -87,6 +87,46 @@ function matchesObservationsFilter(item, filterTag = '#observations') {
     haystack.includes('watering-grass-in-a-thunderstorm') ||
     haystack.includes('bread and circus')
   );
+}
+
+function matchItemToIssueId(item) {
+  const text = `${item.caption || ''} ${item.text || ''} ${item.title || ''} ${item.url || ''}`.toLowerCase();
+  const hashtags = Array.isArray(item.hashtags) ? item.hashtags.map((h) => String(h).toLowerCase()).join(' ') : '';
+  const haystack = `${text} ${hashtags}`;
+
+  if (
+    haystack.includes('meat grinder') ||
+    haystack.includes('the-meat-grinder') ||
+    haystack.includes('issue-02') ||
+    haystack.includes('issue 02') ||
+    haystack.includes('issue 2') ||
+    haystack.includes('issue #02') ||
+    haystack.includes('issue #2') ||
+    haystack.includes('billionaires panic') ||
+    haystack.includes('venn diagram')
+  ) {
+    return '02';
+  }
+
+  if (
+    haystack.includes('watering grass') ||
+    haystack.includes('watering-grass') ||
+    haystack.includes('thunderstorm') ||
+    haystack.includes('issue-01') ||
+    haystack.includes('issue 01') ||
+    haystack.includes('issue 1') ||
+    haystack.includes('issue #01') ||
+    haystack.includes('issue #1') ||
+    haystack.includes('bread and circus') ||
+    haystack.includes('sidequest') ||
+    haystack.includes('combine writing') ||
+    haystack.includes('observations.moth1.xyz') ||
+    haystack.includes('#observations')
+  ) {
+    return '01';
+  }
+
+  return null;
 }
 
 function normalizeSubstackItem(
@@ -300,18 +340,22 @@ function normalizeFacebookItem(item, idx = 0) {
         item.likesCount ??
         item.reactionsCount ??
         item.reactionCount ??
+        item.likes_count ??
         0
     ) || 0;
   const comments =
-    Number(item.comments ?? item.commentsCount ?? item.commentCount ?? 0) || 0;
+    Number(item.comments ?? item.commentsCount ?? item.commentCount ?? item.comments_count ?? 0) || 0;
   const shares =
-    Number(item.shares ?? item.sharesCount ?? item.shareCount ?? 0) || 0;
+    Number(item.shares ?? item.sharesCount ?? item.shareCount ?? item.shares_count ?? 0) || 0;
   const views =
     Number(
       item.viewsCount ??
         item.videoViewCount ??
         item.playCount ??
         item.views ??
+        item.video_play_count ??
+        item.video_view_count ??
+        item.videoViews ??
         0
     ) || 0;
   const followers =
@@ -375,6 +419,14 @@ async function fetchDirectActorDataset(actorId, token) {
         const parsed = await dsRes.json();
         if (Array.isArray(parsed)) items = parsed;
       }
+    }
+
+    if (actorId.includes('facebook')) {
+      console.log('[Dashboard] Apify Facebook scraper run dataset:', {
+        runInfo,
+        itemCount: items.length,
+        firstItem: items[0],
+      });
     }
 
     return { connected: true, runInfo, items };
@@ -598,22 +650,123 @@ export default function Dashboard() {
           followers: fbScrapedFollowers,
         });
 
-        // Automatically persist scraped followers / subscribers to local ledger
+        // Automatically persist scraped followers / subscribers & Issue Reels to local ledger
         setLedger((prev) => {
           let changed = false;
           const next = { ...prev };
+
+          // 1. Channel followers / subs
           if (igScrapedFollowers > 0 && prev.instagram?.followers !== igScrapedFollowers) {
-            next.instagram = { ...prev.instagram, followers: igScrapedFollowers };
+            next.instagram = { ...next.instagram, followers: igScrapedFollowers };
             changed = true;
           }
           if (fbScrapedFollowers > 0 && prev.facebook?.followers !== fbScrapedFollowers) {
-            next.facebook = { ...prev.facebook, followers: fbScrapedFollowers };
+            next.facebook = { ...next.facebook, followers: fbScrapedFollowers };
             changed = true;
           }
           if (subScraped > 0 && prev.substackSubscribers !== subScraped) {
             next.substackSubscribers = subScraped;
             changed = true;
           }
+
+          // 2. Auto-populate Instagram Issue Reels from scraped items
+          if (igItems.length > 0 && Array.isArray(next.instagram?.reels)) {
+            const updatedIgReels = next.instagram.reels.map((reel) => {
+              const matchedItems = igItems.filter(
+                (item) => matchItemToIssueId(item) === reel.issueId
+              );
+              if (matchedItems.length === 0) return reel;
+
+              const maxViews = Math.max(
+                Number(reel.views) || 0,
+                ...matchedItems.map((m) => m.views || 0)
+              );
+              const maxLikes = Math.max(
+                Number(reel.likes) || 0,
+                ...matchedItems.map((m) => m.likes || 0)
+              );
+              const maxComments = Math.max(
+                Number(reel.comments) || 0,
+                ...matchedItems.map((m) => m.comments || 0)
+              );
+
+              if (
+                maxViews !== reel.views ||
+                maxLikes !== reel.likes ||
+                maxComments !== reel.comments
+              ) {
+                changed = true;
+                return {
+                  ...reel,
+                  views: maxViews,
+                  likes: maxLikes,
+                  comments: maxComments,
+                  status: 'Published',
+                  isScrapedSync: true,
+                };
+              }
+              return reel;
+            });
+            next.instagram = { ...next.instagram, reels: updatedIgReels };
+          }
+
+          // 3. Auto-populate Facebook Issue Reels from scraped items
+          const fbCandidates = fbItems.length > 0 ? fbItems : (directFacebook?.items || []);
+          if (fbCandidates.length > 0 && Array.isArray(next.facebook?.reels)) {
+            const updatedFbReels = next.facebook.reels.map((reel) => {
+              const matchedItems = fbCandidates.filter(
+                (item) => matchItemToIssueId(item) === reel.issueId
+              );
+              // If there's 1 FB post scraped and only 1 active issue posted (Issue 01), fallback-map to Issue 01
+              const effectiveMatches =
+                matchedItems.length > 0
+                  ? matchedItems
+                  : fbCandidates.length === 1 && reel.issueId === '01'
+                    ? fbCandidates
+                    : [];
+
+              if (effectiveMatches.length === 0) return reel;
+
+              const maxViews = Math.max(
+                Number(reel.views) || 0,
+                ...effectiveMatches.map((m) => m.views || 0)
+              );
+              const maxLikes = Math.max(
+                Number(reel.likes) || 0,
+                ...effectiveMatches.map((m) => m.likes || 0)
+              );
+              const maxComments = Math.max(
+                Number(reel.comments) || 0,
+                ...effectiveMatches.map((m) => m.comments || 0)
+              );
+              const maxShares = Math.max(
+                Number(reel.shares) || 0,
+                ...effectiveMatches.map((m) => m.shares || 0)
+              );
+
+              if (
+                maxViews !== reel.views ||
+                maxLikes !== reel.likes ||
+                maxComments !== reel.comments ||
+                maxShares !== reel.shares ||
+                !reel.isScrapedSync
+              ) {
+                changed = true;
+                return {
+                  ...reel,
+                  views: maxViews,
+                  likes: maxLikes,
+                  comments: maxComments,
+                  shares: maxShares,
+                  status: 'Published',
+                  isScrapedSync: true,
+                };
+              }
+              return reel;
+            });
+            next.facebook = { ...next.facebook, reels: updatedFbReels };
+          }
+
           if (changed) {
             saveChannelLedger(next);
             return next;
@@ -1386,7 +1539,7 @@ export default function Dashboard() {
                         facebookUrl: e.target.value,
                       }))
                     }
-                    placeholder="https://www.facebook.com/sivaraj.pragasm"
+                    placeholder="https://www.facebook.com/observationsbymoth1"
                     className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-[#86efac]"
                   />
                 </div>
@@ -1721,7 +1874,7 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-mono text-[11px] text-slate-400 truncate">
-                  sivaraj.pragasm
+                  observationsbymoth1
                 </span>
                 <Share2 className="w-4 h-4 text-[#86efac] shrink-0" />
               </div>
@@ -2192,8 +2345,11 @@ export default function Dashboard() {
 
               {/* Manual / Issue-Specific Instagram Reel Tracker */}
               <div className="space-y-3 pt-2 border-t border-slate-800">
-                <div className="font-mono text-[11px] text-slate-400 uppercase font-bold">
-                  Issue Reel Ledger (Manual Override / Sync)
+                <div className="flex items-center justify-between font-mono text-[11px] text-slate-400 uppercase font-bold">
+                  <span>Issue Reel Ledger</span>
+                  <span className="text-[10px] text-[#fda4af] font-normal normal-case">
+                    Auto-synced from Apify dataset
+                  </span>
                 </div>
                 {ledger.instagram.reels.map((reel) => (
                   <div
@@ -2201,8 +2357,13 @@ export default function Dashboard() {
                     className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-2.5"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="font-bold text-xs sm:text-sm text-[#e2e8f0]">
-                        Issue #{reel.issueId}: {reel.title}
+                      <div className="font-bold text-xs sm:text-sm text-[#e2e8f0] flex items-center gap-2">
+                        <span>Issue #{reel.issueId}: {reel.title}</span>
+                        {reel.isScrapedSync && (
+                          <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] font-mono">
+                            Auto-Synced
+                          </span>
+                        )}
                       </div>
                       <select
                         value={reel.status}
@@ -2387,7 +2548,7 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
-                    Facebook Posts &amp; Reels (sivaraj.pragasm)
+                    Facebook Posts &amp; Reels (observationsbymoth1)
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
                     Showing{' '}
@@ -2441,7 +2602,7 @@ export default function Dashboard() {
                   ) : (
                     <div>
                       No Apify dataset items loaded yet for{' '}
-                      <code className="text-[#86efac]">sivaraj.pragasm</code>.
+                      <code className="text-[#86efac]">observationsbymoth1</code>.
                       Click &ldquo;Run Facebook Scraper&rdquo; above.
                     </div>
                   )}
@@ -2495,8 +2656,11 @@ export default function Dashboard() {
               )}
 
               <div className="space-y-3 pt-2 border-t border-slate-800">
-                <div className="font-mono text-[11px] text-slate-400 uppercase font-bold">
-                  Issue Reel Ledger (Manual Override / Outbound Clicks)
+                <div className="flex items-center justify-between font-mono text-[11px] text-slate-400 uppercase font-bold">
+                  <span>Issue Reel Ledger</span>
+                  <span className="text-[10px] text-[#86efac] font-normal normal-case">
+                    Auto-synced from Apify dataset
+                  </span>
                 </div>
                 {ledger.facebook.reels.map((reel) => (
                   <div
@@ -2504,8 +2668,13 @@ export default function Dashboard() {
                     className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-2.5"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="font-bold text-xs sm:text-sm text-[#e2e8f0]">
-                        Issue #{reel.issueId}: {reel.title}
+                      <div className="font-bold text-xs sm:text-sm text-[#e2e8f0] flex items-center gap-2">
+                        <span>Issue #{reel.issueId}: {reel.title}</span>
+                        {reel.isScrapedSync && (
+                          <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] font-mono">
+                            Auto-Synced
+                          </span>
+                        )}
                       </div>
                       <select
                         value={reel.status}
