@@ -149,6 +149,15 @@ function normalizeSubstackItem(
     readingTimeMinutes:
       Number(item.readingTimeMinutes ?? item.reading_time) ||
       Math.max(1, Math.round((wordCount || 600) / 200)),
+    subscribers:
+      Number(
+        item.subscribersCount ??
+          item.subscriber_count ??
+          item.subscribers ??
+          item.subsCount ??
+          item.publication?.subscribersCount ??
+          0
+      ) || 0,
     source,
   };
 }
@@ -179,7 +188,14 @@ function normalizeInstagramItem(item, idx = 0) {
   const comments =
     Number(item.commentsCount ?? item.commentCount ?? item.comments ?? 0) || 0;
   const followers =
-    Number(item.followersCount ?? item.ownerFollowersCount ?? 0) || 0;
+    Number(
+      item.followersCount ??
+        item.ownerFollowersCount ??
+        item.owner?.followersCount ??
+        item.user?.followersCount ??
+        item.followers ??
+        0
+    ) || 0;
 
   return {
     id: String(item.id || shortCode || `ig-${idx}`),
@@ -194,7 +210,7 @@ function normalizeInstagramItem(item, idx = 0) {
     views,
     likes,
     comments,
-    ownerUsername: item.ownerUsername || item.username || '',
+    ownerUsername: item.ownerUsername || item.username || item.owner?.username || '',
     followers,
   };
 }
@@ -232,6 +248,14 @@ function normalizeThreadsItem(item, idx = 0) {
       item.reposts ?? item.repostCount ?? item.shares ?? item.quotes ?? 0
     ) || 0;
   const views = Number(item.views ?? item.viewCount ?? 0) || 0;
+  const followers =
+    Number(
+      item.followersCount ??
+        item.user?.followersCount ??
+        item.author?.followersCount ??
+        item.followers ??
+        0
+    ) || 0;
 
   return {
     id: String(item.id || item.code || `thread-${idx}`),
@@ -248,6 +272,7 @@ function normalizeThreadsItem(item, idx = 0) {
     replies,
     reposts,
     views,
+    followers,
     username:
       item.username || item.author?.username || item.ownerUsername || '',
   };
@@ -287,6 +312,19 @@ function normalizeFacebookItem(item, idx = 0) {
         item.views ??
         0
     ) || 0;
+  const followers =
+    Number(
+      item.pageFollowersCount ??
+        item.pageFollowers ??
+        item.followersCount ??
+        item.pageLikesCount ??
+        item.pageLikes ??
+        item.pageInfo?.followersCount ??
+        item.pageInfo?.likesCount ??
+        item.user?.followersCount ??
+        item.followers ??
+        0
+    ) || 0;
 
   return {
     id: String(item.postId || item.id || `fb-${idx}`),
@@ -298,6 +336,7 @@ function normalizeFacebookItem(item, idx = 0) {
     likes,
     comments,
     shares,
+    followers,
     pageName: item.pageName || item.user?.name || '',
   };
 }
@@ -385,21 +424,25 @@ export default function Dashboard() {
     connected: false,
     runInfo: null,
     posts: [],
+    subscribers: 0,
   });
   const [instagramState, setInstagramState] = useState({
     connected: false,
     runInfo: null,
     items: [],
+    followers: 0,
   });
   const [threadsState, setThreadsState] = useState({
     connected: false,
     runInfo: null,
     items: [],
+    followers: 0,
   });
   const [facebookState, setFacebookState] = useState({
     connected: false,
     runInfo: null,
     items: [],
+    followers: 0,
   });
 
   const syncAllTelemetry = useCallback(
@@ -458,6 +501,7 @@ export default function Dashboard() {
               comments: Math.max(existing.comments || 0, item.comments || 0),
               restacks: Math.max(existing.restacks || 0, item.restacks || 0),
               wordCount: existing.wordCount || item.wordCount || 0,
+              subscribers: Math.max(existing.subscribers || 0, item.subscribers || 0),
               source: 'apify+substack-merged',
             });
           } else {
@@ -465,13 +509,20 @@ export default function Dashboard() {
           }
         }
 
+        const substackPosts = Array.from(substackMap.values());
+        const subScraped = Math.max(
+          serverJson?.substack?.subscribers || 0,
+          ...substackPosts.map((p) => p.subscribers || 0)
+        );
+
         setSubstackState({
           connected:
             Boolean(directSubstack?.connected) ||
             Boolean(serverJson?.substack?.connected),
           runInfo:
             directSubstack?.runInfo || serverJson?.substack?.runInfo || null,
-          posts: Array.from(substackMap.values()),
+          posts: substackPosts,
+          subscribers: subScraped,
         });
 
         // 2. Instagram Items (apify/instagram-scraper)
@@ -482,6 +533,11 @@ export default function Dashboard() {
               )
             : serverJson?.instagram?.items || [];
 
+        const igScrapedFollowers = Math.max(
+          serverJson?.instagram?.followers || 0,
+          ...igItems.map((i) => i.followers || 0)
+        );
+
         setInstagramState({
           connected:
             Boolean(directInstagram?.connected) ||
@@ -489,6 +545,7 @@ export default function Dashboard() {
           runInfo:
             directInstagram?.runInfo || serverJson?.instagram?.runInfo || null,
           items: igItems,
+          followers: igScrapedFollowers,
         });
 
         // 3. Threads Items (automation-lab/threads-scraper)
@@ -499,6 +556,11 @@ export default function Dashboard() {
               )
             : serverJson?.threads?.items || [];
 
+        const thScrapedFollowers = Math.max(
+          serverJson?.threads?.followers || 0,
+          ...thItems.map((i) => i.followers || 0)
+        );
+
         setThreadsState({
           connected:
             Boolean(directThreads?.connected) ||
@@ -506,6 +568,7 @@ export default function Dashboard() {
           runInfo:
             directThreads?.runInfo || serverJson?.threads?.runInfo || null,
           items: thItems,
+          followers: thScrapedFollowers,
         });
 
         // 4. Facebook Items (apify/facebook-posts-scraper)
@@ -516,6 +579,11 @@ export default function Dashboard() {
               )
             : serverJson?.facebook?.items || [];
 
+        const fbScrapedFollowers = Math.max(
+          serverJson?.facebook?.followers || 0,
+          ...fbItems.map((i) => i.followers || 0)
+        );
+
         setFacebookState({
           connected:
             Boolean(directFacebook?.connected) ||
@@ -523,6 +591,30 @@ export default function Dashboard() {
           runInfo:
             directFacebook?.runInfo || serverJson?.facebook?.runInfo || null,
           items: fbItems,
+          followers: fbScrapedFollowers,
+        });
+
+        // Automatically persist scraped followers / subscribers to local ledger
+        setLedger((prev) => {
+          let changed = false;
+          const next = { ...prev };
+          if (igScrapedFollowers > 0 && prev.instagram?.followers !== igScrapedFollowers) {
+            next.instagram = { ...prev.instagram, followers: igScrapedFollowers };
+            changed = true;
+          }
+          if (fbScrapedFollowers > 0 && prev.facebook?.followers !== fbScrapedFollowers) {
+            next.facebook = { ...prev.facebook, followers: fbScrapedFollowers };
+            changed = true;
+          }
+          if (subScraped > 0 && prev.substackSubscribers !== subScraped) {
+            next.substackSubscribers = subScraped;
+            changed = true;
+          }
+          if (changed) {
+            saveChannelLedger(next);
+            return next;
+          }
+          return prev;
         });
       } finally {
         setLoadingSync(false);
@@ -1376,16 +1468,15 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
-              <span className="text-slate-400">Subs:</span>
-              <input
-                type="number"
-                min="0"
-                value={ledger.substackSubscribers || 0}
-                onChange={(e) =>
-                  updateFollowerCount('substack', e.target.value)
-                }
-                className="w-16 bg-[#0b0d10] border border-slate-800 px-1.5 py-0.5 text-[11px] font-mono text-[#67e8f9] font-bold text-right"
-              />
+              <span className="text-slate-400">Subscribers:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-[12px] font-bold text-[#67e8f9] tabular-nums">
+                  {(substackState.subscribers || ledger.substackSubscribers || 0).toLocaleString()}
+                </span>
+                <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#67e8f9]/40 bg-[#67e8f9]/10 text-[#67e8f9] rounded-none">
+                  {substackState.subscribers > 0 ? 'Scraped' : 'Live'}
+                </span>
+              </div>
             </div>
           </CyberPanel>
 
@@ -1413,15 +1504,14 @@ export default function Dashboard() {
 
             <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
               <span className="text-slate-400">Followers:</span>
-              <input
-                type="number"
-                min="0"
-                value={ledger.instagram.followers || 0}
-                onChange={(e) =>
-                  updateFollowerCount('instagram', e.target.value)
-                }
-                className="w-16 bg-[#0b0d10] border border-slate-800 px-1.5 py-0.5 text-[11px] font-mono text-[#fda4af] font-bold text-right"
-              />
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-[12px] font-bold text-[#fda4af] tabular-nums">
+                  {(instagramState.followers || ledger.instagram.followers || 0).toLocaleString()}
+                </span>
+                <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#fda4af]/40 bg-[#fda4af]/10 text-[#fda4af] rounded-none">
+                  {instagramState.followers > 0 ? 'Scraped' : 'Live'}
+                </span>
+              </div>
             </div>
           </CyberPanel>
 
@@ -1448,11 +1538,15 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between font-mono text-[10px]">
-              <span className="text-[#c084fc]">
-                {threadsState.items.length > 0
-                  ? `${visibleThreadsItems.length}/${threadsState.items.length} ${activeFilterTag}`
-                  : 'Ready to Scrape'}
-              </span>
+              <span className="text-slate-400">Followers:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-[12px] font-bold text-[#c084fc] tabular-nums">
+                  {(threadsState.followers || 0).toLocaleString()}
+                </span>
+                <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#c084fc]/40 bg-[#c084fc]/10 text-[#c084fc] rounded-none">
+                  {threadsState.followers > 0 ? 'Scraped' : 'Live'}
+                </span>
+              </div>
             </div>
           </CyberPanel>
 
@@ -1480,15 +1574,14 @@ export default function Dashboard() {
 
             <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
               <span className="text-slate-400">Followers:</span>
-              <input
-                type="number"
-                min="0"
-                value={ledger.facebook.followers || 0}
-                onChange={(e) =>
-                  updateFollowerCount('facebook', e.target.value)
-                }
-                className="w-16 bg-[#0b0d10] border border-slate-800 px-1.5 py-0.5 text-[11px] font-mono text-[#86efac] font-bold text-right"
-              />
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-[12px] font-bold text-[#86efac] tabular-nums">
+                  {(facebookState.followers || ledger.facebook.followers || 0).toLocaleString()}
+                </span>
+                <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] rounded-none">
+                  {facebookState.followers > 0 ? 'Scraped' : 'Live'}
+                </span>
+              </div>
             </div>
           </CyberPanel>
 

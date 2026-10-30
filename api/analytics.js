@@ -101,6 +101,15 @@ export function normalizeSubstackItem(
     readingTimeMinutes:
       Number(item.readingTimeMinutes ?? item.reading_time) ||
       Math.max(1, Math.round((wordCount || 600) / 200)),
+    subscribers:
+      Number(
+        item.subscribersCount ??
+          item.subscriber_count ??
+          item.subscribers ??
+          item.subsCount ??
+          item.publication?.subscribersCount ??
+          0
+      ) || 0,
     source,
   };
 }
@@ -131,7 +140,14 @@ export function normalizeInstagramItem(item, idx = 0) {
   const comments =
     Number(item.commentsCount ?? item.commentCount ?? item.comments ?? 0) || 0;
   const followers =
-    Number(item.followersCount ?? item.ownerFollowersCount ?? 0) || 0;
+    Number(
+      item.followersCount ??
+        item.ownerFollowersCount ??
+        item.owner?.followersCount ??
+        item.user?.followersCount ??
+        item.followers ??
+        0
+    ) || 0;
 
   return {
     id: String(item.id || shortCode || `ig-${idx}`),
@@ -147,7 +163,7 @@ export function normalizeInstagramItem(item, idx = 0) {
     views,
     likes,
     comments,
-    ownerUsername: item.ownerUsername || item.username || '',
+    ownerUsername: item.ownerUsername || item.username || item.owner?.username || '',
     followers,
     displayUrl: item.displayUrl || item.thumbnailUrl || null,
   };
@@ -190,6 +206,14 @@ export function normalizeThreadsItem(item, idx = 0) {
         0
     ) || 0;
   const views = Number(item.views ?? item.viewCount ?? 0) || 0;
+  const followers =
+    Number(
+      item.followersCount ??
+        item.user?.followersCount ??
+        item.author?.followersCount ??
+        item.followers ??
+        0
+    ) || 0;
 
   return {
     id: String(item.id || item.code || `thread-${idx}`),
@@ -207,6 +231,7 @@ export function normalizeThreadsItem(item, idx = 0) {
     replies,
     reposts,
     views,
+    followers,
     username:
       item.username || item.author?.username || item.ownerUsername || '',
   };
@@ -246,6 +271,19 @@ export function normalizeFacebookItem(item, idx = 0) {
         item.views ??
         0
     ) || 0;
+  const followers =
+    Number(
+      item.pageFollowersCount ??
+        item.pageFollowers ??
+        item.followersCount ??
+        item.pageLikesCount ??
+        item.pageLikes ??
+        item.pageInfo?.followersCount ??
+        item.pageInfo?.likesCount ??
+        item.user?.followersCount ??
+        item.followers ??
+        0
+    ) || 0;
 
   return {
     id: String(item.postId || item.id || `fb-${idx}`),
@@ -258,6 +296,7 @@ export function normalizeFacebookItem(item, idx = 0) {
     likes,
     comments,
     shares,
+    followers,
     pageName: item.pageName || item.user?.name || '',
   };
 }
@@ -396,6 +435,23 @@ export default async function handler(req, res) {
     normalizeFacebookItem(item, i)
   );
 
+  const instagramFollowers = instagramItems.reduce(
+    (max, item) => Math.max(max, item.followers || 0),
+    0
+  );
+  const facebookFollowers = facebookItems.reduce(
+    (max, item) => Math.max(max, item.followers || 0),
+    0
+  );
+  const threadsFollowers = threadsItems.reduce(
+    (max, item) => Math.max(max, item.followers || 0),
+    0
+  );
+  const substackSubscribers = substackPosts.reduce(
+    (max, item) => Math.max(max, item.subscribers || 0),
+    0
+  );
+
   return res.status(200).json({
     timestamp: new Date().toISOString(),
     apifyConfigured: Boolean(apifyToken),
@@ -404,24 +460,28 @@ export default async function handler(req, res) {
       connected: apifySubstack.connected,
       runInfo: apifySubstack.runInfo,
       apifyItemCount: apifySubstack.items.length,
+      subscribers: substackSubscribers,
       posts: substackPosts,
     },
     instagram: {
       actorId: 'apify/instagram-scraper',
       connected: apifyInstagram.connected,
       runInfo: apifyInstagram.runInfo,
+      followers: instagramFollowers,
       items: instagramItems,
     },
     threads: {
       actorId: 'automation-lab/threads-scraper',
       connected: apifyThreads.connected,
       runInfo: apifyThreads.runInfo,
+      followers: threadsFollowers,
       items: threadsItems,
     },
     facebook: {
       actorId: 'apify/facebook-posts-scraper',
       connected: apifyFacebook.connected,
       runInfo: apifyFacebook.runInfo,
+      followers: facebookFollowers,
       items: facebookItems,
     },
   });
