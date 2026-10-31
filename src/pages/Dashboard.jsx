@@ -1,26 +1,156 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  Apple,
+  BarChart3,
   BookOpen,
   Check,
   CheckCircle2,
   Copy,
+  Cpu,
+  Edit2,
   ExternalLink,
   Film,
   Filter,
   Globe,
   KeyRound,
   MessageSquare,
+  Monitor,
   Play,
   RefreshCw,
   Share2,
+  Smartphone,
   Sparkles,
-  Zap,
-  Edit2,
+  Tablet,
+  TrendingUp,
   X,
+  Zap,
 } from 'lucide-react';
 import CyberPanel from '../components/issue02/CyberPanel';
 import { loadChannelLedger, saveChannelLedger } from '../utils/telemetry';
+
+// Resolves country code or country name to native flag emoji
+function getCountryFlag(countryCode) {
+  if (!countryCode) return '🌐';
+  const clean = countryCode.trim().toUpperCase();
+  if (clean === 'UNKNOWN' || clean === 'OTHER') return '🌐';
+  if (clean.length === 2 && /^[A-Z]{2}$/.test(clean)) {
+    return String.fromCodePoint(...[...clean].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
+  }
+  const nameMap = {
+    'UNITED STATES': '🇺🇸',
+    USA: '🇺🇸',
+    SINGAPORE: '🇸🇬',
+    MALAYSIA: '🇲🇾',
+    'UNITED KINGDOM': '🇬🇧',
+    UK: '🇬🇧',
+    INDIA: '🇮🇳',
+    AUSTRALIA: '🇦🇺',
+    GERMANY: '🇩🇪',
+    CANADA: '🇨🇦',
+    FRANCE: '🇫🇷',
+    JAPAN: '🇯🇵',
+    INDONESIA: '🇮🇩',
+    NETHERLANDS: '🇳🇱',
+    PHILIPPINES: '🇵🇭',
+    VIETNAM: '🇻🇳',
+    BRAZIL: '🇧🇷',
+    SPAIN: '🇪🇸',
+    ITALY: '🇮🇹',
+    'SOUTH KOREA': '🇰🇷',
+    'NEW ZEALAND': '🇳🇿',
+    SWITZERLAND: '🇨🇭',
+    SWEDEN: '🇸🇪',
+  };
+  return nameMap[clean] || '🌐';
+}
+
+// Brand platform logo pill for referrers
+function ReferrerLogo({ hostname }) {
+  const h = (hostname || '').toLowerCase();
+  if (h.includes('instagram')) {
+    return (
+      <span className="w-4 h-4 rounded-sm bg-gradient-to-tr from-[#f59e0b] via-[#ec4899] to-[#8b5cf6] flex items-center justify-center text-[9px] text-white font-black shrink-0">
+        IG
+      </span>
+    );
+  }
+  if (h.includes('facebook') || h.includes('fb.me')) {
+    return (
+      <span className="w-4 h-4 rounded-sm bg-[#1877F2] flex items-center justify-center text-[10px] text-white font-black shrink-0">
+        f
+      </span>
+    );
+  }
+  if (h.includes('threads')) {
+    return (
+      <span className="w-4 h-4 rounded-sm bg-[#121316] border border-neutral-700 flex items-center justify-center text-[10px] text-white font-bold shrink-0">
+        @
+      </span>
+    );
+  }
+  if (h.includes('substack')) {
+    return (
+      <span className="w-4 h-4 rounded-sm bg-[#FF6719] flex items-center justify-center text-[9px] text-white font-black shrink-0">
+        S
+      </span>
+    );
+  }
+  if (h.includes('google')) {
+    return (
+      <span className="w-4 h-4 rounded-sm bg-white flex items-center justify-center text-[10px] text-[#4285F4] font-black shrink-0">
+        G
+      </span>
+    );
+  }
+  if (h.includes('twitter') || h.includes('t.co') || h.includes('x.com')) {
+    return (
+      <span className="w-4 h-4 rounded-sm bg-black border border-neutral-700 flex items-center justify-center text-[9px] text-white font-bold shrink-0">
+        𝕏
+      </span>
+    );
+  }
+  if (h.includes('linkedin')) {
+    return (
+      <span className="w-4 h-4 rounded-sm bg-[#0A66C2] flex items-center justify-center text-[9px] text-white font-black shrink-0">
+        in
+      </span>
+    );
+  }
+  return (
+    <span className="w-4 h-4 rounded-sm bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-400 shrink-0">
+      <Globe className="w-2.5 h-2.5" />
+    </span>
+  );
+}
+
+function DeviceIcon({ deviceType }) {
+  const d = (deviceType || '').toLowerCase();
+  if (d.includes('mobile') || d.includes('phone')) {
+    return <Smartphone className="w-3.5 h-3.5 text-[#fda4af] shrink-0" />;
+  }
+  if (d.includes('tablet') || d.includes('ipad')) {
+    return <Tablet className="w-3.5 h-3.5 text-[#c084fc] shrink-0" />;
+  }
+  return <Monitor className="w-3.5 h-3.5 text-[#67e8f9] shrink-0" />;
+}
+
+function OsIcon({ osName }) {
+  const o = (osName || '').toLowerCase();
+  if (o.includes('ios') || o.includes('mac') || o.includes('apple')) {
+    return <Apple className="w-3.5 h-3.5 text-[#e2e8f0] shrink-0" />;
+  }
+  if (o.includes('android')) {
+    return <Smartphone className="w-3.5 h-3.5 text-[#86efac] shrink-0" />;
+  }
+  if (o.includes('windows')) {
+    return <Monitor className="w-3.5 h-3.5 text-[#60a5fa] shrink-0" />;
+  }
+  if (o.includes('linux')) {
+    return <Cpu className="w-3.5 h-3.5 text-[#fbbf24] shrink-0" />;
+  }
+  return <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />;
+}
 
 const APIFY_TOKEN_STORAGE_KEY = 'moth1_apify_token';
 const VERCEL_TOKEN_STORAGE_KEY = 'moth1_vercel_token_v1';
@@ -2359,31 +2489,28 @@ export default function Dashboard() {
           </CyberPanel>
         </div>
 
-        {/* SECTION 1: Website Route Breakdown & Vercel Web Analytics Sync */}
+        {/* SECTION 1: Website Audience & Route Breakdown */}
         <CyberPanel
-          label="Website Telemetry • observations.moth1.xyz"
+          label="Website Audience • observations.moth1.xyz"
           accent="#86efac"
           className="p-4 sm:p-6"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
             <div>
-              <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
-                Interactive Web Essay Traffic by Route
+              <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
+                Website Audience &amp; Route Performance
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Live pageviews and share clicks are streamed automatically to
-                Vercel Web Analytics via{' '}
-                <code className="text-[#86efac]">&lt;Analytics /&gt;</code>. You
-                can also sync your Vercel dashboard numbers below.
+                Real-time pageviews, visitors, referrers, and regional distribution from Vercel Analytics.
               </p>
             </div>
             <a
               href="https://vercel.com/dashboard"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 px-3.5 py-2 font-mono text-xs text-[#86efac] font-bold hover:bg-[#86efac]/20 transition-colors w-full sm:w-auto shrink-0"
+              className="inline-flex items-center justify-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 px-3.5 py-1.5 font-mono text-xs text-[#86efac] font-bold hover:bg-[#86efac]/20 transition-colors w-full sm:w-auto shrink-0"
             >
-              <span>Open Vercel Web Analytics</span>
+              <span>Vercel Analytics</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
@@ -2440,9 +2567,9 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="h-1.5 w-full bg-slate-900 overflow-hidden">
+                  <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#86efac] to-[#67e8f9] transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-[#86efac] to-[#67e8f9] rounded-full transition-all duration-500"
                       style={{ width: `${Math.max(4, barPct)}%` }}
                     />
                   </div>
@@ -2453,123 +2580,197 @@ export default function Dashboard() {
 
           {/* Vercel Cloud Intelligence Grids: Referrers, Countries, Devices & OS */}
           {vercelAnalytics?.connected && (
-            <div className="mt-6 pt-6 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
-              {/* 1. Referrers */}
-              <div className="p-3.5 bg-[#0b0d10] border border-slate-800">
-                <div className="text-[11px] text-[#86efac] font-bold uppercase mb-2 flex items-center justify-between">
-                  <span>Top Referrers</span>
+            <div className="mt-5 pt-5 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 font-mono">
+              {/* 1. Referrers with Platform Logos & Progress Bars */}
+              <div className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-2.5">
+                <div className="text-[11px] text-[#86efac] font-bold uppercase flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                  <span className="flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>Top Referrers</span>
+                  </span>
                   <span className="text-[10px] text-slate-400">Visitors</span>
                 </div>
                 {vercelAnalytics.referrers?.length > 0 ? (
-                  <div className="space-y-1.5 text-xs">
-                    {vercelAnalytics.referrers.slice(0, 6).map((ref, idx) => (
-                      <div key={idx} className="flex items-center justify-between">
-                        <span className="truncate text-slate-300 max-w-[130px]">
-                          {ref.referrerHostname || 'Direct / Bookmark'}
-                        </span>
-                        <span className="font-bold text-[#86efac]">
-                          {ref.visitors || ref.pageviews || 0}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="space-y-2 text-xs">
+                    {vercelAnalytics.referrers.slice(0, 5).map((ref, idx) => {
+                      const val = ref.visitors || ref.pageviews || 0;
+                      const maxVal = Math.max(1, ...vercelAnalytics.referrers.map((r) => r.visitors || r.pageviews || 0));
+                      const pct = Math.round((val / maxVal) * 100);
+                      return (
+                        <div key={idx} className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 min-w-0 pr-2">
+                              <ReferrerLogo hostname={ref.referrerHostname} />
+                              <span className="truncate text-slate-300">
+                                {ref.referrerHostname || 'Direct / Bookmark'}
+                              </span>
+                            </div>
+                            <span className="font-bold text-[#86efac] shrink-0">
+                              {val.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#86efac]/40 to-[#86efac] rounded-full transition-all duration-300"
+                              style={{ width: `${Math.max(6, pct)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div className="text-xs text-slate-500 italic">No referrer data yet</div>
+                  <div className="text-xs text-slate-500 italic py-2">No referrer data yet</div>
                 )}
               </div>
 
-              {/* 2. Countries */}
-              <div className="p-3.5 bg-[#0b0d10] border border-slate-800">
-                <div className="text-[11px] text-[#67e8f9] font-bold uppercase mb-2 flex items-center justify-between">
-                  <span>Top Countries</span>
+              {/* 2. Countries with Country Flags & Progress Bars */}
+              <div className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-2.5">
+                <div className="text-[11px] text-[#67e8f9] font-bold uppercase flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                  <span className="flex items-center gap-1.5">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>Top Countries</span>
+                  </span>
                   <span className="text-[10px] text-slate-400">Visitors</span>
                 </div>
                 {vercelAnalytics.countries?.length > 0 ? (
-                  <div className="space-y-1.5 text-xs">
-                    {vercelAnalytics.countries.slice(0, 6).map((c, idx) => (
-                      <div key={idx} className="flex items-center justify-between">
-                        <span className="truncate text-slate-300">
-                          {c.country || 'Unknown'}
-                        </span>
-                        <span className="font-bold text-[#67e8f9]">
-                          {c.visitors || c.pageviews || 0}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="space-y-2 text-xs">
+                    {vercelAnalytics.countries.slice(0, 5).map((c, idx) => {
+                      const val = c.visitors || c.pageviews || 0;
+                      const maxVal = Math.max(1, ...vercelAnalytics.countries.map((x) => x.visitors || x.pageviews || 0));
+                      const pct = Math.round((val / maxVal) * 100);
+                      const countryName = c.country || 'Unknown';
+                      const flag = getCountryFlag(countryName);
+                      return (
+                        <div key={idx} className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 min-w-0 pr-2">
+                              <span className="text-sm shrink-0 leading-none">{flag}</span>
+                              <span className="truncate text-slate-300">
+                                {countryName}
+                              </span>
+                            </div>
+                            <span className="font-bold text-[#67e8f9] shrink-0">
+                              {val.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#67e8f9]/40 to-[#67e8f9] rounded-full transition-all duration-300"
+                              style={{ width: `${Math.max(6, pct)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div className="text-xs text-slate-500 italic">No country data yet</div>
+                  <div className="text-xs text-slate-500 italic py-2">No country data yet</div>
                 )}
               </div>
 
-              {/* 3. Devices */}
-              <div className="p-3.5 bg-[#0b0d10] border border-slate-800">
-                <div className="text-[11px] text-[#fda4af] font-bold uppercase mb-2 flex items-center justify-between">
-                  <span>Devices</span>
+              {/* 3. Devices with Device Icons & Progress Bars */}
+              <div className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-2.5">
+                <div className="text-[11px] text-[#fda4af] font-bold uppercase flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                  <span className="flex items-center gap-1.5">
+                    <Monitor className="w-3.5 h-3.5" />
+                    <span>Devices</span>
+                  </span>
                   <span className="text-[10px] text-slate-400">Visitors</span>
                 </div>
                 {vercelAnalytics.devices?.length > 0 ? (
-                  <div className="space-y-1.5 text-xs">
-                    {vercelAnalytics.devices.slice(0, 6).map((d, idx) => (
-                      <div key={idx} className="flex items-center justify-between">
-                        <span className="truncate text-slate-300 capitalize">
-                          {d.deviceType || 'Desktop'}
-                        </span>
-                        <span className="font-bold text-[#fda4af]">
-                          {d.visitors || d.pageviews || 0}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="space-y-2 text-xs">
+                    {vercelAnalytics.devices.slice(0, 5).map((d, idx) => {
+                      const val = d.visitors || d.pageviews || 0;
+                      const maxVal = Math.max(1, ...vercelAnalytics.devices.map((x) => x.visitors || x.pageviews || 0));
+                      const pct = Math.round((val / maxVal) * 100);
+                      return (
+                        <div key={idx} className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 min-w-0 pr-2">
+                              <DeviceIcon deviceType={d.deviceType} />
+                              <span className="truncate text-slate-300 capitalize">
+                                {d.deviceType || 'Desktop'}
+                              </span>
+                            </div>
+                            <span className="font-bold text-[#fda4af] shrink-0">
+                              {val.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#fda4af]/40 to-[#fda4af] rounded-full transition-all duration-300"
+                              style={{ width: `${Math.max(6, pct)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div className="text-xs text-slate-500 italic">No device data yet</div>
+                  <div className="text-xs text-slate-500 italic py-2">No device data yet</div>
                 )}
               </div>
 
-              {/* 4. Operating Systems */}
-              <div className="p-3.5 bg-[#0b0d10] border border-slate-800">
-                <div className="text-[11px] text-[#c084fc] font-bold uppercase mb-2 flex items-center justify-between">
-                  <span>Operating Systems</span>
+              {/* 4. Operating Systems with OS Icons & Progress Bars */}
+              <div className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-2.5">
+                <div className="text-[11px] text-[#c084fc] font-bold uppercase flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                  <span className="flex items-center gap-1.5">
+                    <Cpu className="w-3.5 h-3.5" />
+                    <span>Operating Systems</span>
+                  </span>
                   <span className="text-[10px] text-slate-400">Visitors</span>
                 </div>
                 {vercelAnalytics.osList?.length > 0 ? (
-                  <div className="space-y-1.5 text-xs">
-                    {vercelAnalytics.osList.slice(0, 6).map((os, idx) => (
-                      <div key={idx} className="flex items-center justify-between">
-                        <span className="truncate text-slate-300">
-                          {os.osName || 'Unknown OS'}
-                        </span>
-                        <span className="font-bold text-[#c084fc]">
-                          {os.visitors || os.pageviews || 0}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="space-y-2 text-xs">
+                    {vercelAnalytics.osList.slice(0, 5).map((os, idx) => {
+                      const val = os.visitors || os.pageviews || 0;
+                      const maxVal = Math.max(1, ...vercelAnalytics.osList.map((x) => x.visitors || x.pageviews || 0));
+                      const pct = Math.round((val / maxVal) * 100);
+                      return (
+                        <div key={idx} className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 min-w-0 pr-2">
+                              <OsIcon osName={os.osName} />
+                              <span className="truncate text-slate-300">
+                                {os.osName || 'Unknown OS'}
+                              </span>
+                            </div>
+                            <span className="font-bold text-[#c084fc] shrink-0">
+                              {val.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#c084fc]/40 to-[#c084fc] rounded-full transition-all duration-300"
+                              style={{ width: `${Math.max(6, pct)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div className="text-xs text-slate-500 italic">No OS data yet</div>
+                  <div className="text-xs text-slate-500 italic py-2">No OS data yet</div>
                 )}
               </div>
             </div>
           )}
         </CyberPanel>
 
-        {/* SECTION 2: Substack Scraper (automation-lab/substack-scraper) */}
+        {/* SECTION 2: Substack Publication */}
         <CyberPanel
-          label="Substack Telemetry • automation-lab/substack-scraper"
+          label="Substack Publication"
           accent="#67e8f9"
           className="p-4 sm:p-6"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
             <div>
-              <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
-                Published Substack Dispatches ({targets.substackUrl})
+              <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
+                Substack Publication Performance
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Powered by{' '}
-                <code className="text-[#67e8f9]">
-                  automation-lab/substack-scraper
-                </code>{' '}
-                merged with live Substack archive endpoints.
+                Newsletter subscriber growth, reads, and dispatch engagement metrics.
               </p>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -2577,7 +2778,7 @@ export default function Dashboard() {
                 type="button"
                 onClick={() => triggerActorRun('substack')}
                 disabled={runningActor !== null}
-                className="inline-flex items-center justify-center gap-1.5 border border-[#67e8f9]/60 bg-[#67e8f9]/10 hover:bg-[#67e8f9]/20 px-3.5 py-2 font-mono text-xs text-[#67e8f9] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
+                className="inline-flex items-center justify-center gap-1.5 border border-[#67e8f9]/60 bg-[#67e8f9]/10 hover:bg-[#67e8f9]/20 px-3.5 py-1.5 font-mono text-xs text-[#67e8f9] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
               >
                 <Play className="w-3.5 h-3.5" />
                 <span>
@@ -2681,8 +2882,9 @@ export default function Dashboard() {
         {/* SECTION 3: Instagram Scraper (apify/instagram-scraper) + Threads & Facebook Scrapers */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Instagram Apify Scraper Feed */}
+          {/* Instagram Reels */}
           <CyberPanel
-            label="Instagram Scraper • apify/instagram-scraper"
+            label="Instagram Reels • @moth1.siv"
             accent="#fda4af"
             className="p-4 sm:p-6 flex flex-col justify-between"
           >
@@ -2690,19 +2892,10 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
-                    Instagram Feed &amp; Reels (@{targets.instagramHandle})
+                    Instagram Reels (@{targets.instagramHandle})
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Showing{' '}
-                    <strong className="text-[#fda4af]">
-                      {visibleInstagramItems.length}
-                    </strong>{' '}
-                    of {instagramState.items.length} scraped posts{' '}
-                    {filterOnlyObservations && (
-                      <span>
-                        matching <code className="text-[#86efac]">{activeFilterTag}</code>
-                      </span>
-                    )}
+                    Verified video views, likes, and engagement metrics.
                   </p>
                 </div>
                 <button
@@ -2722,204 +2915,112 @@ export default function Dashboard() {
 
               {visibleInstagramItems.length === 0 ? (
                 <div className="py-6 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 mb-4 space-y-2">
-                  {instagramState.items.length > 0 && filterOnlyObservations ? (
-                    <>
-                      <div>
-                        Scraped{' '}
-                        <strong className="text-[#fda4af]">
-                          {instagramState.items.length}
-                        </strong>{' '}
-                        posts from @{targets.instagramHandle}, but none contain{' '}
-                        <code className="text-[#86efac]">{activeFilterTag}</code>{' '}
-                        yet.
+                  <div>
+                    No Instagram Reels loaded yet. Click &ldquo;Run Instagram Scraper&rdquo; above.
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="overflow-x-auto -mx-1 sm:mx-0">
+                    <table className="w-full text-left border-collapse min-w-[480px]">
+                      <thead>
+                        <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
+                          <th className="py-2 pr-3">Post / Reel</th>
+                          <th className="py-2 px-2">Type</th>
+                          <th className="py-2 px-2">Views</th>
+                          <th className="py-2 px-2">Likes</th>
+                          <th className="py-2 px-2">Comments</th>
+                          <th className="py-2 pl-2 text-right">Link</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/70 text-xs">
+                        {visibleInstagramItems.slice(0, 15).map((item) => (
+                          <tr key={item.id} className="hover:bg-slate-900/40">
+                            <td className="py-2.5 pr-3 max-w-[200px] truncate text-[#e2e8f0]">
+                              {item.caption}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[10px] text-[#fda4af]">
+                              {item.type}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono font-bold text-[#86efac]">
+                              {item.views.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#e2e8f0]">
+                              {item.likes.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
+                              {item.comments.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 pl-2 text-right">
+                              <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-[11px] text-[#fda4af] hover:underline"
+                              >
+                                ↗
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Reel Views Comparison Visualizer Bar */}
+                  {visibleInstagramItems.length >= 2 && (
+                    <div className="pt-3 border-t border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 font-bold uppercase">
+                        <span>Reel Views Comparison</span>
+                        <span className="text-[#fda4af]">
+                          {visibleInstagramItems.reduce((s, i) => s + (i.views || 0), 0).toLocaleString()} Total Views
+                        </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setFilterOnlyObservations(false)}
-                        className="border border-slate-700 bg-[#121316] px-3 py-1 text-[11px] text-[#fda4af] hover:border-[#fda4af] cursor-pointer"
-                      >
-                        Show all {instagramState.items.length} scraped IG posts
-                      </button>
-                    </>
-                  ) : (
-                    <div>
-                      No Apify dataset items loaded yet for{' '}
-                      <code className="text-[#fda4af]">
-                        @{targets.instagramHandle}
-                      </code>
-                      . Click &ldquo;Run Instagram Scraper&rdquo; above.
+                      <div className="space-y-2 font-mono text-xs">
+                        {visibleInstagramItems.slice(0, 2).map((item, idx) => {
+                          const maxViews = Math.max(1, ...visibleInstagramItems.map((i) => i.views || 0));
+                          const pct = Math.round(((item.views || 0) / maxViews) * 100);
+                          return (
+                            <div key={item.id} className="space-y-1">
+                              <div className="flex items-center justify-between text-[11px]">
+                                <span className="truncate max-w-[220px] text-slate-300">
+                                  {idx === 0 ? 'Issue #02: The Meat Grinder' : 'Issue #01: Watering Grass'}
+                                </span>
+                                <span className="font-bold text-[#fda4af]">
+                                  {item.views.toLocaleString()} views
+                                </span>
+                              </div>
+                              <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-gradient-to-r from-[#fda4af]/40 to-[#fda4af] rounded-full transition-all duration-300"
+                                  style={{ width: `${Math.max(6, pct)}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="overflow-x-auto mb-5 max-h-[280px] -mx-1 sm:mx-0">
-                  <table className="w-full text-left border-collapse min-w-[480px]">
-                    <thead>
-                      <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
-                        <th className="py-2 pr-3">Post / Reel</th>
-                        <th className="py-2 px-2">Type</th>
-                        <th className="py-2 px-2">Views</th>
-                        <th className="py-2 px-2">Likes</th>
-                        <th className="py-2 px-2">Comments</th>
-                        <th className="py-2 pl-2 text-right">Link</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/70 text-xs">
-                      {visibleInstagramItems.slice(0, 15).map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-900/40">
-                          <td className="py-2.5 pr-3 max-w-[200px] truncate text-[#e2e8f0]">
-                            {item.caption}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[10px] text-[#fda4af]">
-                            {item.type}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono font-bold text-[#86efac]">
-                            {item.views.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#e2e8f0]">
-                            {item.likes.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
-                            {item.comments.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 pl-2 text-right">
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-[11px] text-[#fda4af] hover:underline"
-                            >
-                              ↗
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
               )}
-
-              {/* Manual / Issue-Specific Instagram Reel Tracker */}
-              <div className="space-y-3 pt-2 border-t border-slate-800">
-                <div className="flex items-center justify-between font-mono text-[11px] text-slate-400 uppercase font-bold">
-                  <span>Issue Reel Ledger</span>
-                  <span className="text-[10px] text-[#fda4af] font-normal normal-case">
-                    Auto-synced from Apify dataset
-                  </span>
-                </div>
-                {ledger.instagram.reels.map((reel) => (
-                  <div
-                    key={reel.id}
-                    className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-2.5"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="font-bold text-xs sm:text-sm text-[#e2e8f0] flex items-center gap-2">
-                        <span>Issue #{reel.issueId}: {reel.title}</span>
-                        {reel.isScrapedSync && (
-                          <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] font-mono">
-                            Auto-Synced
-                          </span>
-                        )}
-                      </div>
-                      <select
-                        value={reel.status}
-                        onChange={(e) =>
-                          updateSocialReelMetric(
-                            'instagram',
-                            reel.id,
-                            'status',
-                            e.target.value
-                          )
-                        }
-                        className="bg-[#121316] border border-slate-700 px-2 py-0.5 font-mono text-[10px] text-[#fda4af] uppercase"
-                      >
-                        <option value="Ready to Post">Ready to Post</option>
-                        <option value="Published">Published</option>
-                        <option value="Boosted">Boosted</option>
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono">
-                      {[
-                        { key: 'views', label: 'VIEWS', color: '#fda4af' },
-                        { key: 'likes', label: 'LIKES', color: '#e2e8f0' },
-                        {
-                          key: 'comments',
-                          label: 'COMMENTS',
-                          color: '#e2e8f0',
-                        },
-                        { key: 'shares', label: 'SHARES', color: '#86efac' },
-                        { key: 'saves', label: 'SAVES', color: '#67e8f9' },
-                      ].map((field) => (
-                        <div key={field.key}>
-                          <label className="block text-[9px] text-slate-400 mb-0.5">
-                            {field.label}
-                          </label>
-                          {field.key === 'saves' ? (
-                            <input
-                              type="number"
-                              min="0"
-                              value={reel.saves ?? getSavedSaves('instagram', reel.issueId, 0)}
-                              onChange={(e) =>
-                                handleUpdateSaves(
-                                  'instagram',
-                                  reel.id,
-                                  reel.issueId,
-                                  e.target.value
-                                )
-                              }
-                              title="Click to edit saves"
-                              className="bg-transparent text-[#e6e4dd] border-b border-neutral-700 focus:border-amber-400 focus:outline-none w-12 text-center font-mono py-1 text-xs"
-                            />
-                          ) : (
-                            <input
-                              type="number"
-                              min="0"
-                              value={reel[field.key]}
-                              onChange={(e) =>
-                                updateSocialReelMetric(
-                                  'instagram',
-                                  reel.id,
-                                  field.key,
-                                  e.target.value
-                                )
-                              }
-                              style={{ color: field.color }}
-                              className="w-full bg-[#121316] border border-slate-800 px-2 py-1 text-xs font-bold"
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </CyberPanel>
 
           {/* Threads Scraper (automation-lab/threads-scraper) + Facebook Scraper (apify/facebook-posts-scraper) */}
           <div className="space-y-4 sm:space-y-6">
             <CyberPanel
-              label="Threads Scraper • automation-lab/threads-scraper"
+              label="Threads Discussions • @moth1.siv"
               accent="#c084fc"
               className="p-4 sm:p-6"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
-                    Threads Posts (@{targets.threadsHandle})
+                    Threads Discussions (@{targets.threadsHandle})
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Showing{' '}
-                    <strong className="text-[#c084fc]">
-                      {visibleThreadsItems.length}
-                    </strong>{' '}
-                    of {threadsState.items.length} scraped threads{' '}
-                    {filterOnlyObservations && (
-                      <span>
-                        matching <code className="text-[#86efac]">{activeFilterTag}</code>
-                      </span>
-                    )}
+                    Short-form dispatches, replies, and discussion metrics.
                   </p>
                 </div>
                 <button
@@ -3013,23 +3114,19 @@ export default function Dashboard() {
               )}
             </CyberPanel>
 
-            {/* Facebook Scraper (apify/facebook-posts-scraper) & Reels Panel */}
+            {/* Facebook Scraper & Reels Panel */}
             <CyberPanel
-              label="Facebook Scraper • apify/facebook-posts-scraper"
+              label="Facebook Reels"
               accent="#86efac"
               className="p-4 sm:p-6"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
-                    Facebook Posts &amp; Reels (observationsbymoth1)
+                    Facebook Reels (@observationsbymoth1)
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Showing{' '}
-                    <strong className="text-[#86efac]">
-                      {visibleFacebookItems.length}
-                    </strong>{' '}
-                    verified video reels (Dedicated Page: <code className="text-[#86efac]">observationsbymoth1</code>)
+                    Verified video views, reach, and interaction metrics.
                   </p>
                 </div>
                 <button
@@ -3056,7 +3153,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="overflow-x-auto mb-5 max-h-[240px] -mx-1 sm:mx-0">
+                <div className="overflow-x-auto mb-4 max-h-[240px] -mx-1 sm:mx-0">
                   <table className="w-full text-left border-collapse min-w-[480px]">
                     <thead>
                       <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
@@ -3103,107 +3200,48 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <div className="space-y-3 pt-2 border-t border-slate-800">
-                <div className="flex items-center justify-between font-mono text-[11px] text-slate-400 uppercase font-bold">
-                  <span>Issue Reel Ledger</span>
-                  <span className="text-[10px] text-[#86efac] font-normal normal-case">
-                    Auto-synced from Apify dataset
-                  </span>
-                </div>
-                {ledger.facebook.reels.map((reel) => (
-                  <div
-                    key={reel.id}
-                    className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-2.5"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="font-bold text-xs sm:text-sm text-[#e2e8f0] flex items-center gap-2">
-                        <span>Issue #{reel.issueId}: {reel.title}</span>
-                        {reel.isScrapedSync && (
-                          <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] font-mono">
-                            Auto-Synced
-                          </span>
-                        )}
-                      </div>
-                      <select
-                        value={reel.status}
-                        onChange={(e) =>
-                          updateSocialReelMetric(
-                            'facebook',
-                            reel.id,
-                            'status',
-                            e.target.value
-                          )
-                        }
-                        className="bg-[#121316] border border-slate-700 px-2 py-0.5 font-mono text-[10px] text-[#86efac] uppercase"
-                      >
-                        <option value="Ready to Post">Ready to Post</option>
-                        <option value="Published">Published</option>
-                        <option value="Boosted">Boosted</option>
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 sm:gap-2 font-mono">
-                      {[
-                        { key: 'views', label: 'VIEWS', color: '#86efac' },
-                        { key: 'likes', label: 'LIKES', color: '#e2e8f0' },
-                        {
-                          key: 'comments',
-                          label: 'COMMENTS',
-                          color: '#e2e8f0',
-                        },
-                        { key: 'shares', label: 'SHARES', color: '#67e8f9' },
-                        { key: 'saves', label: 'SAVES', color: '#67e8f9' },
-                      ].map((field) => (
-                        <div key={field.key}>
-                          <label className="block text-[9px] text-slate-400 mb-0.5">
-                            {field.label}
-                          </label>
-                          {field.key === 'saves' ? (
-                            <input
-                              type="number"
-                              min="0"
-                              value={reel.saves ?? getSavedSaves('facebook', reel.issueId, 0)}
-                              onChange={(e) =>
-                                handleUpdateSaves(
-                                  'facebook',
-                                  reel.id,
-                                  reel.issueId,
-                                  e.target.value
-                                )
-                              }
-                              title="Click to edit saves"
-                              className="bg-transparent text-[#e6e4dd] border-b border-neutral-700 focus:border-amber-400 focus:outline-none w-12 text-center font-mono py-1 text-xs"
-                            />
-                          ) : (
-                            <input
-                              type="number"
-                              min="0"
-                              value={reel[field.key]}
-                              onChange={(e) =>
-                                updateSocialReelMetric(
-                                  'facebook',
-                                  reel.id,
-                                  field.key,
-                                  e.target.value
-                                )
-                              }
-                              style={{ color: field.color }}
-                              className="w-full bg-[#121316] border border-slate-800 px-2 py-1 text-xs font-bold"
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </div>
+              {/* Reel Views Comparison Visualizer Bar */}
+              {visibleFacebookItems.length >= 2 && (
+                <div className="pt-3 border-t border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 font-bold uppercase">
+                    <span>Reel Views Comparison</span>
+                    <span className="text-[#86efac]">
+                      {visibleFacebookItems.reduce((s, i) => s + (i.views || 0), 0).toLocaleString()} Total Views
+                    </span>
                   </div>
-                ))}
-              </div>
+                  <div className="space-y-2 font-mono text-xs">
+                    {visibleFacebookItems.slice(0, 2).map((item, idx) => {
+                      const maxViews = Math.max(1, ...visibleFacebookItems.map((i) => i.views || 0));
+                      const pct = Math.round(((item.views || 0) / maxViews) * 100);
+                      return (
+                        <div key={item.id} className="space-y-1">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="truncate max-w-[220px] text-slate-300">
+                              {idx === 0 ? 'Issue #02: The Meat Grinder' : 'Issue #01: Watering Grass'}
+                            </span>
+                            <span className="font-bold text-[#86efac]">
+                              {item.views.toLocaleString()} views
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#86efac]/40 to-[#86efac] rounded-full transition-all duration-300"
+                              style={{ width: `${Math.max(6, pct)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </CyberPanel>
           </div>
         </div>
 
         {/* SECTION 4: Story to Essay Conversion Funnel (100% Automated Telemetry) */}
         <CyberPanel
-          label="Story to Essay Conversion Funnel • 100% Automated Telemetry"
+          label="Story Funnel • Automated Telemetry"
           accent="#f472b6"
           className="p-4 sm:p-6"
         >
@@ -3211,7 +3249,7 @@ export default function Dashboard() {
             <div>
               <div className="flex flex-wrap items-center gap-2.5 mb-1">
                 <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
-                  Story Conversion Funnel by Platform
+                  Story to Essay Conversion Funnel
                 </h2>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#86efac] animate-pulse" />
@@ -3219,7 +3257,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Bypasses Vercel Web Analytics Plus paywall with direct client-side UTM capture (<code className="text-[#f472b6]">/api/track-story-click</code>), scroll depth telemetry (75%+ threshold), and Substack form submissions. Zero manual inputs.
+                Inbound traffic from Instagram &amp; Facebook stories, 75%+ scroll retention, and Substack subscriptions.
               </p>
             </div>
 
