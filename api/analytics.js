@@ -238,43 +238,46 @@ export function normalizeThreadsItem(item, idx = 0) {
 }
 
 export function normalizeFacebookItem(item, idx = 0) {
-  const text =
-    item.text ||
-    item.message ||
-    item.caption ||
-    item.title ||
-    `Facebook Post #${idx + 1}`;
+  const caption = item.caption || item.text || item.message || item.postText || item.content || item.title || '';
+  const text = caption || `Facebook Post #${idx + 1}`;
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
   const url =
     item.url ||
     item.postUrl ||
     item.topLevelUrl ||
     item.facebookUrl ||
-    'https://www.facebook.com/';
+    'https://www.facebook.com/observationsbymoth1';
+
+  // Fallback parser: If views or playCount is returned, map that to views.
+  const views =
+    Number(
+      item.views ??
+        item.playCount ??
+        item.videoViewCount ??
+        item.viewsCount ??
+        item.video_play_count ??
+        item.video_view_count ??
+        item.videoViews ??
+        0
+    ) || 0;
+
+  // Fallback parser: If only reactions/likes exist, map likesCount/reactionCount to likes.
   const likes =
     Number(
       item.likes ??
         item.likesCount ??
         item.reactionsCount ??
         item.reactionCount ??
+        item.reactions ??
         item.likes_count ??
+        item.likeCount ??
         0
     ) || 0;
+
   const comments =
     Number(item.comments ?? item.commentsCount ?? item.commentCount ?? item.comments_count ?? 0) || 0;
   const shares =
     Number(item.shares ?? item.sharesCount ?? item.shareCount ?? item.shares_count ?? 0) || 0;
-  const views =
-    Number(
-      item.viewsCount ??
-        item.videoViewCount ??
-        item.playCount ??
-        item.views ??
-        item.video_play_count ??
-        item.video_view_count ??
-        item.videoViews ??
-        0
-    ) || 0;
   const followers =
     Number(
       item.pageFollowersCount ??
@@ -292,16 +295,19 @@ export function normalizeFacebookItem(item, idx = 0) {
   return {
     id: String(item.postId || item.id || `fb-${idx}`),
     text,
+    caption: text,
     hashtags,
-    isObservationsPost: isObservationsContent(text, hashtags),
+    // Context: The page https://www.facebook.com/observationsbymoth1 is dedicated solely to this publication.
+    // Remove strict #observations filter entirely for Facebook.
+    isObservationsPost: true,
     url,
-    publishedAt: item.time || item.timestamp || item.date || null,
+    publishedAt: item.time || item.timestamp || item.date || item.createdTime || item.publishedTime || null,
     views,
     likes,
     comments,
     shares,
     followers,
-    pageName: item.pageName || item.user?.name || '',
+    pageName: item.pageName || item.user?.name || 'Observations by Moth1',
   };
 }
 
@@ -428,12 +434,14 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       }
     };
 
-    const [paths, referrers, countries, devices, osList] = await Promise.all([
+    const [paths, referrers, countries, devices, osList, utmSources, utmMediums] = await Promise.all([
       fetchDimension('requestPath'),
       fetchDimension('referrerHostname'),
       fetchDimension('country'),
       fetchDimension('deviceType'),
       fetchDimension('osName'),
+      fetchDimension('utmSource'),
+      fetchDimension('utmMedium'),
     ]);
 
     const totalPageviews = paths.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0);
@@ -449,6 +457,8 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       countries,
       devices,
       osList,
+      utmSources,
+      utmMediums,
     };
   } catch (err) {
     return { connected: false, error: err.message };

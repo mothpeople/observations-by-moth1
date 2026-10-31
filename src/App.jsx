@@ -45,6 +45,36 @@ function PublicationLayout({ dispatch = null, children }) {
     }
   }, [dispatch]);
 
+  // Automated Scroll Depth Telemetry (tracks 75%+ scroll completion)
+  useEffect(() => {
+    if (!dispatch || typeof window === 'undefined') return;
+    let tracked75 = false;
+
+    const handleScroll = () => {
+      if (tracked75) return;
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      const docHeight = (document.documentElement.scrollHeight || 0) - window.innerHeight;
+      if (docHeight > 0) {
+        const progress = scrollY / docHeight;
+        if (progress >= 0.75) {
+          tracked75 = true;
+          recordSiteEvent('scroll_depth', {
+            depth: 75,
+            path: `/${dispatch.slug}`,
+            issueId: dispatch.id,
+          });
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Run once on mount in case user restores previous scroll position
+    handleScroll();
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [dispatch]);
+
   return (
     <div className="relative min-h-screen bg-[#0c0d10] text-[#e6e4dd] selection:bg-[#dc2626] selection:text-[#e6e4dd]">
       {/* Global SVG Filters: Washi Rice Paper Grain (opacity 0.04) & Sumi-e Brush Edge Displacement */}

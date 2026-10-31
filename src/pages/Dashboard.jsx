@@ -322,43 +322,46 @@ function normalizeThreadsItem(item, idx = 0) {
 }
 
 function normalizeFacebookItem(item, idx = 0) {
-  const text =
-    item.text ||
-    item.message ||
-    item.caption ||
-    item.title ||
-    `Facebook Post #${idx + 1}`;
+  const caption = item.caption || item.text || item.message || item.postText || item.content || item.title || '';
+  const text = caption || `Facebook Post #${idx + 1}`;
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
   const url =
     item.url ||
     item.postUrl ||
     item.topLevelUrl ||
     item.facebookUrl ||
-    'https://www.facebook.com/';
+    'https://www.facebook.com/observationsbymoth1';
+
+  // Fallback parser: If views or playCount is returned, map that to views.
+  const views =
+    Number(
+      item.views ??
+        item.playCount ??
+        item.videoViewCount ??
+        item.viewsCount ??
+        item.video_play_count ??
+        item.video_view_count ??
+        item.videoViews ??
+        0
+    ) || 0;
+
+  // Fallback parser: If only reactions/likes exist, map likesCount/reactionCount to likes.
   const likes =
     Number(
       item.likes ??
         item.likesCount ??
         item.reactionsCount ??
         item.reactionCount ??
+        item.reactions ??
         item.likes_count ??
+        item.likeCount ??
         0
     ) || 0;
+
   const comments =
     Number(item.comments ?? item.commentsCount ?? item.commentCount ?? item.comments_count ?? 0) || 0;
   const shares =
     Number(item.shares ?? item.sharesCount ?? item.shareCount ?? item.shares_count ?? 0) || 0;
-  const views =
-    Number(
-      item.viewsCount ??
-        item.videoViewCount ??
-        item.playCount ??
-        item.views ??
-        item.video_play_count ??
-        item.video_view_count ??
-        item.videoViews ??
-        0
-    ) || 0;
   const followers =
     Number(
       item.pageFollowersCount ??
@@ -376,15 +379,18 @@ function normalizeFacebookItem(item, idx = 0) {
   return {
     id: String(item.postId || item.id || `fb-${idx}`),
     text,
+    caption: text,
     hashtags,
+    // Dedicated page: https://www.facebook.com/observationsbymoth1 is 100% Observations by Moth1
+    isObservationsPost: true,
     url,
-    publishedAt: item.time || item.timestamp || item.date || null,
+    publishedAt: item.time || item.timestamp || item.date || item.createdTime || item.publishedTime || null,
     views,
     likes,
     comments,
     shares,
     followers,
-    pageName: item.pageName || item.user?.name || '',
+    pageName: item.pageName || item.user?.name || 'Observations by Moth1',
   };
 }
 
@@ -730,35 +736,103 @@ export default function Dashboard() {
           // 3. Auto-populate Facebook Issue Reels from scraped items
           const fbCandidates = fbItems.length > 0 ? fbItems : (directFacebook?.items || []);
           if (fbCandidates.length > 0 && Array.isArray(next.facebook?.reels)) {
+            // Sort FB candidates chronologically by published date/time (earliest -> newest)
+            const parseFbTime = (item) => {
+              const t = item.publishedAt || item.time || item.timestamp || item.date || item.createdTime || item.publishedTime;
+              if (!t) return 0;
+              const ms = new Date(t).getTime();
+              return Number.isFinite(ms) ? ms : 0;
+            };
+
+            const sortedFbItems = [...fbCandidates].sort(
+              (a, b) => parseFbTime(a) - parseFbTime(b)
+            );
+
             const updatedFbReels = next.facebook.reels.map((reel) => {
-              const matchedItems = fbCandidates.filter(
-                (item) => matchItemToIssueId(item) === reel.issueId
-              );
-              // If there's 1 FB post scraped and only 1 active issue posted (Issue 01), fallback-map to Issue 01
-              const effectiveMatches =
-                matchedItems.length > 0
-                  ? matchedItems
-                  : fbCandidates.length === 1 && reel.issueId === '01'
-                    ? fbCandidates
-                    : [];
+              // Priority 1: Case-insensitive keyword check in caption / text
+              const matchedItems = fbCandidates.filter((item) => {
+                const text = `${item.caption || ''} ${item.text || ''} ${item.title || ''} ${item.url || ''}`.toLowerCase();
+                const tags = Array.isArray(item.hashtags)
+                  ? item.hashtags.map((h) => String(h).toLowerCase()).join(' ')
+                  : '';
+                const haystack = `${text} ${tags}`;
+
+                if (reel.issueId === '02') {
+                  return (
+                    haystack.includes('meat grinder') ||
+                    haystack.includes('the-meat-grinder') ||
+                    haystack.includes('issue-02') ||
+                    haystack.includes('issue 02') ||
+                    haystack.includes('issue 2') ||
+                    haystack.includes('issue #02') ||
+                    haystack.includes('billionaires panic') ||
+                    haystack.includes('venn diagram')
+                  );
+                }
+                if (reel.issueId === '01') {
+                  return (
+                    haystack.includes('watering grass') ||
+                    haystack.includes('watering-grass') ||
+                    haystack.includes('thunderstorm') ||
+                    haystack.includes('issue-01') ||
+                    haystack.includes('issue 01') ||
+                    haystack.includes('issue 1') ||
+                    haystack.includes('issue #01') ||
+                    haystack.includes('bread and circus') ||
+                    haystack.includes('sidequest')
+                  );
+                }
+                return false;
+              });
+
+              // Priority 2: Direct chronological mapping
+              // Chronological item 0 (earliest) -> Issue #01, item 1 (subsequent) -> Issue #02
+              let effectiveMatches = matchedItems;
+              if (effectiveMatches.length === 0) {
+                if (reel.issueId === '01' && sortedFbItems.length >= 1) {
+                  effectiveMatches = [sortedFbItems[0]];
+                } else if (reel.issueId === '02' && sortedFbItems.length >= 2) {
+                  effectiveMatches = [sortedFbItems[1]];
+                }
+              }
 
               if (effectiveMatches.length === 0) return reel;
 
               const maxViews = Math.max(
                 Number(reel.views) || 0,
-                ...effectiveMatches.map((m) => m.views || 0)
+                ...effectiveMatches.map(
+                  (m) =>
+                    Number(
+                      m.views ??
+                        m.playCount ??
+                        m.videoViewCount ??
+                        m.viewsCount ??
+                        m.video_play_count ??
+                        0
+                    ) || 0
+                )
               );
               const maxLikes = Math.max(
                 Number(reel.likes) || 0,
-                ...effectiveMatches.map((m) => m.likes || 0)
+                ...effectiveMatches.map(
+                  (m) =>
+                    Number(
+                      m.likes ??
+                        m.likesCount ??
+                        m.reactionsCount ??
+                        m.reactionCount ??
+                        m.reactions ??
+                        0
+                    ) || 0
+                )
               );
               const maxComments = Math.max(
                 Number(reel.comments) || 0,
-                ...effectiveMatches.map((m) => m.comments || 0)
+                ...effectiveMatches.map((m) => Number(m.comments ?? m.commentsCount ?? 0) || 0)
               );
               const maxShares = Math.max(
                 Number(reel.shares) || 0,
-                ...effectiveMatches.map((m) => m.shares || 0)
+                ...effectiveMatches.map((m) => Number(m.shares ?? m.sharesCount ?? 0) || 0)
               );
 
               if (
@@ -1039,45 +1113,6 @@ export default function Dashboard() {
     setEditingPlatform(null);
   };
 
-  // Quick-edit Story Funnel Metrics per dispatch (Instagram & Facebook)
-  const updateDispatchPlatformMetric = (dispatchId, platform, field, value) => {
-    const num = Math.max(0, Number(value) || 0);
-    const updated = {
-      ...ledger,
-      storyFunnel: {
-        ...ledger.storyFunnel,
-        dispatches: (ledger.storyFunnel?.dispatches || []).map((d) => {
-          if (d.id === dispatchId || d.issueId === dispatchId) {
-            const currentPlatformData = d[platform] || { impressions: 0, clicks: 0, subscribers: 0 };
-            return {
-              ...d,
-              [platform]: {
-                ...currentPlatformData,
-                [field]: num,
-              },
-            };
-          }
-          return d;
-        }),
-      },
-    };
-    setLedger(updated);
-    saveChannelLedger(updated);
-  };
-
-  const updateGlobalStoryImpressions = (value) => {
-    const num = Math.max(0, Number(value) || 0);
-    const updated = {
-      ...ledger,
-      storyFunnel: {
-        ...ledger.storyFunnel,
-        defaultImpressions: num,
-      },
-    };
-    setLedger(updated);
-    saveChannelLedger(updated);
-  };
-
   const copyUtmLink = (slug, issueId, platform = 'instagram') => {
     const origin =
       typeof window !== 'undefined' &&
@@ -1110,11 +1145,9 @@ export default function Dashboard() {
       )
     : threadsState.items;
 
-  const visibleFacebookItems = filterOnlyObservations
-    ? facebookState.items.filter((item) =>
-        matchesObservationsFilter(item, activeFilterTag)
-      )
-    : facebookState.items;
+  // Remove the strict #observations hashtag filter entirely for Facebook scraper.
+  // Context: The page https://www.facebook.com/observationsbymoth1 is dedicated solely to this publication.
+  const visibleFacebookItems = facebookState.items;
 
   // Computed Aggregates
   const totalWebViews =
@@ -1136,70 +1169,83 @@ export default function Dashboard() {
     0
   );
 
-  // Story Conversion Funnel Aggregates (Instagram & Facebook Breakdown)
+  // Story Conversion Funnel Aggregates (100% Automated Telemetry)
   const storyDispatches = ledger.storyFunnel?.dispatches || [];
-  const defaultImpressions = ledger.storyFunnel?.defaultImpressions ?? 0;
 
-  // Instagram Story Aggregates
-  const igStoryImpressions = storyDispatches.reduce(
-    (sum, d) => sum + (Number(d.instagram?.impressions ?? d.storyImpressions) || 0),
-    0
-  );
-  const igStoryClicks = storyDispatches.reduce(
-    (sum, d) => sum + (Number(d.instagram?.clicks ?? d.storyClicks) || 0),
+  // Vercel story visits breakdown (by UTM query parameter or referrer)
+  const vercelIgVisitors =
+    Number(
+      vercelAnalytics?.utmSources?.find((s) => s.utmSource?.toLowerCase() === 'instagram')?.visitors ??
+      vercelAnalytics?.referrers?.filter((r) => r.referrerHostname?.toLowerCase().includes('instagram'))
+        .reduce((sum, r) => sum + (Number(r.visitors) || 0), 0) ??
+      0
+    ) || 0;
+
+  const vercelFbVisitors =
+    Number(
+      vercelAnalytics?.utmSources?.find((s) => s.utmSource?.toLowerCase() === 'facebook')?.visitors ??
+      vercelAnalytics?.referrers?.filter((r) => r.referrerHostname?.toLowerCase().includes('facebook'))
+        .reduce((sum, r) => sum + (Number(r.visitors) || 0), 0) ??
+      0
+    ) || 0;
+
+  // Instagram Story Aggregates (Automated Telemetry)
+  const igStoryEntrances =
+    storyDispatches.reduce(
+      (sum, d) => sum + (Number(d.instagram?.entrances ?? d.instagram?.clicks ?? d.storyClicks) || 0),
+      0
+    ) || vercelIgVisitors;
+  const igStoryScroll75 = storyDispatches.reduce(
+    (sum, d) => sum + (Number(d.instagram?.scroll75) || 0),
     0
   );
   const igStorySubscribers = storyDispatches.reduce(
     (sum, d) => sum + (Number(d.instagram?.subscribers ?? d.storySubscribers) || 0),
     0
   );
-  const igStoryCtrPct =
-    igStoryImpressions > 0
-      ? ((igStoryClicks / igStoryImpressions) * 100).toFixed(1)
-      : '0.0';
+  const igStoryRetentionPct =
+    igStoryEntrances > 0
+      ? Math.min(100, (igStoryScroll75 / igStoryEntrances) * 100).toFixed(1)
+      : (igStoryScroll75 > 0 ? '100.0' : '0.0');
   const igStorySubConvPct =
-    igStoryClicks > 0
-      ? ((igStorySubscribers / igStoryClicks) * 100).toFixed(1)
+    igStoryEntrances > 0
+      ? ((igStorySubscribers / igStoryEntrances) * 100).toFixed(1)
       : '0.0';
 
-  // Facebook Story Aggregates
-  const fbStoryImpressions = storyDispatches.reduce(
-    (sum, d) => sum + (Number(d.facebook?.impressions) || 0),
-    0
-  );
-  const fbStoryClicks = storyDispatches.reduce(
-    (sum, d) => sum + (Number(d.facebook?.clicks) || 0),
+  // Facebook Story Aggregates (Automated Telemetry)
+  const fbStoryEntrances =
+    storyDispatches.reduce(
+      (sum, d) => sum + (Number(d.facebook?.entrances ?? d.facebook?.clicks) || 0),
+      0
+    ) || vercelFbVisitors;
+  const fbStoryScroll75 = storyDispatches.reduce(
+    (sum, d) => sum + (Number(d.facebook?.scroll75) || 0),
     0
   );
   const fbStorySubscribers = storyDispatches.reduce(
     (sum, d) => sum + (Number(d.facebook?.subscribers) || 0),
     0
   );
-  const fbStoryCtrPct =
-    fbStoryImpressions > 0
-      ? ((fbStoryClicks / fbStoryImpressions) * 100).toFixed(1)
-      : '0.0';
+  const fbStoryRetentionPct =
+    fbStoryEntrances > 0
+      ? Math.min(100, (fbStoryScroll75 / fbStoryEntrances) * 100).toFixed(1)
+      : (fbStoryScroll75 > 0 ? '100.0' : '0.0');
   const fbStorySubConvPct =
-    fbStoryClicks > 0
-      ? ((fbStorySubscribers / fbStoryClicks) * 100).toFixed(1)
+    fbStoryEntrances > 0
+      ? ((fbStorySubscribers / fbStoryEntrances) * 100).toFixed(1)
       : '0.0';
 
   // Combined Totals
-  const totalStoryImpressions =
-    igStoryImpressions + fbStoryImpressions || defaultImpressions;
-  const totalStoryClicks = igStoryClicks + fbStoryClicks;
+  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances;
+  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75;
   const totalStorySubscribers = igStorySubscribers + fbStorySubscribers;
-
-  // Story CTR: (Clicks / Impressions * 100)
-  const storyCtrPct =
-    totalStoryImpressions > 0
-      ? ((totalStoryClicks / totalStoryImpressions) * 100).toFixed(1)
-      : '0.0';
-
-  // Conversion to Substack Subscriber (% of story clickers who hit submit)
-  const storySubConversionPct =
-    totalStoryClicks > 0
-      ? ((totalStorySubscribers / totalStoryClicks) * 100).toFixed(1)
+  const totalStoryRetentionPct =
+    totalStoryEntrances > 0
+      ? Math.min(100, (totalStoryScroll75 / totalStoryEntrances) * 100).toFixed(1)
+      : (totalStoryScroll75 > 0 ? '100.0' : '0.0');
+  const totalStoryConvPct =
+    totalStoryEntrances > 0
+      ? ((totalStorySubscribers / totalStoryEntrances) * 100).toFixed(1)
       : '0.0';
 
   // Instagram: combine filtered scraped Apify items + manual Reel ledger
@@ -1923,7 +1969,7 @@ export default function Dashboard() {
               </div>
               <div className="text-xs text-slate-400 mt-0.5">
                 Views • {totalFbEngagement.toLocaleString()} Engagements (
-                {visibleFacebookItems.length} {activeFilterTag})
+                {visibleFacebookItems.length} Posts)
               </div>
             </div>
 
@@ -2684,12 +2730,7 @@ export default function Dashboard() {
                     <strong className="text-[#86efac]">
                       {visibleFacebookItems.length}
                     </strong>{' '}
-                    of {facebookState.items.length} scraped FB posts{' '}
-                    {filterOnlyObservations && (
-                      <span>
-                        matching <code className="text-[#86efac]">{activeFilterTag}</code>
-                      </span>
-                    )}
+                    scraped FB posts (Dedicated Page: <code className="text-[#86efac]">observationsbymoth1</code>)
                   </p>
                 </div>
                 <button
@@ -2709,32 +2750,11 @@ export default function Dashboard() {
 
               {visibleFacebookItems.length === 0 ? (
                 <div className="py-5 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 mb-4 space-y-2">
-                  {facebookState.items.length > 0 && filterOnlyObservations ? (
-                    <>
-                      <div>
-                        Scraped{' '}
-                        <strong className="text-[#86efac]">
-                          {facebookState.items.length}
-                        </strong>{' '}
-                        posts from Facebook, but none contain{' '}
-                        <code className="text-[#86efac]">{activeFilterTag}</code>{' '}
-                        yet.
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setFilterOnlyObservations(false)}
-                        className="border border-slate-700 bg-[#121316] px-3 py-1 text-[11px] text-[#86efac] hover:border-[#86efac] cursor-pointer"
-                      >
-                        Show all {facebookState.items.length} scraped FB posts
-                      </button>
-                    </>
-                  ) : (
-                    <div>
-                      No Apify dataset items loaded yet for{' '}
-                      <code className="text-[#86efac]">observationsbymoth1</code>.
-                      Click &ldquo;Run Facebook Scraper&rdquo; above.
-                    </div>
-                  )}
+                  <div>
+                    No Apify dataset items loaded yet for{' '}
+                    <code className="text-[#86efac]">observationsbymoth1</code>.
+                    Click &ldquo;Run Facebook Scraper&rdquo; above.
+                  </div>
                 </div>
               ) : (
                 <div className="overflow-x-auto mb-5 max-h-[240px] -mx-1 sm:mx-0">
@@ -2868,53 +2888,73 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* SECTION 4: Story to Essay Conversion Funnel (Instagram & Facebook Breakdown) */}
+        {/* SECTION 4: Story to Essay Conversion Funnel (100% Automated Telemetry) */}
         <CyberPanel
-          label="Story to Essay Conversion Funnel • Instagram & Facebook"
+          label="Story to Essay Conversion Funnel • 100% Automated Telemetry"
           accent="#f472b6"
           className="p-4 sm:p-6"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
             <div>
-              <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0] flex items-center gap-2">
-                <span>Story Conversion Funnel by Platform</span>
-                <span className="px-2 py-0.5 border border-[#f472b6]/40 bg-[#f472b6]/10 text-[#f472b6] text-[10px] font-mono uppercase font-bold">
-                  IG &amp; FB Breakdown
+              <div className="flex flex-wrap items-center gap-2.5 mb-1">
+                <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
+                  Story Conversion Funnel by Platform
+                </h2>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#86efac] animate-pulse" />
+                  100% AUTOMATED TELEMETRY
                 </span>
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Separate counters for Instagram (<code className="text-[#fda4af]">utm_source=instagram</code>) and Facebook (<code className="text-[#60a5fa]">utm_source=facebook</code>) with <code className="text-[#f472b6]">utm_medium=story</code>.
-                Log your final 24h Story views below to compute verified CTR &amp; Substack subscriber conversions.
+              </div>
+              <p className="text-xs text-slate-400">
+                Driven by live Vercel Web Analytics UTM attribution (<code className="text-[#f472b6]">utm_medium=story</code>, <code className="text-[#fda4af]">utm_source=instagram</code>, <code className="text-[#60a5fa]">utm_source=facebook</code>), scroll depth telemetry (75%+ threshold), and Substack form submissions. Zero manual inputs.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-mono shrink-0">
               <span className="px-2 py-1 bg-[#fda4af]/10 border border-[#fda4af]/30 text-[#fda4af]">
-                IG CTR: <strong>{igStoryCtrPct}%</strong> ({igStoryClicks}c / {igStorySubscribers}s)
+                IG: <strong>{igStoryEntrances}</strong> visits • <strong>{igStoryRetentionPct}%</strong> 75% read • <strong>{igStorySubscribers}</strong> subs
               </span>
               <span className="px-2 py-1 bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa]">
-                FB CTR: <strong>{fbStoryCtrPct}%</strong> ({fbStoryClicks}c / {fbStorySubscribers}s)
+                FB: <strong>{fbStoryEntrances}</strong> visits • <strong>{fbStoryRetentionPct}%</strong> 75% read • <strong>{fbStorySubscribers}</strong> subs
               </span>
             </div>
           </div>
 
           <div className="space-y-4 sm:space-y-6">
             {storyDispatches.map((dispatch) => {
-              const rawIgImp = Number(dispatch.instagram?.impressions ?? dispatch.storyImpressions);
-              const igImpressions = Number.isFinite(rawIgImp) ? rawIgImp : 0;
-              const igClicks = Number(dispatch.instagram?.clicks ?? dispatch.storyClicks) || 0;
-              const igSubs = Number(dispatch.instagram?.subscribers ?? dispatch.storySubscribers) || 0;
-              const igCtr = igImpressions > 0 ? ((igClicks / igImpressions) * 100).toFixed(1) : '0.0';
-              const igConv = igClicks > 0 ? ((igSubs / igClicks) * 100).toFixed(1) : '0.0';
-
-              const rawFbImp = Number(dispatch.facebook?.impressions);
-              const fbImpressions = Number.isFinite(rawFbImp) ? rawFbImp : 0;
-              const fbClicks = Number(dispatch.facebook?.clicks) || 0;
-              const fbSubs = Number(dispatch.facebook?.subscribers) || 0;
-              const fbCtr = fbImpressions > 0 ? ((fbClicks / fbImpressions) * 100).toFixed(1) : '0.0';
-              const fbConv = fbClicks > 0 ? ((fbSubs / fbClicks) * 100).toFixed(1) : '0.0';
-
               const issueTag = dispatch.issueId || dispatch.id;
+
+              // Metric calculations for Instagram
+              const igEntrances = Math.max(
+                Number(dispatch.instagram?.entrances ?? dispatch.instagram?.clicks ?? 0),
+                vercelAnalytics ? Math.round(vercelIgVisitors / (storyDispatches.length || 1)) : 0
+              );
+              const igScroll75 = Number(dispatch.instagram?.scroll75 ?? 0);
+              const igSubs = Number(dispatch.instagram?.subscribers ?? 0);
+              const igRetentionPct =
+                igEntrances > 0
+                  ? Math.min(100, (igScroll75 / igEntrances) * 100).toFixed(1)
+                  : (igScroll75 > 0 ? '100.0' : '0.0');
+              const igConvPct =
+                igEntrances > 0
+                  ? ((igSubs / igEntrances) * 100).toFixed(1)
+                  : '0.0';
+
+              // Metric calculations for Facebook
+              const fbEntrances = Math.max(
+                Number(dispatch.facebook?.entrances ?? dispatch.facebook?.clicks ?? 0),
+                vercelAnalytics ? Math.round(vercelFbVisitors / (storyDispatches.length || 1)) : 0
+              );
+              const fbScroll75 = Number(dispatch.facebook?.scroll75 ?? 0);
+              const fbSubs = Number(dispatch.facebook?.subscribers ?? 0);
+              const fbRetentionPct =
+                fbEntrances > 0
+                  ? Math.min(100, (fbScroll75 / fbEntrances) * 100).toFixed(1)
+                  : (fbScroll75 > 0 ? '100.0' : '0.0');
+              const fbConvPct =
+                fbEntrances > 0
+                  ? ((fbSubs / fbEntrances) * 100).toFixed(1)
+                  : '0.0';
 
               return (
                 <div
@@ -2964,66 +3004,45 @@ export default function Dashboard() {
                         </button>
                       </div>
 
-                      {/* 3 Quick-Edit Inputs for Instagram */}
-                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 font-mono text-xs">
-                        <div>
-                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
-                            24H VIEWS
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={igImpressions}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'instagram',
-                                'impressions',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#fda4af] text-center sm:text-left"
-                          />
+                      {/* 3 Automated Telemetry Metrics for Instagram */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Story Entrances
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#fda4af] tabular-nums mt-1">
+                            {igEntrances.toLocaleString()}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            utm_source=instagram
+                          </div>
                         </div>
 
-                        <div>
-                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
-                            CLICKS
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={igClicks}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'instagram',
-                                'clicks',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#e2e8f0] text-center sm:text-left"
-                          />
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Scroll Retention
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#fbbf24] tabular-nums mt-1">
+                            {igRetentionPct}%
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            {igScroll75} read past 75% depth
+                          </div>
                         </div>
 
-                        <div>
-                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
-                            SUBS
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={igSubs}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'instagram',
-                                'subscribers',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#86efac] text-center sm:text-left"
-                          />
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Subscriber Conv.
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#86efac] tabular-nums mt-1">
+                            {igSubs}{' '}
+                            <span className="text-xs font-normal text-slate-400">
+                              ({igConvPct}%)
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            Substack subscriptions
+                          </div>
                         </div>
                       </div>
 
@@ -3031,23 +3050,23 @@ export default function Dashboard() {
                       <div className="space-y-1 pt-1">
                         <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono">
                           <span className="text-slate-400">
-                            CTR: <strong className="text-[#fda4af]">{igCtr}%</strong>
+                            75% Retention: <strong className="text-[#fbbf24]">{igRetentionPct}%</strong>
                           </span>
                           <span className="text-slate-400">
-                            Substack Conv: <strong className="text-[#86efac]">{igConv}%</strong>
+                            Substack Conv: <strong className="text-[#86efac]">{igConvPct}%</strong>
                           </span>
                         </div>
                         <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
                           <div
-                            className="h-full bg-[#fda4af] transition-all duration-500"
+                            className="h-full bg-[#fbbf24] transition-all duration-500"
                             style={{
-                              width: `${Math.min(100, Math.max(0, Number(igCtr) || 0))}%`,
+                              width: `${Math.min(100, Math.max(0, Number(igRetentionPct) || 0))}%`,
                             }}
                           />
                           <div
                             className="h-full bg-[#86efac] transition-all duration-500"
                             style={{
-                              width: `${Math.min(100, Math.max(0, (Number(igConv) * Number(igCtr)) / 100 || 0))}%`,
+                              width: `${Math.min(100, Math.max(0, Number(igConvPct) || 0))}%`,
                             }}
                           />
                         </div>
@@ -3084,66 +3103,45 @@ export default function Dashboard() {
                         </button>
                       </div>
 
-                      {/* 3 Quick-Edit Inputs for Facebook */}
-                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 font-mono text-xs">
-                        <div>
-                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
-                            24H VIEWS
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={fbImpressions}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'facebook',
-                                'impressions',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#60a5fa] text-center sm:text-left"
-                          />
+                      {/* 3 Automated Telemetry Metrics for Facebook */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Story Entrances
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#60a5fa] tabular-nums mt-1">
+                            {fbEntrances.toLocaleString()}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            utm_source=facebook
+                          </div>
                         </div>
 
-                        <div>
-                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
-                            CLICKS
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={fbClicks}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'facebook',
-                                'clicks',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#e2e8f0] text-center sm:text-left"
-                          />
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Scroll Retention
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#fbbf24] tabular-nums mt-1">
+                            {fbRetentionPct}%
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            {fbScroll75} read past 75% depth
+                          </div>
                         </div>
 
-                        <div>
-                          <label className="block text-[9px] sm:text-[10px] text-slate-400 mb-0.5 truncate text-center sm:text-left">
-                            SUBS
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={fbSubs}
-                            onChange={(e) =>
-                              updateDispatchPlatformMetric(
-                                dispatch.id,
-                                'facebook',
-                                'subscribers',
-                                e.target.value
-                              )
-                            }
-                            className="w-full bg-[#0b0d10] border border-slate-800 px-1 sm:px-2 py-1 text-xs font-bold text-[#86efac] text-center sm:text-left"
-                          />
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Subscriber Conv.
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#86efac] tabular-nums mt-1">
+                            {fbSubs}{' '}
+                            <span className="text-xs font-normal text-slate-400">
+                              ({fbConvPct}%)
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            Substack subscriptions
+                          </div>
                         </div>
                       </div>
 
@@ -3151,23 +3149,23 @@ export default function Dashboard() {
                       <div className="space-y-1 pt-1">
                         <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono">
                           <span className="text-slate-400">
-                            CTR: <strong className="text-[#60a5fa]">{fbCtr}%</strong>
+                            75% Retention: <strong className="text-[#fbbf24]">{fbRetentionPct}%</strong>
                           </span>
                           <span className="text-slate-400">
-                            Substack Conv: <strong className="text-[#86efac]">{fbConv}%</strong>
+                            Substack Conv: <strong className="text-[#86efac]">{fbConvPct}%</strong>
                           </span>
                         </div>
                         <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
                           <div
-                            className="h-full bg-[#60a5fa] transition-all duration-500"
+                            className="h-full bg-[#fbbf24] transition-all duration-500"
                             style={{
-                              width: `${Math.min(100, Math.max(0, Number(fbCtr) || 0))}%`,
+                              width: `${Math.min(100, Math.max(0, Number(fbRetentionPct) || 0))}%`,
                             }}
                           />
                           <div
                             className="h-full bg-[#86efac] transition-all duration-500"
                             style={{
-                              width: `${Math.min(100, Math.max(0, (Number(fbConv) * Number(fbCtr)) / 100 || 0))}%`,
+                              width: `${Math.min(100, Math.max(0, Number(fbConvPct) || 0))}%`,
                             }}
                           />
                         </div>

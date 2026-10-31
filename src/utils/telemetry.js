@@ -105,14 +105,16 @@ const DEFAULT_CHANNEL_LEDGER = {
         slug: 'the-meat-grinder',
         title: 'Issue #02: The Meat Grinder Needs More Meat',
         instagram: {
-          impressions: 0, // 24h IG Story views (starts at 0)
-          clicks: 0, // utm_source = 'instagram' & utm_medium = 'story'
-          subscribers: 0, // IG story clickers who hit submit
+          entrances: 0, // Story Entrances (utm_source=instagram & utm_medium=story)
+          clicks: 0,
+          scroll75: 0, // Story Scroll Retention (read past 75%)
+          subscribers: 0, // Story Subscriber Conversions
         },
         facebook: {
-          impressions: 0, // 24h FB Story views (starts at 0)
-          clicks: 0, // utm_source = 'facebook' & utm_medium = 'story'
-          subscribers: 0, // FB story clickers who hit submit
+          entrances: 0, // Story Entrances (utm_source=facebook & utm_medium=story)
+          clicks: 0,
+          scroll75: 0, // Story Scroll Retention (read past 75%)
+          subscribers: 0, // Story Subscriber Conversions
         },
       },
       {
@@ -121,13 +123,15 @@ const DEFAULT_CHANNEL_LEDGER = {
         slug: 'watering-grass-in-a-thunderstorm',
         title: 'Issue #01: Watering Grass in a Thunderstorm',
         instagram: {
-          impressions: 0,
+          entrances: 0,
           clicks: 0,
+          scroll75: 0,
           subscribers: 0,
         },
         facebook: {
-          impressions: 0,
+          entrances: 0,
           clicks: 0,
+          scroll75: 0,
           subscribers: 0,
         },
       },
@@ -151,33 +155,30 @@ export function loadChannelLedger() {
       );
       if (!found) return def;
 
-      // Gracefully migrate legacy single-counter fields if present (treat initial placeholder 100 as 0)
-      const rawLegacyImp = Number(found.storyImpressions);
-      const legacyImpressions = rawLegacyImp === 100 && !found.storyClicks ? 0 : (Number.isFinite(rawLegacyImp) ? rawLegacyImp : 0);
       const legacyClicks = Number(found.storyClicks) || 0;
       const legacySubs = Number(found.storySubscribers) || 0;
 
-      const rawIgImp = Number(found.instagram?.impressions);
-      const igImpressions = rawIgImp === 100 && !found.instagram?.clicks ? 0 : (Number.isFinite(rawIgImp) ? rawIgImp : legacyImpressions);
-      const igClicks = Number(found.instagram?.clicks) || legacyClicks;
-      const igSubs = Number(found.instagram?.subscribers) || legacySubs;
+      const igEntrances = Number(found.instagram?.entrances ?? found.instagram?.clicks ?? legacyClicks) || 0;
+      const igScroll75 = Number(found.instagram?.scroll75) || 0;
+      const igSubs = Number(found.instagram?.subscribers ?? legacySubs) || 0;
 
-      const rawFbImp = Number(found.facebook?.impressions);
-      const fbImpressions = rawFbImp === 100 && !found.facebook?.clicks ? 0 : (Number.isFinite(rawFbImp) ? rawFbImp : 0);
-      const fbClicks = Number(found.facebook?.clicks) || 0;
+      const fbEntrances = Number(found.facebook?.entrances ?? found.facebook?.clicks) || 0;
+      const fbScroll75 = Number(found.facebook?.scroll75) || 0;
       const fbSubs = Number(found.facebook?.subscribers) || 0;
 
       return {
         ...def,
         ...found,
         instagram: {
-          impressions: igImpressions,
-          clicks: igClicks,
+          entrances: igEntrances,
+          clicks: igEntrances,
+          scroll75: igScroll75,
           subscribers: igSubs,
         },
         facebook: {
-          impressions: fbImpressions,
-          clicks: fbClicks,
+          entrances: fbEntrances,
+          clicks: fbEntrances,
+          scroll75: fbScroll75,
           subscribers: fbSubs,
         },
       };
@@ -247,7 +248,14 @@ export function recordSiteEvent(eventName, payload = {}) {
     const platformKey =
       utmSource.includes('facebook') || utmSource === 'fb' ? 'facebook' : 'instagram';
 
-    if (utmMedium === 'story') {
+    const isStorySession =
+      utmMedium === 'story' ||
+      utmSource.includes('instagram') ||
+      utmSource.includes('facebook') ||
+      utmSource === 'ig' ||
+      utmSource === 'fb';
+
+    if (isStorySession) {
       try {
         window.sessionStorage.setItem('moth1_utm_medium', 'story');
         window.sessionStorage.setItem('moth1_utm_source', platformKey);
@@ -265,8 +273,8 @@ export function recordSiteEvent(eventName, payload = {}) {
         r.path === payload.path ? { ...r, views: (r.views || 0) + 1 } : r
       );
 
-      // 2. If visitor arrived via Story link (utm_medium = 'story'), increment link clicks
-      if (utmMedium === 'story') {
+      // 2. If visitor arrived via Story link (utm_medium = 'story' or utm_source is ig/fb), increment automated story entrances
+      if (isStorySession) {
         const matchedDispatch =
           ledger.storyFunnel.dispatches.find(
             (d) =>
@@ -278,9 +286,11 @@ export function recordSiteEvent(eventName, payload = {}) {
 
         if (matchedDispatch) {
           if (!matchedDispatch[platformKey]) {
-            matchedDispatch[platformKey] = { impressions: 100, clicks: 0, subscribers: 0 };
+            matchedDispatch[platformKey] = { entrances: 0, clicks: 0, scroll75: 0, subscribers: 0 };
           }
-          matchedDispatch[platformKey].clicks = (matchedDispatch[platformKey].clicks || 0) + 1;
+          const nextEntrances = (matchedDispatch[platformKey].entrances || matchedDispatch[platformKey].clicks || 0) + 1;
+          matchedDispatch[platformKey].entrances = nextEntrances;
+          matchedDispatch[platformKey].clicks = nextEntrances;
         }
 
         try {
@@ -296,13 +306,64 @@ export function recordSiteEvent(eventName, payload = {}) {
       }
 
       saveChannelLedger(ledger);
+    } else if (eventName === 'scroll_depth' && payload.depth >= 75) {
+      // 3. Automated Scroll Retention (75%+ threshold reached)
+      let isStoryOrigin = utmMedium === 'story';
+      let originSource = platformKey;
+      if (typeof window !== 'undefined') {
+        try {
+          if (!isStoryOrigin) {
+            isStoryOrigin = window.sessionStorage.getItem('moth1_utm_medium') === 'story';
+          }
+          const storedSource = window.sessionStorage.getItem('moth1_utm_source');
+          if (storedSource) originSource = storedSource;
+        } catch {
+          // ignore
+        }
+      }
+
+      if (isStoryOrigin) {
+        const path =
+          payload.path ||
+          (typeof window !== 'undefined' ? window.sessionStorage.getItem('moth1_story_path') : '') ||
+          '';
+        const matchedDispatch =
+          ledger.storyFunnel.dispatches.find(
+            (d) =>
+              d.slug &&
+              (path.includes(d.slug) ||
+                d.slug.includes(path.replace(/^\//, '')) ||
+                d.issueId === payload.issueId)
+          ) || ledger.storyFunnel.dispatches[0];
+
+        if (matchedDispatch) {
+          const targetKey = originSource === 'facebook' ? 'facebook' : 'instagram';
+          if (!matchedDispatch[targetKey]) {
+            matchedDispatch[targetKey] = { entrances: 1, clicks: 1, scroll75: 0, subscribers: 0 };
+          }
+          matchedDispatch[targetKey].scroll75 = (matchedDispatch[targetKey].scroll75 || 0) + 1;
+        }
+
+        try {
+          track('story_scroll_75', {
+            path: payload.path,
+            issueId: payload.issueId,
+            utm_medium: 'story',
+            utm_source: originSource,
+          });
+        } catch {
+          // ignore
+        }
+
+        saveChannelLedger(ledger);
+      }
     } else if (eventName === 'share_copied' && payload.path) {
       ledger.website.routes = ledger.website.routes.map((r) =>
         r.path === payload.path ? { ...r, shares: (r.shares || 0) + 1 } : r
       );
       saveChannelLedger(ledger);
     } else if (eventName === 'substack_subscribe') {
-      // Check if session or payload originated from story
+      // 4. Actual Substack form submissions originating from story sessions
       let isStoryOrigin = utmMedium === 'story';
       let subscriberSource = platformKey;
       if (typeof window !== 'undefined') {
@@ -334,7 +395,7 @@ export function recordSiteEvent(eventName, payload = {}) {
         if (matchedDispatch) {
           const targetKey = subscriberSource === 'facebook' ? 'facebook' : 'instagram';
           if (!matchedDispatch[targetKey]) {
-            matchedDispatch[targetKey] = { impressions: 100, clicks: 0, subscribers: 0 };
+            matchedDispatch[targetKey] = { entrances: 1, clicks: 1, scroll75: 0, subscribers: 0 };
           }
           matchedDispatch[targetKey].subscribers = (matchedDispatch[targetKey].subscribers || 0) + 1;
         }
