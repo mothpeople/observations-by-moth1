@@ -595,42 +595,89 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
   try {
     let resolvedProjectId = (vercelProjectId || '').trim();
     let resolvedProjectName = '';
+    let activeTeamId = (vercelTeamId || '').trim();
 
     // Auto-discover Project ID if not explicitly specified
     if (!resolvedProjectId) {
-      const projUrl = new URL('https://api.vercel.com/v9/projects');
-      if (vercelTeamId) projUrl.searchParams.set('teamId', String(vercelTeamId).trim());
-      const projRes = await fetch(projUrl.toString(), { headers });
-      if (projRes.ok) {
-        const projData = await projRes.json();
-        const projectList = Array.isArray(projData.projects) ? projData.projects : [];
-        const found =
-          projectList.find((p) => p.link?.repo?.toLowerCase() === 'observations-by-moth1') ||
-          projectList.find((p) => p.name?.toLowerCase() === 'observations-by-moth1') ||
-          projectList.find((p) => p.name?.toLowerCase() === 'scrollytelling-exploration-engine') ||
-          projectList.find((p) => (p.targets?.production?.alias || []).includes('observations.moth1.xyz')) ||
-          projectList.find((p) => p.targets?.production?.domain === 'observations.moth1.xyz') ||
-          projectList.find((p) => (p.domains || []).some((d) => (d.name || d) === 'observations.moth1.xyz')) ||
-          projectList.find((p) => p.name?.toLowerCase().includes('observations')) ||
-          projectList[0];
-
-        if (found) {
-          resolvedProjectId = found.id;
-          resolvedProjectName = found.name;
+      // 1. Discover all possible contexts (personal + all teams the user belongs to)
+      const teamContexts = [activeTeamId || null];
+      try {
+        const teamsRes = await fetch('https://api.vercel.com/v2/teams', { headers });
+        if (teamsRes.ok) {
+          const teamsData = await teamsRes.json();
+          const teamsList = Array.isArray(teamsData.teams) ? teamsData.teams : [];
+          for (const t of teamsList) {
+            if (t.id && !teamContexts.includes(t.id)) {
+              teamContexts.push(t.id);
+            }
+          }
         }
-      } else {
-        const errText = await projRes.text().catch(() => '');
-        return {
-          connected: false,
-          error: `Vercel /v9/projects API returned HTTP ${projRes.status}: ${errText.slice(0, 120)}`,
-        };
+      } catch {
+        // ignore
+      }
+
+      // 2. Search for the project across all contexts
+      for (const tId of teamContexts) {
+        if (resolvedProjectId) break;
+
+        // Try direct name lookups first
+        for (const candidateName of ['observations-by-moth1', 'scrollytelling-exploration-engine', 'observations']) {
+          try {
+            const directUrl = new URL(`https://api.vercel.com/v9/projects/${candidateName}`);
+            if (tId) directUrl.searchParams.set('teamId', tId);
+            const dRes = await fetch(directUrl.toString(), { headers });
+            if (dRes.ok) {
+              const dData = await dRes.json();
+              if (dData?.id) {
+                resolvedProjectId = dData.id;
+                resolvedProjectName = dData.name || candidateName;
+                if (tId) activeTeamId = tId;
+                break;
+              }
+            }
+          } catch {
+            // continue
+          }
+        }
+
+        if (resolvedProjectId) break;
+
+        // If direct lookup didn't match, list projects in this context
+        try {
+          const projUrl = new URL('https://api.vercel.com/v9/projects');
+          if (tId) projUrl.searchParams.set('teamId', tId);
+          projUrl.searchParams.set('limit', '100');
+          const projRes = await fetch(projUrl.toString(), { headers });
+          if (projRes.ok) {
+            const projData = await projRes.json();
+            const projectList = Array.isArray(projData.projects) ? projData.projects : [];
+            const found =
+              projectList.find((p) => p.link?.repo?.toLowerCase() === 'observations-by-moth1') ||
+              projectList.find((p) => p.name?.toLowerCase() === 'observations-by-moth1') ||
+              projectList.find((p) => p.name?.toLowerCase() === 'scrollytelling-exploration-engine') ||
+              projectList.find((p) => (p.targets?.production?.alias || []).includes('observations.moth1.xyz')) ||
+              projectList.find((p) => p.targets?.production?.domain === 'observations.moth1.xyz') ||
+              projectList.find((p) => (p.domains || []).some((d) => (d.name || d) === 'observations.moth1.xyz')) ||
+              projectList.find((p) => p.name?.toLowerCase().includes('observations')) ||
+              (teamContexts.length === 1 ? projectList[0] : null);
+
+            if (found) {
+              resolvedProjectId = found.id;
+              resolvedProjectName = found.name;
+              if (tId) activeTeamId = tId;
+              break;
+            }
+          }
+        } catch {
+          // continue
+        }
       }
     }
 
     if (!resolvedProjectId) {
       return {
         connected: false,
-        error: 'Could not resolve Vercel project ID. Please provide Vercel Project ID explicitly.',
+        error: 'Could not resolve Vercel project ID. Please provide Vercel Project ID explicitly in API Tokens.',
       };
     }
 
@@ -646,7 +693,7 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
     try {
       const countUrl = new URL('https://api.vercel.com/v1/query/web-analytics/visits/count');
       countUrl.searchParams.set('projectId', resolvedProjectId);
-      if (vercelTeamId) countUrl.searchParams.set('teamId', String(vercelTeamId).trim());
+      if (activeTeamId) countUrl.searchParams.set('teamId', activeTeamId);
       countUrl.searchParams.set('since', since);
       countUrl.searchParams.set('until', until);
 
@@ -666,7 +713,7 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       try {
         const u = new URL('https://api.vercel.com/v1/query/web-analytics/visits/aggregate');
         u.searchParams.set('projectId', resolvedProjectId);
-        if (vercelTeamId) u.searchParams.set('teamId', String(vercelTeamId).trim());
+        if (activeTeamId) u.searchParams.set('teamId', activeTeamId);
         u.searchParams.set('since', since);
         u.searchParams.set('until', until);
         u.searchParams.set('by', byField);
@@ -677,7 +724,7 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
           // If ISO format failed, try millisecond timestamp format
           const altU = new URL('https://api.vercel.com/v1/query/web-analytics/visits/aggregate');
           altU.searchParams.set('projectId', resolvedProjectId);
-          if (vercelTeamId) altU.searchParams.set('teamId', String(vercelTeamId).trim());
+          if (activeTeamId) altU.searchParams.set('teamId', activeTeamId);
           altU.searchParams.set('since', String(thirtyDaysAgo.getTime()));
           altU.searchParams.set('until', String(now.getTime()));
           altU.searchParams.set('by', byField);
