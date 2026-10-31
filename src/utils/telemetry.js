@@ -407,6 +407,19 @@ export function recordSiteEvent(eventName, payload = {}) {
             utm_medium: 'story',
             utm_source: subscriberSource,
           });
+
+          // Post to serverless UTM tracking endpoint
+          fetch('/api/track-story-click', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              issue: matchedDispatch?.slug || 'the-meat-grinder',
+              source: subscriberSource,
+              medium: 'story',
+              eventType: 'subscriber',
+              timestamp: new Date().toISOString(),
+            }),
+          }).catch(() => {});
         } catch {
           // ignore
         }

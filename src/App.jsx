@@ -17,6 +17,37 @@ import { recordSiteEvent } from './utils/telemetry';
 function PublicationLayout({ dispatch = null, children }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  // Client-Side UTM Listener: Bypass Vercel Web Analytics Plus Paywall
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const medium = params.get('utm_medium');
+      const source = params.get('utm_source');
+      const campaign = params.get('utm_campaign');
+
+      if (medium === 'story' || source === 'instagram' || source === 'facebook') {
+        const sessionKey = `moth1_story_click_${window.location.pathname}_${source}_${medium}`;
+        if (!window.sessionStorage.getItem(sessionKey)) {
+          window.sessionStorage.setItem(sessionKey, '1');
+          fetch('/api/track-story-click', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              issue: window.location.pathname.replace(/^\//, '') || 'latest',
+              source: source || 'social',
+              medium: medium || 'story',
+              campaign: campaign || '',
+              timestamp: new Date().toISOString(),
+            }),
+          }).catch(() => {});
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   useEffect(() => {
     const searchParams =
       typeof window !== 'undefined' && window.location.search
@@ -63,6 +94,32 @@ function PublicationLayout({ dispatch = null, children }) {
             path: `/${dispatch.slug}`,
             issueId: dispatch.id,
           });
+
+          // Post automated 75% scroll retention event to serverless UTM tracking endpoint
+          try {
+            const isStory =
+              window.sessionStorage?.getItem('moth1_utm_medium') === 'story' ||
+              new URLSearchParams(window.location.search).get('utm_medium') === 'story';
+            if (isStory) {
+              const storySrc =
+                window.sessionStorage?.getItem('moth1_utm_source') ||
+                new URLSearchParams(window.location.search).get('utm_source') ||
+                'social';
+              fetch('/api/track-story-click', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  issue: dispatch.slug,
+                  source: storySrc,
+                  medium: 'story',
+                  eventType: 'scroll_75',
+                  timestamp: new Date().toISOString(),
+                }),
+              }).catch(() => {});
+            }
+          } catch {
+            // ignore
+          }
         }
       }
     };

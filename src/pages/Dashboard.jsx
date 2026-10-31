@@ -464,6 +464,7 @@ export default function Dashboard() {
   });
 
   const [vercelAnalytics, setVercelAnalytics] = useState(null);
+  const [storyClickStats, setStoryClickStats] = useState(null);
 
   const [isOwnerUnlocked, setIsOwnerUnlocked] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -530,15 +531,17 @@ export default function Dashboard() {
         if (activeToken) headers['X-Apify-Token'] = activeToken;
         if (activeVercelToken) headers['X-Vercel-Token'] = activeVercelToken;
 
-        // Fetch server /api/analytics + direct browser Apify datasets for all 4 actors in parallel
+        // Fetch server /api/analytics, /api/track-story-click + direct browser Apify datasets for all 4 actors in parallel
         const [
           serverRes,
+          storyClickRes,
           directSubstack,
           directInstagram,
           directThreads,
           directFacebook,
         ] = await Promise.all([
           fetch('/api/analytics', { headers }).catch(() => null),
+          fetch('/api/track-story-click').catch(() => null),
           activeToken
             ? fetchDirectActorDataset(ACTORS.substack.id, activeToken)
             : Promise.resolve(null),
@@ -556,6 +559,15 @@ export default function Dashboard() {
         let serverJson = null;
         if (serverRes && serverRes.ok) {
           serverJson = await serverRes.json();
+        }
+
+        if (storyClickRes && storyClickRes.ok) {
+          try {
+            const clickJson = await storyClickRes.json();
+            setStoryClickStats(clickJson);
+          } catch {
+            // ignore
+          }
         }
 
         // 1. Merge Substack Posts
@@ -1169,40 +1181,32 @@ export default function Dashboard() {
     0
   );
 
-  // Story Conversion Funnel Aggregates (100% Automated Telemetry)
+  // Story Conversion Funnel Aggregates (100% Automated Telemetry via /api/track-story-click)
   const storyDispatches = ledger.storyFunnel?.dispatches || [];
+  const serverStoryTotal = storyClickStats?.total || {};
 
-  // Vercel story visits breakdown (by UTM query parameter or referrer)
-  const vercelIgVisitors =
-    Number(
-      vercelAnalytics?.utmSources?.find((s) => s.utmSource?.toLowerCase() === 'instagram')?.visitors ??
-      vercelAnalytics?.referrers?.filter((r) => r.referrerHostname?.toLowerCase().includes('instagram'))
-        .reduce((sum, r) => sum + (Number(r.visitors) || 0), 0) ??
-      0
-    ) || 0;
-
-  const vercelFbVisitors =
-    Number(
-      vercelAnalytics?.utmSources?.find((s) => s.utmSource?.toLowerCase() === 'facebook')?.visitors ??
-      vercelAnalytics?.referrers?.filter((r) => r.referrerHostname?.toLowerCase().includes('facebook'))
-        .reduce((sum, r) => sum + (Number(r.visitors) || 0), 0) ??
-      0
-    ) || 0;
-
-  // Instagram Story Aggregates (Automated Telemetry)
+  // Instagram Story Aggregates (Bypassing Vercel Plus Paywall)
   const igStoryEntrances =
-    storyDispatches.reduce(
-      (sum, d) => sum + (Number(d.instagram?.entrances ?? d.instagram?.clicks ?? d.storyClicks) || 0),
-      0
-    ) || vercelIgVisitors;
-  const igStoryScroll75 = storyDispatches.reduce(
-    (sum, d) => sum + (Number(d.instagram?.scroll75) || 0),
-    0
-  );
-  const igStorySubscribers = storyDispatches.reduce(
-    (sum, d) => sum + (Number(d.instagram?.subscribers ?? d.storySubscribers) || 0),
-    0
-  );
+    storyDispatches.reduce((sum, d) => {
+      const serverClicks = Number(storyClickStats?.issues?.[d.slug]?.instagram?.clicks || 0);
+      const ledgerClicks = Number(d.instagram?.entrances ?? d.instagram?.clicks ?? 0);
+      return sum + Math.max(serverClicks, ledgerClicks);
+    }, 0) || Number(serverStoryTotal.instagram?.clicks || 0);
+
+  const igStoryScroll75 =
+    storyDispatches.reduce((sum, d) => {
+      const serverScroll = Number(storyClickStats?.issues?.[d.slug]?.instagram?.scroll75 || 0);
+      const ledgerScroll = Number(d.instagram?.scroll75 || 0);
+      return sum + Math.max(serverScroll, ledgerScroll);
+    }, 0) || Number(serverStoryTotal.instagram?.scroll75 || 0);
+
+  const igStorySubscribers =
+    storyDispatches.reduce((sum, d) => {
+      const serverSubs = Number(storyClickStats?.issues?.[d.slug]?.instagram?.subscribers || 0);
+      const ledgerSubs = Number(d.instagram?.subscribers || 0);
+      return sum + Math.max(serverSubs, ledgerSubs);
+    }, 0) || Number(serverStoryTotal.instagram?.subscribers || 0);
+
   const igStoryRetentionPct =
     igStoryEntrances > 0
       ? Math.min(100, (igStoryScroll75 / igStoryEntrances) * 100).toFixed(1)
@@ -1212,20 +1216,28 @@ export default function Dashboard() {
       ? ((igStorySubscribers / igStoryEntrances) * 100).toFixed(1)
       : '0.0';
 
-  // Facebook Story Aggregates (Automated Telemetry)
+  // Facebook Story Aggregates (Bypassing Vercel Plus Paywall)
   const fbStoryEntrances =
-    storyDispatches.reduce(
-      (sum, d) => sum + (Number(d.facebook?.entrances ?? d.facebook?.clicks) || 0),
-      0
-    ) || vercelFbVisitors;
-  const fbStoryScroll75 = storyDispatches.reduce(
-    (sum, d) => sum + (Number(d.facebook?.scroll75) || 0),
-    0
-  );
-  const fbStorySubscribers = storyDispatches.reduce(
-    (sum, d) => sum + (Number(d.facebook?.subscribers) || 0),
-    0
-  );
+    storyDispatches.reduce((sum, d) => {
+      const serverClicks = Number(storyClickStats?.issues?.[d.slug]?.facebook?.clicks || 0);
+      const ledgerClicks = Number(d.facebook?.entrances ?? d.facebook?.clicks ?? 0);
+      return sum + Math.max(serverClicks, ledgerClicks);
+    }, 0) || Number(serverStoryTotal.facebook?.clicks || 0);
+
+  const fbStoryScroll75 =
+    storyDispatches.reduce((sum, d) => {
+      const serverScroll = Number(storyClickStats?.issues?.[d.slug]?.facebook?.scroll75 || 0);
+      const ledgerScroll = Number(d.facebook?.scroll75 || 0);
+      return sum + Math.max(serverScroll, ledgerScroll);
+    }, 0) || Number(serverStoryTotal.facebook?.scroll75 || 0);
+
+  const fbStorySubscribers =
+    storyDispatches.reduce((sum, d) => {
+      const serverSubs = Number(storyClickStats?.issues?.[d.slug]?.facebook?.subscribers || 0);
+      const ledgerSubs = Number(d.facebook?.subscribers || 0);
+      return sum + Math.max(serverSubs, ledgerSubs);
+    }, 0) || Number(serverStoryTotal.facebook?.subscribers || 0);
+
   const fbStoryRetentionPct =
     fbStoryEntrances > 0
       ? Math.min(100, (fbStoryScroll75 / fbStoryEntrances) * 100).toFixed(1)
@@ -2916,16 +2928,16 @@ export default function Dashboard() {
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Driven by live Vercel Web Analytics UTM attribution (<code className="text-[#f472b6]">utm_medium=story</code>, <code className="text-[#fda4af]">utm_source=instagram</code>, <code className="text-[#60a5fa]">utm_source=facebook</code>), scroll depth telemetry (75%+ threshold), and Substack form submissions. Zero manual inputs.
+                Bypasses Vercel Web Analytics Plus paywall with direct client-side UTM capture (<code className="text-[#f472b6]">/api/track-story-click</code>), scroll depth telemetry (75%+ threshold), and Substack form submissions. Zero manual inputs.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 text-xs font-mono shrink-0">
               <span className="px-2 py-1 bg-[#fda4af]/10 border border-[#fda4af]/30 text-[#fda4af]">
-                IG: <strong>{igStoryEntrances}</strong> visits • <strong>{igStoryRetentionPct}%</strong> 75% read • <strong>{igStorySubscribers}</strong> subs
+                IG: <strong>{igStoryEntrances}</strong> clicks • <strong>{igStoryRetentionPct}%</strong> 75% read • <strong>{igStorySubscribers}</strong> subs
               </span>
               <span className="px-2 py-1 bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa]">
-                FB: <strong>{fbStoryEntrances}</strong> visits • <strong>{fbStoryRetentionPct}%</strong> 75% read • <strong>{fbStorySubscribers}</strong> subs
+                FB: <strong>{fbStoryEntrances}</strong> clicks • <strong>{fbStoryRetentionPct}%</strong> 75% read • <strong>{fbStorySubscribers}</strong> subs
               </span>
             </div>
           </div>
@@ -2934,13 +2946,21 @@ export default function Dashboard() {
             {storyDispatches.map((dispatch) => {
               const issueTag = dispatch.issueId || dispatch.id;
 
-              // Metric calculations for Instagram
+              const issueStats = storyClickStats?.issues?.[dispatch.slug] || {};
+
+              // Metric calculations for Instagram (Bypassing Vercel Plus Paywall)
               const igEntrances = Math.max(
-                Number(dispatch.instagram?.entrances ?? dispatch.instagram?.clicks ?? 0),
-                vercelAnalytics ? Math.round(vercelIgVisitors / (storyDispatches.length || 1)) : 0
+                Number(issueStats.instagram?.clicks || 0),
+                Number(dispatch.instagram?.entrances ?? dispatch.instagram?.clicks ?? 0)
               );
-              const igScroll75 = Number(dispatch.instagram?.scroll75 ?? 0);
-              const igSubs = Number(dispatch.instagram?.subscribers ?? 0);
+              const igScroll75 = Math.max(
+                Number(issueStats.instagram?.scroll75 || 0),
+                Number(dispatch.instagram?.scroll75 ?? 0)
+              );
+              const igSubs = Math.max(
+                Number(issueStats.instagram?.subscribers || 0),
+                Number(dispatch.instagram?.subscribers ?? 0)
+              );
               const igRetentionPct =
                 igEntrances > 0
                   ? Math.min(100, (igScroll75 / igEntrances) * 100).toFixed(1)
@@ -2950,13 +2970,19 @@ export default function Dashboard() {
                   ? ((igSubs / igEntrances) * 100).toFixed(1)
                   : '0.0';
 
-              // Metric calculations for Facebook
+              // Metric calculations for Facebook (Bypassing Vercel Plus Paywall)
               const fbEntrances = Math.max(
-                Number(dispatch.facebook?.entrances ?? dispatch.facebook?.clicks ?? 0),
-                vercelAnalytics ? Math.round(vercelFbVisitors / (storyDispatches.length || 1)) : 0
+                Number(issueStats.facebook?.clicks || 0),
+                Number(dispatch.facebook?.entrances ?? dispatch.facebook?.clicks ?? 0)
               );
-              const fbScroll75 = Number(dispatch.facebook?.scroll75 ?? 0);
-              const fbSubs = Number(dispatch.facebook?.subscribers ?? 0);
+              const fbScroll75 = Math.max(
+                Number(issueStats.facebook?.scroll75 || 0),
+                Number(dispatch.facebook?.scroll75 ?? 0)
+              );
+              const fbSubs = Math.max(
+                Number(issueStats.facebook?.subscribers || 0),
+                Number(dispatch.facebook?.subscribers ?? 0)
+              );
               const fbRetentionPct =
                 fbEntrances > 0
                   ? Math.min(100, (fbScroll75 / fbEntrances) * 100).toFixed(1)
@@ -3017,14 +3043,17 @@ export default function Dashboard() {
                       {/* 3 Automated Telemetry Metrics for Instagram */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
-                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
-                            Story Entrances
+                          <div className="flex items-center justify-between text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            <span>Story Entrances</span>
+                            <span className="text-[8px] font-bold text-[#fda4af] bg-[#fda4af]/10 px-1 py-0.5 border border-[#fda4af]/30">
+                              {igEntrances} Clicks
+                            </span>
                           </div>
                           <div className="font-mono text-xl sm:text-2xl font-black text-[#fda4af] tabular-nums mt-1">
                             {igEntrances.toLocaleString()}
                           </div>
                           <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                            utm_source=instagram
+                            utm_source=instagram • Verified Clicks
                           </div>
                         </div>
 
@@ -3116,14 +3145,17 @@ export default function Dashboard() {
                       {/* 3 Automated Telemetry Metrics for Facebook */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
-                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
-                            Story Entrances
+                          <div className="flex items-center justify-between text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            <span>Story Entrances</span>
+                            <span className="text-[8px] font-bold text-[#60a5fa] bg-[#60a5fa]/10 px-1 py-0.5 border border-[#60a5fa]/30">
+                              {fbEntrances} Clicks
+                            </span>
                           </div>
                           <div className="font-mono text-xl sm:text-2xl font-black text-[#60a5fa] tabular-nums mt-1">
                             {fbEntrances.toLocaleString()}
                           </div>
                           <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                            utm_source=facebook
+                            utm_source=facebook • Verified Clicks
                           </div>
                         </div>
 
