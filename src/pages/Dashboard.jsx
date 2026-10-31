@@ -1248,6 +1248,15 @@ export default function Dashboard() {
       ? ((totalStorySubscribers / totalStoryEntrances) * 100).toFixed(1)
       : '0.0';
 
+  // Backward-compatible aliases for Story Funnel telemetry
+  const totalStoryClicks = totalStoryEntrances;
+  const igStoryClicks = igStoryEntrances;
+  const fbStoryClicks = fbStoryEntrances;
+  const storyCtrPct = totalStoryRetentionPct;
+  const storySubConversionPct = totalStoryConvPct;
+  const igStoryCtrPct = igStoryRetentionPct;
+  const fbStoryCtrPct = fbStoryRetentionPct;
+
   // Instagram: combine filtered scraped Apify items + manual Reel ledger
   const igScrapedViews = visibleInstagramItems.reduce(
     (sum, i) => sum + (i.views || 0),
@@ -2032,26 +2041,27 @@ export default function Dashboard() {
             </div>
           </CyberPanel>
 
-          {/* KPI 6: Story to Essay Conversion (Instagram & Facebook Breakdown) */}
+          {/* KPI 6: Story Conversion Funnel (100% Automated Telemetry) */}
           <CyberPanel
-            label="Story Funnel • Conversion"
+            label="Story Funnel • Automated"
             accent="#f472b6"
             className="p-4 flex flex-col justify-between border border-[#f472b6]/40 bg-[#121316]"
           >
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-mono text-[10px] text-slate-400 truncate uppercase tracking-wider">
-                  Story to Essay Funnel
+                  Story Funnel Telemetry
                 </span>
                 <Zap className="w-4 h-4 text-[#f472b6] shrink-0" />
               </div>
               <div className="font-mono text-2xl font-black text-[#f472b6] tabular-nums">
-                {storyCtrPct}% <span className="text-sm font-bold text-slate-400">CTR</span>
+                {totalStoryEntrances}{' '}
+                <span className="text-sm font-bold text-slate-400">Visits</span>
               </div>
               <div className="text-xs text-slate-300 mt-1 font-mono">
-                <span className="text-[#86efac] font-bold">{totalStoryClicks}</span> clicks •{' '}
-                <span className="text-[#f472b6] font-bold">{totalStorySubscribers}</span> subs (
-                <span className="text-[#86efac] font-bold">{storySubConversionPct}%</span>)
+                <span className="text-[#fbbf24] font-bold">{totalStoryRetentionPct}%</span> 75% read •{' '}
+                <span className="text-[#86efac] font-bold">{totalStorySubscribers}</span> subs (
+                <span className="text-[#86efac] font-bold">{totalStoryConvPct}%</span>)
               </div>
             </div>
 
@@ -2062,7 +2072,7 @@ export default function Dashboard() {
                   IG Story:
                 </span>
                 <span className="text-slate-300">
-                  <strong className="text-[#fda4af]">{igStoryCtrPct}%</strong> ({igStoryClicks}c • {igStorySubscribers}s)
+                  <strong className="text-[#fda4af]">{igStoryEntrances}</strong> visits • <strong className="text-[#fbbf24]">{igStoryRetentionPct}%</strong> read
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -2071,7 +2081,7 @@ export default function Dashboard() {
                   FB Story:
                 </span>
                 <span className="text-slate-300">
-                  <strong className="text-[#60a5fa]">{fbStoryCtrPct}%</strong> ({fbStoryClicks}c • {fbStorySubscribers}s)
+                  <strong className="text-[#60a5fa]">{fbStoryEntrances}</strong> visits • <strong className="text-[#fbbf24]">{fbStoryRetentionPct}%</strong> read
                 </span>
               </div>
             </div>
