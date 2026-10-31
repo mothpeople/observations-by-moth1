@@ -322,25 +322,46 @@ function normalizeThreadsItem(item, idx = 0) {
 }
 
 function normalizeFacebookItem(item, idx = 0) {
-  const caption = item.caption || item.text || item.message || item.postText || item.content || item.title || '';
+  const caption =
+    item.caption ||
+    item.text ||
+    item.message ||
+    item.postText ||
+    item.content ||
+    item.title ||
+    item.name ||
+    item.description ||
+    '';
   const text = caption || `Facebook Post #${idx + 1}`;
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
+
+  // Support direct reel links or /reels endpoint from Apify dataset
+  const directReelUrl =
+    item.reelUrl ||
+    item.reelsUrl ||
+    item.videoUrl ||
+    item.directUrl ||
+    (item.reelId ? `https://www.facebook.com/reel/${item.reelId}` : '') ||
+    (item.videoId ? `https://www.facebook.com/observationsbymoth1/videos/${item.videoId}` : '');
+
   const url =
+    directReelUrl ||
     item.url ||
     item.postUrl ||
     item.topLevelUrl ||
     item.facebookUrl ||
+    item.link ||
     'https://www.facebook.com/observationsbymoth1';
 
-  // Fallback parser: If views or playCount is returned, map that to views.
+  // Fallback parser: Ensure views map from either playCount, videoViewCount, or fallback to views.
   const views =
     Number(
-      item.views ??
-        item.playCount ??
+      item.playCount ??
         item.videoViewCount ??
-        item.viewsCount ??
         item.video_play_count ??
         item.video_view_count ??
+        item.viewsCount ??
+        item.views ??
         item.videoViews ??
         0
     ) || 0;
@@ -376,14 +397,23 @@ function normalizeFacebookItem(item, idx = 0) {
         0
     ) || 0;
 
+  const isReel = Boolean(
+    item.isReel ||
+      item.isVideo ||
+      item.type === 'video' ||
+      item.type === 'reel' ||
+      (url && (url.includes('/reel') || url.includes('/videos')))
+  );
+
   return {
-    id: String(item.postId || item.id || `fb-${idx}`),
+    id: String(item.reelId || item.videoId || item.postId || item.id || `fb-${idx}`),
     text,
     caption: text,
     hashtags,
     // Dedicated page: https://www.facebook.com/observationsbymoth1 is 100% Observations by Moth1
     isObservationsPost: true,
     url,
+    isReel,
     publishedAt: item.time || item.timestamp || item.date || item.createdTime || item.publishedTime || null,
     views,
     likes,
@@ -808,18 +838,37 @@ export default function Dashboard() {
                 }
               }
 
-              if (effectiveMatches.length === 0) return reel;
+              // Load persisted saves from localStorage
+              const cleanIssue = String(reel.issueId || '01').padStart(2, '0');
+              const localSavedSaves =
+                typeof window !== 'undefined'
+                  ? window.localStorage.getItem(`saves_fb_issue_${cleanIssue}`)
+                  : null;
+              const currentSaves =
+                localSavedSaves !== null
+                  ? (Number(localSavedSaves) || 0)
+                  : (Number(reel.saves) || 0);
+
+              if (effectiveMatches.length === 0) {
+                if (reel.saves !== currentSaves) {
+                  changed = true;
+                  return { ...reel, saves: currentSaves };
+                }
+                return reel;
+              }
 
               const maxViews = Math.max(
                 Number(reel.views) || 0,
                 ...effectiveMatches.map(
                   (m) =>
                     Number(
-                      m.views ??
-                        m.playCount ??
+                      m.playCount ??
                         m.videoViewCount ??
-                        m.viewsCount ??
                         m.video_play_count ??
+                        m.video_view_count ??
+                        m.viewsCount ??
+                        m.views ??
+                        m.videoViews ??
                         0
                     ) || 0
                 )
@@ -852,6 +901,7 @@ export default function Dashboard() {
                 maxLikes !== reel.likes ||
                 maxComments !== reel.comments ||
                 maxShares !== reel.shares ||
+                currentSaves !== reel.saves ||
                 !reel.isScrapedSync
               ) {
                 changed = true;
@@ -861,6 +911,7 @@ export default function Dashboard() {
                   likes: maxLikes,
                   comments: maxComments,
                   shares: maxShares,
+                  saves: currentSaves,
                   status: 'Published',
                   isScrapedSync: true,
                 };
@@ -1084,6 +1135,26 @@ export default function Dashboard() {
     };
     setLedger(updated);
     saveChannelLedger(updated);
+  };
+
+  const getSavedSaves = (platform, issueId, fallback = 0) => {
+    if (typeof window === 'undefined') return fallback;
+    const prefix = platform === 'instagram' ? 'ig' : 'fb';
+    const cleanIssue = String(issueId || '01').padStart(2, '0');
+    const key = `saves_${prefix}_issue_${cleanIssue}`;
+    const val = window.localStorage.getItem(key);
+    return val !== null && val !== '' ? (Number(val) || 0) : fallback;
+  };
+
+  const handleUpdateSaves = (platform, reelId, issueId, val) => {
+    const num = Math.max(0, Number(val) || 0);
+    const prefix = platform === 'instagram' ? 'ig' : 'fb';
+    const cleanIssue = String(issueId || '01').padStart(2, '0');
+    const key = `saves_${prefix}_issue_${cleanIssue}`;
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(key, String(num));
+    }
+    updateSocialReelMetric(platform, reelId, 'saves', num);
   };
 
   const updateFollowerCount = (platform, value) => {
@@ -1334,6 +1405,7 @@ export default function Dashboard() {
       (Number(r.likes) || 0) +
       (Number(r.comments) || 0) +
       (Number(r.shares) || 0) +
+      (Number(r.saves) || 0) +
       (Number(r.linkClicks) || 0),
     0
   );
@@ -2596,21 +2668,39 @@ export default function Dashboard() {
                           <label className="block text-[9px] text-slate-400 mb-0.5">
                             {field.label}
                           </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={reel[field.key]}
-                            onChange={(e) =>
-                              updateSocialReelMetric(
-                                'instagram',
-                                reel.id,
-                                field.key,
-                                e.target.value
-                              )
-                            }
-                            style={{ color: field.color }}
-                            className="w-full bg-[#121316] border border-slate-800 px-2 py-1 text-xs font-bold"
-                          />
+                          {field.key === 'saves' ? (
+                            <input
+                              type="number"
+                              min="0"
+                              value={reel.saves ?? getSavedSaves('instagram', reel.issueId, 0)}
+                              onChange={(e) =>
+                                handleUpdateSaves(
+                                  'instagram',
+                                  reel.id,
+                                  reel.issueId,
+                                  e.target.value
+                                )
+                              }
+                              title="Click to edit saves"
+                              className="bg-transparent text-[#e6e4dd] border-b border-neutral-700 focus:border-amber-400 focus:outline-none w-12 text-center font-mono py-1 text-xs"
+                            />
+                          ) : (
+                            <input
+                              type="number"
+                              min="0"
+                              value={reel[field.key]}
+                              onChange={(e) =>
+                                updateSocialReelMetric(
+                                  'instagram',
+                                  reel.id,
+                                  field.key,
+                                  e.target.value
+                                )
+                              }
+                              style={{ color: field.color }}
+                              className="w-full bg-[#121316] border border-slate-800 px-2 py-1 text-xs font-bold"
+                            />
+                          )}
                         </div>
                       ))}
                     </div>
@@ -2875,31 +2965,45 @@ export default function Dashboard() {
                           color: '#e2e8f0',
                         },
                         { key: 'shares', label: 'SHARES', color: '#67e8f9' },
-                        {
-                          key: 'linkClicks',
-                          label: 'SITE CLICKS',
-                          color: '#c084fc',
-                        },
+                        { key: 'saves', label: 'SAVES', color: '#67e8f9' },
                       ].map((field) => (
                         <div key={field.key}>
                           <label className="block text-[9px] text-slate-400 mb-0.5">
                             {field.label}
                           </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={reel[field.key]}
-                            onChange={(e) =>
-                              updateSocialReelMetric(
-                                'facebook',
-                                reel.id,
-                                field.key,
-                                e.target.value
-                              )
-                            }
-                            style={{ color: field.color }}
-                            className="w-full bg-[#121316] border border-slate-800 px-2 py-1 text-xs font-bold"
-                          />
+                          {field.key === 'saves' ? (
+                            <input
+                              type="number"
+                              min="0"
+                              value={reel.saves ?? getSavedSaves('facebook', reel.issueId, 0)}
+                              onChange={(e) =>
+                                handleUpdateSaves(
+                                  'facebook',
+                                  reel.id,
+                                  reel.issueId,
+                                  e.target.value
+                                )
+                              }
+                              title="Click to edit saves"
+                              className="bg-transparent text-[#e6e4dd] border-b border-neutral-700 focus:border-amber-400 focus:outline-none w-12 text-center font-mono py-1 text-xs"
+                            />
+                          ) : (
+                            <input
+                              type="number"
+                              min="0"
+                              value={reel[field.key]}
+                              onChange={(e) =>
+                                updateSocialReelMetric(
+                                  'facebook',
+                                  reel.id,
+                                  field.key,
+                                  e.target.value
+                                )
+                              }
+                              style={{ color: field.color }}
+                              className="w-full bg-[#121316] border border-slate-800 px-2 py-1 text-xs font-bold"
+                            />
+                          )}
                         </div>
                       ))}
                     </div>

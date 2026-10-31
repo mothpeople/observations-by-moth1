@@ -238,25 +238,46 @@ export function normalizeThreadsItem(item, idx = 0) {
 }
 
 export function normalizeFacebookItem(item, idx = 0) {
-  const caption = item.caption || item.text || item.message || item.postText || item.content || item.title || '';
+  const caption =
+    item.caption ||
+    item.text ||
+    item.message ||
+    item.postText ||
+    item.content ||
+    item.title ||
+    item.name ||
+    item.description ||
+    '';
   const text = caption || `Facebook Post #${idx + 1}`;
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
+
+  // Support direct reel links or /reels endpoint from Apify dataset
+  const directReelUrl =
+    item.reelUrl ||
+    item.reelsUrl ||
+    item.videoUrl ||
+    item.directUrl ||
+    (item.reelId ? `https://www.facebook.com/reel/${item.reelId}` : '') ||
+    (item.videoId ? `https://www.facebook.com/observationsbymoth1/videos/${item.videoId}` : '');
+
   const url =
+    directReelUrl ||
     item.url ||
     item.postUrl ||
     item.topLevelUrl ||
     item.facebookUrl ||
+    item.link ||
     'https://www.facebook.com/observationsbymoth1';
 
-  // Fallback parser: If views or playCount is returned, map that to views.
+  // Fallback parser: Ensure views map from either playCount, videoViewCount, or fallback to views.
   const views =
     Number(
-      item.views ??
-        item.playCount ??
+      item.playCount ??
         item.videoViewCount ??
-        item.viewsCount ??
         item.video_play_count ??
         item.video_view_count ??
+        item.viewsCount ??
+        item.views ??
         item.videoViews ??
         0
     ) || 0;
@@ -292,8 +313,16 @@ export function normalizeFacebookItem(item, idx = 0) {
         0
     ) || 0;
 
+  const isReel = Boolean(
+    item.isReel ||
+      item.isVideo ||
+      item.type === 'video' ||
+      item.type === 'reel' ||
+      (url && (url.includes('/reel') || url.includes('/videos')))
+  );
+
   return {
-    id: String(item.postId || item.id || `fb-${idx}`),
+    id: String(item.reelId || item.videoId || item.postId || item.id || `fb-${idx}`),
     text,
     caption: text,
     hashtags,
@@ -301,6 +330,7 @@ export function normalizeFacebookItem(item, idx = 0) {
     // Remove strict #observations filter entirely for Facebook.
     isObservationsPost: true,
     url,
+    isReel,
     publishedAt: item.time || item.timestamp || item.date || item.createdTime || item.publishedTime || null,
     views,
     likes,
@@ -563,6 +593,41 @@ export default async function handler(req, res) {
     normalizeFacebookItem(item, i)
   );
 
+  // Chronologically sort Facebook items (earliest -> newest) and map to Issue #01 and Issue #02
+  const sortedFacebookItems = [...facebookItems].sort((a, b) => {
+    const ta = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+    const tb = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+    return ta - tb;
+  });
+
+  const fbIssue01Item = sortedFacebookItems.length >= 1 ? sortedFacebookItems[0] : null;
+  const fbIssue02Item = sortedFacebookItems.length >= 2 ? sortedFacebookItems[1] : null;
+
+  const facebookReels = [
+    {
+      id: 'fb-reel-02',
+      issueId: '02',
+      title: 'The Meat Grinder',
+      views: fbIssue02Item?.views || 0,
+      likes: fbIssue02Item?.likes || 0,
+      comments: fbIssue02Item?.comments || 0,
+      shares: fbIssue02Item?.shares || 0,
+      status: fbIssue02Item ? 'Published' : 'Ready to Post',
+      url: fbIssue02Item?.url || 'https://www.facebook.com/observationsbymoth1',
+    },
+    {
+      id: 'fb-reel-01',
+      issueId: '01',
+      title: 'Watering Grass in a Thunderstorm',
+      views: fbIssue01Item?.views || 0,
+      likes: fbIssue01Item?.likes || 0,
+      comments: fbIssue01Item?.comments || 0,
+      shares: fbIssue01Item?.shares || 0,
+      status: fbIssue01Item ? 'Published' : 'Ready to Post',
+      url: fbIssue01Item?.url || 'https://www.facebook.com/observationsbymoth1',
+    },
+  ];
+
   const instagramFollowers = instagramItems.reduce(
     (max, item) => Math.max(max, item.followers || 0),
     0
@@ -611,6 +676,7 @@ export default async function handler(req, res) {
       runInfo: apifyFacebook.runInfo,
       followers: facebookFollowers,
       items: facebookItems,
+      reels: facebookReels,
     },
     vercel: vercelAnalytics,
   });

@@ -79,6 +79,7 @@ const DEFAULT_CHANNEL_LEDGER = {
         likes: 0,
         comments: 0,
         shares: 0,
+        saves: 0,
         linkClicks: 0,
         status: 'Ready to Post',
       },
@@ -90,6 +91,7 @@ const DEFAULT_CHANNEL_LEDGER = {
         likes: 0,
         comments: 0,
         shares: 0,
+        saves: 0,
         linkClicks: 0,
         status: 'Published',
       },
@@ -184,6 +186,26 @@ export function loadChannelLedger() {
       };
     });
 
+    const igReels = (parsed.instagram?.reels || DEFAULT_CHANNEL_LEDGER.instagram.reels).map((r) => {
+      const cleanIssue = String(r.issueId || '01').padStart(2, '0');
+      const savedKey = `saves_ig_issue_${cleanIssue}`;
+      const savedVal = typeof window !== 'undefined' ? window.localStorage.getItem(savedKey) : null;
+      return {
+        ...r,
+        saves: savedVal !== null ? (Number(savedVal) || 0) : (Number(r.saves) || 0),
+      };
+    });
+
+    const fbReels = (parsed.facebook?.reels || DEFAULT_CHANNEL_LEDGER.facebook.reels).map((r) => {
+      const cleanIssue = String(r.issueId || '01').padStart(2, '0');
+      const savedKey = `saves_fb_issue_${cleanIssue}`;
+      const savedVal = typeof window !== 'undefined' ? window.localStorage.getItem(savedKey) : null;
+      return {
+        ...r,
+        saves: savedVal !== null ? (Number(savedVal) || 0) : (Number(r.saves) || 0),
+      };
+    });
+
     return {
       ...DEFAULT_CHANNEL_LEDGER,
       ...parsed,
@@ -195,10 +217,12 @@ export function loadChannelLedger() {
       instagram: {
         ...DEFAULT_CHANNEL_LEDGER.instagram,
         ...(parsed.instagram || {}),
+        reels: igReels,
       },
       facebook: {
         ...DEFAULT_CHANNEL_LEDGER.facebook,
         ...(parsed.facebook || {}),
+        reels: fbReels,
       },
       storyFunnel: {
         ...DEFAULT_CHANNEL_LEDGER.storyFunnel,

@@ -20,3 +20,6 @@ out/
 # Unoptimized large draft GIFs
 substack-header-clean-loop.gif
 substack-header-titled-loop.gif
+
+# Local runtime telemetry
+.story-clicks.json
