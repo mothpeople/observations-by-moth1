@@ -7,6 +7,7 @@ import {
   useParams,
 } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { dispatches, findDispatchByParam } from './data/dispatches';
 import Masthead from './components/Masthead';
 import ArchiveDrawer from './components/ArchiveDrawer';
@@ -228,35 +229,38 @@ function DynamicDispatchRoute() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Route /: Main Publication Landing Page with dynamic animated background & links to all issues */}
-        <Route
-          path="/"
-          element={
-            <PublicationLayout dispatch={null}>
-              <LandingPage dispatches={dispatches} />
-            </PublicationLayout>
-          }
-        />
+    <>
+      <BrowserRouter>
+        <Routes>
+          {/* Route /: Main Publication Landing Page with dynamic animated background & links to all issues */}
+          <Route
+            path="/"
+            element={
+              <PublicationLayout dispatch={null}>
+                <LandingPage dispatches={dispatches} />
+              </PublicationLayout>
+            }
+          />
 
-        {/* Route /analytics: Hidden Multi-Channel Publication Telemetry Dashboard */}
-        <Route
-          path="/analytics"
-          element={
-            <PublicationLayout dispatch={null}>
-              <Dashboard />
-            </PublicationLayout>
-          }
-        />
+          {/* Route /analytics: Hidden Multi-Channel Publication Telemetry Dashboard */}
+          <Route
+            path="/analytics"
+            element={
+              <PublicationLayout dispatch={null}>
+                <Dashboard />
+              </PublicationLayout>
+            }
+          />
 
-        {/* Route /:slug and /issue/:id: Dynamically renders the matching dispatch */}
-        <Route path="/:slug" element={<DynamicDispatchRoute />} />
-        <Route path="/issue/:id" element={<DynamicDispatchRoute />} />
+          {/* Route /:slug and /issue/:id: Dynamically renders the matching dispatch */}
+          <Route path="/:slug" element={<DynamicDispatchRoute />} />
+          <Route path="/issue/:id" element={<DynamicDispatchRoute />} />
 
-        {/* Fallback route *: Redirects to / */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Fallback route *: Redirects to / */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+      <SpeedInsights />
+    </>
   );
 }
