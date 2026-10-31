@@ -580,37 +580,58 @@ async function fetchActorLastDataset(actorId, token) {
 
 async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) {
   if (!vercelToken) {
-    return { connected: false, error: 'No Vercel Token provided' };
+    return {
+      connected: false,
+      error: 'No Vercel Token provided. Enter your Vercel Token in API Tokens or set VERCEL_TOKEN environment variable.',
+    };
   }
 
+  const cleanToken = String(vercelToken).trim();
   const headers = {
-    Authorization: `Bearer ${vercelToken}`,
+    Authorization: `Bearer ${cleanToken}`,
     Accept: 'application/json',
   };
 
   try {
-    let resolvedProjectId = vercelProjectId;
+    let resolvedProjectId = (vercelProjectId || '').trim();
+    let resolvedProjectName = '';
 
     // Auto-discover Project ID if not explicitly specified
     if (!resolvedProjectId) {
       const projUrl = new URL('https://api.vercel.com/v9/projects');
-      if (vercelTeamId) projUrl.searchParams.set('teamId', vercelTeamId);
+      if (vercelTeamId) projUrl.searchParams.set('teamId', String(vercelTeamId).trim());
       const projRes = await fetch(projUrl.toString(), { headers });
       if (projRes.ok) {
         const projData = await projRes.json();
-        const found = (projData.projects || []).find(
-          (p) =>
-            p.name === 'observations-by-moth1' ||
-            p.name?.includes('observations') ||
-            p.targets?.production?.domain === 'observations.moth1.xyz' ||
-            (p.domains || []).some((d) => d.name === 'observations.moth1.xyz')
-        ) || projData.projects?.[0];
-        if (found) resolvedProjectId = found.id;
+        const projectList = Array.isArray(projData.projects) ? projData.projects : [];
+        const found =
+          projectList.find((p) => p.link?.repo?.toLowerCase() === 'observations-by-moth1') ||
+          projectList.find((p) => p.name?.toLowerCase() === 'observations-by-moth1') ||
+          projectList.find((p) => p.name?.toLowerCase() === 'scrollytelling-exploration-engine') ||
+          projectList.find((p) => (p.targets?.production?.alias || []).includes('observations.moth1.xyz')) ||
+          projectList.find((p) => p.targets?.production?.domain === 'observations.moth1.xyz') ||
+          projectList.find((p) => (p.domains || []).some((d) => (d.name || d) === 'observations.moth1.xyz')) ||
+          projectList.find((p) => p.name?.toLowerCase().includes('observations')) ||
+          projectList[0];
+
+        if (found) {
+          resolvedProjectId = found.id;
+          resolvedProjectName = found.name;
+        }
+      } else {
+        const errText = await projRes.text().catch(() => '');
+        return {
+          connected: false,
+          error: `Vercel /v9/projects API returned HTTP ${projRes.status}: ${errText.slice(0, 120)}`,
+        };
       }
     }
 
     if (!resolvedProjectId) {
-      return { connected: false, error: 'Could not resolve Vercel project ID' };
+      return {
+        connected: false,
+        error: 'Could not resolve Vercel project ID. Please provide Vercel Project ID explicitly.',
+      };
     }
 
     // Date range: last 30 days
@@ -619,18 +640,54 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
     const since = thirtyDaysAgo.toISOString();
     const until = now.toISOString();
 
+    // 1. Query cumulative /visits/count
+    let countPageviews = 0;
+    let countVisitors = 0;
+    try {
+      const countUrl = new URL('https://api.vercel.com/v1/query/web-analytics/visits/count');
+      countUrl.searchParams.set('projectId', resolvedProjectId);
+      if (vercelTeamId) countUrl.searchParams.set('teamId', String(vercelTeamId).trim());
+      countUrl.searchParams.set('since', since);
+      countUrl.searchParams.set('until', until);
+
+      const cRes = await fetch(countUrl.toString(), { headers });
+      if (cRes.ok) {
+        const cJson = await cRes.json();
+        const cData = cJson.data || cJson;
+        countPageviews = Number(cData.pageviews || cData.totalPageviews || 0) || 0;
+        countVisitors = Number(cData.visitors || cData.totalVisitors || 0) || 0;
+      }
+    } catch {
+      // fallback to aggregate
+    }
+
+    // 2. Query dimensions via /visits/aggregate
     const fetchDimension = async (byField) => {
       try {
         const u = new URL('https://api.vercel.com/v1/query/web-analytics/visits/aggregate');
         u.searchParams.set('projectId', resolvedProjectId);
-        if (vercelTeamId) u.searchParams.set('teamId', vercelTeamId);
+        if (vercelTeamId) u.searchParams.set('teamId', String(vercelTeamId).trim());
         u.searchParams.set('since', since);
         u.searchParams.set('until', until);
         u.searchParams.set('by', byField);
         u.searchParams.set('limit', '100');
 
         const r = await fetch(u.toString(), { headers });
-        if (!r.ok) return [];
+        if (!r.ok) {
+          // If ISO format failed, try millisecond timestamp format
+          const altU = new URL('https://api.vercel.com/v1/query/web-analytics/visits/aggregate');
+          altU.searchParams.set('projectId', resolvedProjectId);
+          if (vercelTeamId) altU.searchParams.set('teamId', String(vercelTeamId).trim());
+          altU.searchParams.set('since', String(thirtyDaysAgo.getTime()));
+          altU.searchParams.set('until', String(now.getTime()));
+          altU.searchParams.set('by', byField);
+          altU.searchParams.set('limit', '100');
+
+          const altR = await fetch(altU.toString(), { headers });
+          if (!altR.ok) return [];
+          const altJson = await altR.json();
+          return Array.isArray(altJson.data) ? altJson.data : [];
+        }
         const resJson = await r.json();
         return Array.isArray(resJson.data) ? resJson.data : [];
       } catch {
@@ -650,10 +707,12 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
     ]);
 
     const totalPageviews = Math.max(
+      countPageviews,
       days.reduce((sum, d) => sum + (Number(d.pageviews) || 0), 0),
       paths.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0)
     );
     const totalVisitors = Math.max(
+      countVisitors,
       days.reduce((sum, d) => sum + (Number(d.visitors) || 0), 0),
       paths.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0)
     );
@@ -661,6 +720,7 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
     return {
       connected: true,
       projectId: resolvedProjectId,
+      projectName: resolvedProjectName,
       totalPageviews,
       totalVisitors,
       days,

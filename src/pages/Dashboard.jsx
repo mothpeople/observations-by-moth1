@@ -154,6 +154,8 @@ function OsIcon({ osName }) {
 
 const APIFY_TOKEN_STORAGE_KEY = 'moth1_apify_token';
 const VERCEL_TOKEN_STORAGE_KEY = 'moth1_vercel_token_v1';
+const VERCEL_PROJECT_ID_STORAGE_KEY = 'moth1_vercel_project_id_v1';
+const VERCEL_TEAM_ID_STORAGE_KEY = 'moth1_vercel_team_id_v1';
 const APIFY_TARGETS_STORAGE_KEY = 'moth1_apify_targets_v2';
 const OWNER_UNLOCK_STORAGE_KEY = 'moth1_owner_unlocked_v1';
 
@@ -797,6 +799,16 @@ export default function Dashboard() {
     return window.localStorage.getItem(VERCEL_TOKEN_STORAGE_KEY) || '';
   });
 
+  const [vercelProjectId, setVercelProjectId] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem(VERCEL_PROJECT_ID_STORAGE_KEY) || '';
+  });
+
+  const [vercelTeamId, setVercelTeamId] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem(VERCEL_TEAM_ID_STORAGE_KEY) || '';
+  });
+
   const [vercelAnalytics, setVercelAnalytics] = useState(null);
   const [storyClickStats, setStoryClickStats] = useState(null);
 
@@ -864,6 +876,8 @@ export default function Dashboard() {
         const headers = {};
         if (activeToken) headers['X-Apify-Token'] = activeToken;
         if (activeVercelToken) headers['X-Vercel-Token'] = activeVercelToken;
+        if (vercelProjectId.trim()) headers['X-Vercel-Project-Id'] = vercelProjectId.trim();
+        if (vercelTeamId.trim()) headers['X-Vercel-Team-Id'] = vercelTeamId.trim();
 
         // Fetch server /api/analytics, /api/track-story-click + direct browser Apify datasets for all 4 actors in parallel
         const [
@@ -1023,7 +1037,7 @@ export default function Dashboard() {
         });
 
         // 5. Vercel Web Analytics Cloud Metrics
-        if (serverJson?.vercel?.connected) {
+        if (serverJson?.vercel) {
           setVercelAnalytics(serverJson.vercel);
         }
 
@@ -1245,7 +1259,7 @@ export default function Dashboard() {
         setLoadingSync(false);
       }
     },
-    [apifyToken, vercelToken]
+    [apifyToken, vercelToken, vercelProjectId, vercelTeamId]
   );
 
   useEffect(() => {
@@ -1256,9 +1270,13 @@ export default function Dashboard() {
     e.preventDefault();
     const cleanedToken = apifyToken.trim();
     const cleanedVercel = vercelToken.trim();
+    const cleanedProjectId = vercelProjectId.trim();
+    const cleanedTeamId = vercelTeamId.trim();
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(APIFY_TOKEN_STORAGE_KEY, cleanedToken);
       window.localStorage.setItem(VERCEL_TOKEN_STORAGE_KEY, cleanedVercel);
+      window.localStorage.setItem(VERCEL_PROJECT_ID_STORAGE_KEY, cleanedProjectId);
+      window.localStorage.setItem(VERCEL_TEAM_ID_STORAGE_KEY, cleanedTeamId);
       window.localStorage.setItem(
         APIFY_TARGETS_STORAGE_KEY,
         JSON.stringify(targets)
@@ -1549,11 +1567,37 @@ export default function Dashboard() {
     facebookState.items.filter((item) => isFacebookVideoReel(item, item))
   );
 
+  // Resolve pageviews and visitors for a given route, aggregating all visits with query parameters (?utm_...) and trailing slashes
+  const getRouteMetrics = (routePath) => {
+    const targetPath = (routePath || '').split('?')[0].replace(/\/+$/, '') || '/';
+    if (vercelAnalytics?.connected && Array.isArray(vercelAnalytics.paths)) {
+      const matches = vercelAnalytics.paths.filter((p) => {
+        const itemPath = (p.requestPath || p.path || p.route || '').split('?')[0].replace(/\/+$/, '') || '/';
+        return itemPath === targetPath;
+      });
+      if (matches.length > 0) {
+        return {
+          pageviews: matches.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0),
+          visitors: matches.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0),
+        };
+      }
+    }
+    const fallback = ledger.website.routes.find((r) => r.path === routePath);
+    return {
+      pageviews: Number(fallback?.views) || 0,
+      visitors: 0,
+    };
+  };
+
   // Computed Aggregates
   const totalWebViews =
-    vercelAnalytics?.totalPageviews ||
-    ledger.website.routes.reduce((sum, r) => sum + (Number(r.views) || 0), 0);
-  const totalWebVisitors = vercelAnalytics?.totalVisitors || 0;
+    vercelAnalytics?.connected && typeof vercelAnalytics.totalPageviews === 'number'
+      ? vercelAnalytics.totalPageviews
+      : ledger.website.routes.reduce((sum, r) => sum + (Number(r.views) || 0), 0);
+  const totalWebVisitors =
+    vercelAnalytics?.connected && typeof vercelAnalytics.totalVisitors === 'number'
+      ? vercelAnalytics.totalVisitors
+      : 0;
   const totalWebShares = ledger.website.routes.reduce(
     (sum, r) => sum + (Number(r.shares) || 0),
     0
@@ -1917,7 +1961,7 @@ export default function Dashboard() {
             className="p-4 sm:p-6"
           >
             <form onSubmit={handleSaveConfig} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-3.5">
                 <div className="space-y-1">
                   <label className="block font-mono text-[11px] text-[#67e8f9] font-bold uppercase">
                     Apify API Token
@@ -1941,6 +1985,19 @@ export default function Dashboard() {
                     onChange={(e) => setVercelToken(e.target.value)}
                     placeholder="Vercel Access Token..."
                     className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#86efac] focus:outline-none focus:border-[#86efac]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block font-mono text-[11px] text-slate-400 font-bold uppercase">
+                    Vercel Project ID
+                  </label>
+                  <input
+                    type="text"
+                    value={vercelProjectId}
+                    onChange={(e) => setVercelProjectId(e.target.value)}
+                    placeholder="Auto-detected"
+                    className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-[#86efac]"
                   />
                 </div>
 
@@ -2515,15 +2572,48 @@ export default function Dashboard() {
             </a>
           </div>
 
+          {/* Vercel Live Status / Disconnect Alert */}
+          {!vercelAnalytics?.connected ? (
+            <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 font-mono text-xs text-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="space-y-0.5">
+                <div className="font-bold flex items-center gap-1.5">
+                  <span>⚠ Vercel Web Analytics Offline / Not Connected</span>
+                </div>
+                <div className="text-[11px] text-amber-200/80">
+                  {vercelAnalytics?.error || 'No live Vercel token detected in browser or environment. Displaying offline baseline.'}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowApifyConfig(true)}
+                className="inline-flex items-center justify-center gap-1.5 text-white bg-amber-500/20 border border-amber-500/50 hover:bg-amber-500/30 px-3 py-1.5 text-xs font-bold shrink-0 cursor-pointer transition-colors"
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>Enter Vercel Token</span>
+              </button>
+            </div>
+          ) : (
+            <div className="mb-4 p-2.5 bg-[#86efac]/10 border border-[#86efac]/30 font-mono text-xs text-[#86efac] flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#86efac] animate-pulse" />
+                <span className="font-bold">
+                  Live Vercel Analytics Connected ({vercelAnalytics.projectName || vercelAnalytics.projectId})
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-300">
+                <strong>{totalWebViews.toLocaleString()}</strong> Total Pageviews • <strong>{totalWebVisitors.toLocaleString()}</strong> Unique Visitors
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
             {ledger.website.routes.map((route) => {
-              const maxViews = Math.max(
-                10,
-                ...ledger.website.routes.map((r) => Number(r.views) || 0)
-              );
+              const metrics = getRouteMetrics(route.path);
+              const allRouteViews = ledger.website.routes.map((r) => getRouteMetrics(r.path).pageviews);
+              const maxViews = Math.max(1, ...allRouteViews);
               const barPct = Math.min(
                 100,
-                Math.round(((Number(route.views) || 0) / maxViews) * 100)
+                Math.round((metrics.pageviews / maxViews) * 100)
               );
 
               return (
@@ -2554,7 +2644,7 @@ export default function Dashboard() {
                         PAGEVIEWS
                       </div>
                       <div className="text-sm font-bold text-[#86efac]">
-                        {(vercelAnalytics?.paths?.find((p) => p.requestPath === route.path)?.pageviews || route.views || 0).toLocaleString()}
+                        {metrics.pageviews.toLocaleString()}
                       </div>
                     </div>
                     <div>
@@ -2562,7 +2652,7 @@ export default function Dashboard() {
                         VISITORS
                       </div>
                       <div className="text-sm font-bold text-[#67e8f9]">
-                        {(vercelAnalytics?.paths?.find((p) => p.requestPath === route.path)?.visitors || 0).toLocaleString()}
+                        {metrics.visitors.toLocaleString()}
                       </div>
                     </div>
                   </div>
