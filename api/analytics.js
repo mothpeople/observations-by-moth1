@@ -796,200 +796,211 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const headerToken = req.headers['x-apify-token'];
-  const queryToken = req.query?.apifyToken;
-  const apifyToken =
-    headerToken ||
-    queryToken ||
-    process.env.APIFY_TOKEN ||
-    process.env.APIFY_API_TOKEN ||
-    '';
+  try {
+    const headerToken = req.headers['x-apify-token'];
+    const queryToken = req.query?.apifyToken;
+    const apifyToken =
+      headerToken ||
+      queryToken ||
+      process.env.APIFY_TOKEN ||
+      process.env.APIFY_API_TOKEN ||
+      '';
 
-  const vercelToken =
-    req.headers['x-vercel-token'] ||
-    req.query?.vercelToken ||
-    process.env.VERCEL_TOKEN ||
-    process.env.VERCEL_ACCESS_TOKEN ||
-    '';
-  const vercelProjectId =
-    req.headers['x-vercel-project-id'] ||
-    req.query?.vercelProjectId ||
-    process.env.VERCEL_PROJECT_ID ||
-    '';
-  const vercelTeamId =
-    req.headers['x-vercel-team-id'] ||
-    req.query?.vercelTeamId ||
-    process.env.VERCEL_TEAM_ID ||
-    '';
+    const vercelToken =
+      req.headers['x-vercel-token'] ||
+      req.query?.vercelToken ||
+      process.env.VERCEL_TOKEN ||
+      process.env.VERCEL_ACCESS_TOKEN ||
+      '';
+    const vercelProjectId =
+      req.headers['x-vercel-project-id'] ||
+      req.query?.vercelProjectId ||
+      process.env.VERCEL_PROJECT_ID ||
+      '';
+    const vercelTeamId =
+      req.headers['x-vercel-team-id'] ||
+      req.query?.vercelTeamId ||
+      process.env.VERCEL_TEAM_ID ||
+      '';
 
-  const [
-    liveSubstack,
-    apifySubstack,
-    apifyInstagram,
-    apifyThreads,
-    apifyFacebook,
-    vercelAnalytics,
-  ] = await Promise.all([
-    fetchLiveSubstackArchive(),
-    fetchActorLastDataset(ACTORS.substack, apifyToken),
-    fetchActorLastDataset(ACTORS.instagram, apifyToken),
-    fetchActorLastDataset(ACTORS.threads, apifyToken),
-    fetchActorLastDataset(ACTORS.facebook, apifyToken),
-    fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId),
-  ]);
+    const [
+      liveSubstack,
+      apifySubstack,
+      apifyInstagram,
+      apifyThreads,
+      apifyFacebook,
+      vercelAnalytics,
+    ] = await Promise.all([
+      fetchLiveSubstackArchive(),
+      fetchActorLastDataset(ACTORS.substack, apifyToken),
+      fetchActorLastDataset(ACTORS.instagram, apifyToken),
+      fetchActorLastDataset(ACTORS.threads, apifyToken),
+      fetchActorLastDataset(ACTORS.facebook, apifyToken),
+      fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId),
+    ]);
 
-  // Merge Substack live + Apify Substack
-  const substackMap = new Map();
-  for (const post of liveSubstack) {
-    substackMap.set(post.slug || post.url || post.title, post);
-  }
-  for (const raw of apifySubstack.items) {
-    const item = normalizeSubstackItem(raw, 0, 'apify-substack-scraper');
-    const key = item.slug || item.url || item.title;
-    const existing = substackMap.get(key);
-    if (existing) {
-      substackMap.set(key, {
-        ...existing,
-        ...item,
-        likes: Math.max(existing.likes || 0, item.likes || 0),
-        comments: Math.max(existing.comments || 0, item.comments || 0),
-        restacks: Math.max(existing.restacks || 0, item.restacks || 0),
-        wordCount: existing.wordCount || item.wordCount || 0,
-        source: 'apify+substack-merged',
-      });
-    } else {
-      substackMap.set(key, item);
+    // Merge Substack live + Apify Substack
+    const substackMap = new Map();
+    for (const post of liveSubstack) {
+      substackMap.set(post.slug || post.url || post.title, post);
     }
+    for (const raw of apifySubstack.items) {
+      const item = normalizeSubstackItem(raw, 0, 'apify-substack-scraper');
+      const key = item.slug || item.url || item.title;
+      const existing = substackMap.get(key);
+      if (existing) {
+        substackMap.set(key, {
+          ...existing,
+          ...item,
+          likes: Math.max(existing.likes || 0, item.likes || 0),
+          comments: Math.max(existing.comments || 0, item.comments || 0),
+          restacks: Math.max(existing.restacks || 0, item.restacks || 0),
+          wordCount: existing.wordCount || item.wordCount || 0,
+          source: 'apify+substack-merged',
+        });
+      } else {
+        substackMap.set(key, item);
+      }
+    }
+    const substackPosts = Array.from(substackMap.values());
+
+    const instagramItems = apifyInstagram.items.map((item, i) =>
+      normalizeInstagramItem(item, i)
+    );
+    const threadsItems = apifyThreads.items.map((item, i) =>
+      normalizeThreadsItem(item, i)
+    );
+    const rawFacebookItems = apifyFacebook.items.map((item, i) =>
+      normalizeFacebookItem(item, i)
+    );
+
+    // Strict Video-Only Filter for Facebook Scraper Data:
+    // Excludes photos, status updates, cover/profile uploads, and zero-metric timeline artifacts.
+    const filteredFacebookItems = rawFacebookItems.filter((item, i) =>
+      isFacebookVideoReel(apifyFacebook.items[i], item)
+    );
+
+    // Sort: Row 1 = Issue 02 ("The Meat Grinder Needs More Meat..."), Row 2 = Issue 01 ("Observations by Moth1 is a new story...")
+    const facebookItems = sortFacebookReelsForDisplay(filteredFacebookItems);
+
+    const fbIssue02Item =
+      facebookItems.find((i) => {
+        const t = `${i.text || ''} ${i.caption || ''}`.toLowerCase();
+        return (
+          t.includes('meat grinder') ||
+          t.includes('billionaires panic') ||
+          t.includes('issue-02') ||
+          t.includes('issue 02')
+        );
+      }) || (facebookItems.length >= 1 ? facebookItems[0] : null);
+
+    const fbIssue01Item =
+      facebookItems.find((i) => {
+        const t = `${i.text || ''} ${i.caption || ''}`.toLowerCase();
+        return (
+          t.includes('watering grass') ||
+          t.includes('new story') ||
+          t.includes('thunderstorm') ||
+          t.includes('issue-01') ||
+          t.includes('issue 01')
+        );
+      }) || (facebookItems.length >= 2 ? facebookItems[1] : null);
+
+    const facebookReels = [
+      {
+        id: 'fb-reel-02',
+        issueId: '02',
+        title: 'The Meat Grinder',
+        views: fbIssue02Item?.views || 0,
+        likes: fbIssue02Item?.likes || 0,
+        comments: fbIssue02Item?.comments || 0,
+        shares: fbIssue02Item?.shares || 0,
+        status: fbIssue02Item ? 'Published' : 'Ready to Post',
+        url: fbIssue02Item?.url || 'https://www.facebook.com/observationsbymoth1',
+      },
+      {
+        id: 'fb-reel-01',
+        issueId: '01',
+        title: 'Watering Grass in a Thunderstorm',
+        views: fbIssue01Item?.views || 0,
+        likes: fbIssue01Item?.likes || 0,
+        comments: fbIssue01Item?.comments || 0,
+        shares: fbIssue01Item?.shares || 0,
+        status: fbIssue01Item ? 'Published' : 'Ready to Post',
+        url: fbIssue01Item?.url || 'https://www.facebook.com/observationsbymoth1',
+      },
+    ];
+
+    const facebookFollowers = Math.max(
+      0,
+      ...apifyFacebook.items.map(
+        (item) =>
+          Number(
+            item.pageFollowersCount ??
+              item.pageFollowers ??
+              item.followersCount ??
+              item.pageLikesCount ??
+              item.pageLikes ??
+              item.pageInfo?.followersCount ??
+              item.pageInfo?.likesCount ??
+              item.user?.followersCount ??
+              item.followers ??
+              0
+          ) || 0
+      )
+    );
+    const instagramFollowers = instagramItems.reduce(
+      (max, item) => Math.max(max, item.followers || 0),
+      0
+    );
+    const threadsFollowers = threadsItems.reduce(
+      (max, item) => Math.max(max, item.followers || 0),
+      0
+    );
+    const substackSubscribers = substackPosts.reduce(
+      (max, item) => Math.max(max, item.subscribers || 0),
+      0
+    );
+
+    return res.status(200).json({
+      timestamp: new Date().toISOString(),
+      apifyConfigured: Boolean(apifyToken),
+      substack: {
+        actorId: 'automation-lab/substack-scraper',
+        connected: apifySubstack.connected,
+        runInfo: apifySubstack.runInfo,
+        apifyItemCount: apifySubstack.items.length,
+        subscribers: substackSubscribers,
+        posts: substackPosts,
+      },
+      instagram: {
+        actorId: 'apify/instagram-scraper',
+        connected: apifyInstagram.connected,
+        runInfo: apifyInstagram.runInfo,
+        followers: instagramFollowers,
+        items: instagramItems,
+      },
+      threads: {
+        actorId: 'automation-lab/threads-scraper',
+        connected: apifyThreads.connected,
+        runInfo: apifyThreads.runInfo,
+        followers: threadsFollowers,
+        items: threadsItems,
+      },
+      facebook: {
+        actorId: 'apify/facebook-posts-scraper',
+        connected: apifyFacebook.connected,
+        runInfo: apifyFacebook.runInfo,
+        followers: facebookFollowers,
+        items: facebookItems,
+        reels: facebookReels,
+      },
+      vercel: vercelAnalytics,
+    });
+  } catch (err) {
+    console.error('[/api/analytics error]:', err);
+    return res.status(500).json({
+      error: err.message,
+    });
   }
-  const substackPosts = Array.from(substackMap.values());
-
-  const instagramItems = apifyInstagram.items.map((item, i) =>
-    normalizeInstagramItem(item, i)
-  );
-  const threadsItems = apifyThreads.items.map((item, i) =>
-    normalizeThreadsItem(item, i)
-  );
-  const rawFacebookItems = apifyFacebook.items.map((item, i) =>
-    normalizeFacebookItem(item, i)
-  );
-
-  // Strict Video-Only Filter for Facebook Scraper Data:
-  // Excludes photos, status updates, cover/profile uploads, and zero-metric timeline artifacts.
-  const filteredFacebookItems = rawFacebookItems.filter((item, i) =>
-    isFacebookVideoReel(apifyFacebook.items[i], item)
-  );
-
-  // Sort: Row 1 = Issue 02 ("The Meat Grinder Needs More Meat..."), Row 2 = Issue 01 ("Observations by Moth1 is a new story...")
-  const facebookItems = sortFacebookReelsForDisplay(filteredFacebookItems);
-
-  const fbIssue02Item =
-    facebookItems.find((i) => {
-      const t = `${i.text || ''} ${i.caption || ''}`.toLowerCase();
-      return (
-        t.includes('meat grinder') ||
-        t.includes('billionaires panic') ||
-        t.includes('issue-02') ||
-        t.includes('issue 02')
-      );
-    }) || (facebookItems.length >= 1 ? facebookItems[0] : null);
-
-  const fbIssue01Item =
-    facebookItems.find((i) => {
-      const t = `${i.text || ''} ${i.caption || ''}`.toLowerCase();
-      return (
-        t.includes('watering grass') ||
-        t.includes('new story') ||
-        t.includes('thunderstorm') ||
-        t.includes('issue-01') ||
-        t.includes('issue 01')
-      );
-    }) || (facebookItems.length >= 2 ? facebookItems[1] : null);
-
-  const facebookReels = [
-    {
-      id: 'fb-reel-02',
-      issueId: '02',
-      title: 'The Meat Grinder',
-      views: fbIssue02Item?.views || 0,
-      likes: fbIssue02Item?.likes || 0,
-      comments: fbIssue02Item?.comments || 0,
-      shares: fbIssue02Item?.shares || 0,
-      status: fbIssue02Item ? 'Published' : 'Ready to Post',
-      url: fbIssue02Item?.url || 'https://www.facebook.com/observationsbymoth1',
-    },
-    {
-      id: 'fb-reel-01',
-      issueId: '01',
-      title: 'Watering Grass in a Thunderstorm',
-      views: fbIssue01Item?.views || 0,
-      likes: fbIssue01Item?.likes || 0,
-      comments: fbIssue01Item?.comments || 0,
-      shares: fbIssue01Item?.shares || 0,
-      status: fbIssue01Item ? 'Published' : 'Ready to Post',
-      url: fbIssue01Item?.url || 'https://www.facebook.com/observationsbymoth1',
-    },
-  ];
-
-  const facebookFollowers = Math.max(
-    0,
-    ...apifyFacebook.items.map(
-      (item) =>
-        Number(
-          item.pageFollowersCount ??
-            item.pageFollowers ??
-            item.followersCount ??
-            item.pageLikesCount ??
-            item.pageLikes ??
-            item.pageInfo?.followersCount ??
-            item.pageInfo?.likesCount ??
-            item.user?.followersCount ??
-            item.followers ??
-            0
-        ) || 0
-    )
-  );
-  const threadsFollowers = threadsItems.reduce(
-    (max, item) => Math.max(max, item.followers || 0),
-    0
-  );
-  const substackSubscribers = substackPosts.reduce(
-    (max, item) => Math.max(max, item.subscribers || 0),
-    0
-  );
-
-  return res.status(200).json({
-    timestamp: new Date().toISOString(),
-    apifyConfigured: Boolean(apifyToken),
-    substack: {
-      actorId: 'automation-lab/substack-scraper',
-      connected: apifySubstack.connected,
-      runInfo: apifySubstack.runInfo,
-      apifyItemCount: apifySubstack.items.length,
-      subscribers: substackSubscribers,
-      posts: substackPosts,
-    },
-    instagram: {
-      actorId: 'apify/instagram-scraper',
-      connected: apifyInstagram.connected,
-      runInfo: apifyInstagram.runInfo,
-      followers: instagramFollowers,
-      items: instagramItems,
-    },
-    threads: {
-      actorId: 'automation-lab/threads-scraper',
-      connected: apifyThreads.connected,
-      runInfo: apifyThreads.runInfo,
-      followers: threadsFollowers,
-      items: threadsItems,
-    },
-    facebook: {
-      actorId: 'apify/facebook-posts-scraper',
-      connected: apifyFacebook.connected,
-      runInfo: apifyFacebook.runInfo,
-      followers: facebookFollowers,
-      items: facebookItems,
-      reels: facebookReels,
-    },
-    vercel: vercelAnalytics,
-  });
 }
