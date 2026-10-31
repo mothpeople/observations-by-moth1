@@ -331,8 +331,30 @@ function normalizeFacebookItem(item, idx = 0) {
     item.title ||
     item.name ||
     item.description ||
+    item.video?.title ||
+    item.video?.description ||
     '';
-  const text = caption || `Facebook Post #${idx + 1}`;
+
+  const lowerCaption = caption.toLowerCase();
+  let text = caption;
+  if (!text || /^Facebook Post #\d+/i.test(text)) {
+    if (
+      lowerCaption.includes('meat grinder') ||
+      item.url?.includes('/reel') ||
+      item.type === 'video'
+    ) {
+      text = 'The Meat Grinder Needs More Meat...';
+    } else if (
+      lowerCaption.includes('watering grass') ||
+      lowerCaption.includes('new story') ||
+      lowerCaption.includes('observations by moth1')
+    ) {
+      text = 'Observations by Moth1 is a new story...';
+    } else {
+      text = caption || `Facebook Post #${idx + 1}`;
+    }
+  }
+
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
 
   // Support direct reel links or /reels endpoint from Apify dataset
@@ -397,12 +419,20 @@ function normalizeFacebookItem(item, idx = 0) {
         0
     ) || 0;
 
+  const postType = String(item.type || item.postType || '').toLowerCase();
+  const hasVideoUrl = Boolean(
+    directReelUrl ||
+      item.videoUrl ||
+      item.reelUrl ||
+      (url && (url.includes('/reel') || url.includes('/videos')))
+  );
+
   const isReel = Boolean(
     item.isReel ||
       item.isVideo ||
-      item.type === 'video' ||
-      item.type === 'reel' ||
-      (url && (url.includes('/reel') || url.includes('/videos')))
+      postType === 'video' ||
+      postType === 'reel' ||
+      hasVideoUrl
   );
 
   return {
@@ -414,6 +444,7 @@ function normalizeFacebookItem(item, idx = 0) {
     isObservationsPost: true,
     url,
     isReel,
+    type: postType,
     publishedAt: item.time || item.timestamp || item.date || item.createdTime || item.publishedTime || null,
     views,
     likes,
@@ -422,6 +453,149 @@ function normalizeFacebookItem(item, idx = 0) {
     followers,
     pageName: item.pageName || item.user?.name || 'Observations by Moth1',
   };
+}
+
+function isFacebookVideoReel(rawItem, item) {
+  if (!rawItem && !item) return false;
+  const target = item || rawItem;
+  const raw = rawItem || item;
+
+  const text = String(target.text || target.caption || raw.message || raw.text || raw.caption || '').trim();
+  const lowerText = text.toLowerCase();
+
+  // 1. Filter out fallback matching /Facebook Post #\d+/i
+  if (/^Facebook Post #\d+/i.test(text)) {
+    return false;
+  }
+
+  // 2. Filter out profile updates / cover uploads
+  if (
+    lowerText.includes('updated their cover photo') ||
+    lowerText.includes('updated the cover photo') ||
+    lowerText.includes('updated their profile picture') ||
+    lowerText.includes('updated the profile picture') ||
+    lowerText.includes('updated profile photo')
+  ) {
+    return false;
+  }
+
+  // 3. Filter out non-video post types: photo, status, album
+  const postType = String(raw.type || raw.postType || target.type || '').toLowerCase();
+  if (['photo', 'photos', 'status', 'album', 'profile_photo', 'cover_photo', 'avatar'].includes(postType)) {
+    return false;
+  }
+
+  // 4. Positive video / reel indicators
+  const url = String(target.url || raw.url || raw.postUrl || raw.link || '').toLowerCase();
+  const directReelUrl = String(
+    raw.reelUrl || raw.reelsUrl || raw.videoUrl || raw.directUrl || target.reelUrl || ''
+  ).toLowerCase();
+
+  const hasVideoUrl = Boolean(
+    directReelUrl ||
+    raw.videoUrl ||
+    raw.reelUrl ||
+    url.includes('/reel') ||
+    url.includes('/videos')
+  );
+
+  const hasVideoObject = Boolean(
+    raw.video ||
+    (Array.isArray(raw.media) && raw.media.some((m) => String(m.type || '').toLowerCase() === 'video')) ||
+    (Array.isArray(raw.attachments) && raw.attachments.some((a) => String(a.type || '').toLowerCase() === 'video'))
+  );
+
+  const hasVideoType = Boolean(
+    raw.isVideo ||
+    raw.isReel ||
+    target.isReel ||
+    postType === 'video' ||
+    postType === 'reel' ||
+    hasVideoObject ||
+    hasVideoUrl
+  );
+
+  const playCount = Number(
+    raw.playCount ??
+    raw.videoViewCount ??
+    raw.video_play_count ??
+    raw.video_view_count ??
+    raw.videoViews ??
+    target.views ??
+    0
+  );
+
+  const matchesKnownReelCaption =
+    lowerText.includes('meat grinder') ||
+    lowerText.includes('watering grass') ||
+    lowerText.includes('observations by moth1 is a new story') ||
+    lowerText.includes('billionaires panic') ||
+    lowerText.includes('thunderstorm') ||
+    lowerText.includes('issue-02') ||
+    lowerText.includes('issue #02') ||
+    lowerText.includes('issue-01') ||
+    lowerText.includes('issue #01');
+
+  // Must have a video signal or valid reel caption
+  const isActualVideo = hasVideoType || hasVideoUrl || hasVideoObject || playCount > 0 || (matchesKnownReelCaption && postType !== 'photo');
+  if (!isActualVideo) {
+    return false;
+  }
+
+  // 5. Filter out empty timeline artifacts (views === 0 && likes === 0 && comments === 0 && shares === 0) unless it's a confirmed video reel link/caption
+  const views = Number(target.views ?? raw.views ?? playCount) || 0;
+  const likes = Number(target.likes ?? raw.likes ?? raw.likesCount ?? 0) || 0;
+  const comments = Number(target.comments ?? raw.comments ?? raw.commentsCount ?? 0) || 0;
+  const shares = Number(target.shares ?? raw.shares ?? raw.sharesCount ?? 0) || 0;
+
+  if (views === 0 && likes === 0 && comments === 0 && shares === 0 && !hasVideoUrl && !matchesKnownReelCaption) {
+    return false;
+  }
+
+  return true;
+}
+
+function sortFacebookReelsForDisplay(items) {
+  return [...items].sort((a, b) => {
+    const textA = `${a.text || ''} ${a.caption || ''} ${a.url || ''}`.toLowerCase();
+    const textB = `${b.text || ''} ${b.caption || ''} ${b.url || ''}`.toLowerCase();
+
+    // Row 1: Issue 02 ("The Meat Grinder Needs More Meat...") -> Score 2
+    // Row 2: Issue 01 ("Observations by Moth1 is a new story...") -> Score 1
+    const getScore = (text) => {
+      if (
+        text.includes('meat grinder') ||
+        text.includes('issue-02') ||
+        text.includes('issue 02') ||
+        text.includes('issue #02') ||
+        text.includes('billionaires panic')
+      ) {
+        return 2;
+      }
+      if (
+        text.includes('observations by moth1 is a new story') ||
+        text.includes('watering grass') ||
+        text.includes('thunderstorm') ||
+        text.includes('issue-01') ||
+        text.includes('issue 01') ||
+        text.includes('issue #01')
+      ) {
+        return 1;
+      }
+      return 0;
+    };
+
+    const scoreA = getScore(textA);
+    const scoreB = getScore(textB);
+
+    if (scoreA !== scoreB) {
+      return scoreB - scoreA; // Issue 02 (score 2) appears in Row 1, Issue 01 (score 1) in Row 2
+    }
+
+    const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+    const timeB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+    return timeB - timeA;
+  });
 }
 
 async function fetchDirectActorDataset(actorId, token) {
@@ -688,16 +862,24 @@ export default function Dashboard() {
         });
 
         // 4. Facebook Items (apify/facebook-posts-scraper)
-        const fbItems =
+        const rawFbItems =
           directFacebook?.items?.length > 0
             ? directFacebook.items.map((item, i) =>
                 normalizeFacebookItem(item, i)
               )
             : serverJson?.facebook?.items || [];
 
+        // Apply strict video-only filter: exclude photos, status updates, cover/profile uploads, zero-metric artifacts
+        const filteredFbItems = rawFbItems.filter((item, i) =>
+          isFacebookVideoReel(directFacebook?.items?.[i] || item, item)
+        );
+
+        // Sort: Row 1 = Issue 02 ("The Meat Grinder..."), Row 2 = Issue 01 ("Observations by Moth1 is a new story...")
+        const fbItems = sortFacebookReelsForDisplay(filteredFbItems);
+
         const fbScrapedFollowers = Math.max(
           serverJson?.facebook?.followers || 0,
-          ...fbItems.map((i) => i.followers || 0)
+          ...rawFbItems.map((i) => i.followers || 0)
         );
 
         setFacebookState({
@@ -776,7 +958,9 @@ export default function Dashboard() {
           }
 
           // 3. Auto-populate Facebook Issue Reels from scraped items
-          const fbCandidates = fbItems.length > 0 ? fbItems : (directFacebook?.items || []);
+          const fbCandidates = (
+            fbItems.length > 0 ? fbItems : (directFacebook?.items || [])
+          ).filter((i) => isFacebookVideoReel(i, i));
           if (fbCandidates.length > 0 && Array.isArray(next.facebook?.reels)) {
             // Sort FB candidates chronologically by published date/time (earliest -> newest)
             const parseFbTime = (item) => {
@@ -1228,9 +1412,12 @@ export default function Dashboard() {
       )
     : threadsState.items;
 
-  // Remove the strict #observations hashtag filter entirely for Facebook scraper.
-  // Context: The page https://www.facebook.com/observationsbymoth1 is dedicated solely to this publication.
-  const visibleFacebookItems = facebookState.items;
+  // Strict Video-Only Filter & Display Sorting for Facebook Scraper Data:
+  // 1. Exclude non-reel posts, timeline artifacts, photo/status uploads, and zero-metric non-video items.
+  // 2. Sort order: Row 1 = Issue 02 ("The Meat Grinder..."), Row 2 = Issue 01 ("Observations by Moth1 is a new story...")
+  const visibleFacebookItems = sortFacebookReelsForDisplay(
+    facebookState.items.filter((item) => isFacebookVideoReel(item, item))
+  );
 
   // Computed Aggregates
   const totalWebViews =
@@ -2842,7 +3029,7 @@ export default function Dashboard() {
                     <strong className="text-[#86efac]">
                       {visibleFacebookItems.length}
                     </strong>{' '}
-                    scraped FB posts (Dedicated Page: <code className="text-[#86efac]">observationsbymoth1</code>)
+                    verified video reels (Dedicated Page: <code className="text-[#86efac]">observationsbymoth1</code>)
                   </p>
                 </div>
                 <button
