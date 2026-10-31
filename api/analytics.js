@@ -424,6 +424,7 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
         u.searchParams.set('since', since);
         u.searchParams.set('until', until);
         u.searchParams.set('by', byField);
+        u.searchParams.set('limit', '100');
 
         const r = await fetch(u.toString(), { headers });
         if (!r.ok) return [];
@@ -434,7 +435,8 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       }
     };
 
-    const [paths, referrers, countries, devices, osList, utmSources, utmMediums] = await Promise.all([
+    const [days, paths, referrers, countries, devices, osList, utmSources, utmMediums] = await Promise.all([
+      fetchDimension('day'),
       fetchDimension('requestPath'),
       fetchDimension('referrerHostname'),
       fetchDimension('country'),
@@ -444,14 +446,21 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       fetchDimension('utmMedium'),
     ]);
 
-    const totalPageviews = paths.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0);
-    const totalVisitors = paths.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0);
+    const totalPageviews = Math.max(
+      days.reduce((sum, d) => sum + (Number(d.pageviews) || 0), 0),
+      paths.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0)
+    );
+    const totalVisitors = Math.max(
+      days.reduce((sum, d) => sum + (Number(d.visitors) || 0), 0),
+      paths.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0)
+    );
 
     return {
       connected: true,
       projectId: resolvedProjectId,
       totalPageviews,
       totalVisitors,
+      days,
       paths,
       referrers,
       countries,
