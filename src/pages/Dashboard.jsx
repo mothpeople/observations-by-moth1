@@ -10,6 +10,8 @@ import {
   Cpu,
   Edit2,
   ExternalLink,
+  Eye,
+  EyeOff,
   Film,
   Filter,
   Globe,
@@ -810,6 +812,8 @@ export default function Dashboard() {
   });
 
   const [vercelAnalytics, setVercelAnalytics] = useState(null);
+  const [showVercelToken, setShowVercelToken] = useState(false);
+  const [showApifyToken, setShowApifyToken] = useState(false);
   const [storyClickStats, setStoryClickStats] = useState(null);
 
   const [isOwnerUnlocked, setIsOwnerUnlocked] = useState(() => {
@@ -1963,11 +1967,25 @@ export default function Dashboard() {
             <form onSubmit={handleSaveConfig} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-3.5">
                 <div className="space-y-1">
-                  <label className="block font-mono text-[11px] text-[#67e8f9] font-bold uppercase">
-                    Apify API Token
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block font-mono text-[11px] text-[#67e8f9] font-bold uppercase">
+                      Apify API Token
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowApifyToken((prev) => !prev)}
+                      className="text-slate-400 hover:text-[#67e8f9] cursor-pointer"
+                      title={showApifyToken ? 'Hide token' : 'Show token'}
+                    >
+                      {showApifyToken ? (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
                   <input
-                    type="password"
+                    type={showApifyToken ? 'text' : 'password'}
                     value={apifyToken}
                     onChange={(e) => setApifyToken(e.target.value)}
                     placeholder="apify_api_..."
@@ -1976,11 +1994,25 @@ export default function Dashboard() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-mono text-[11px] text-[#86efac] font-bold uppercase">
-                    Vercel Read Token
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block font-mono text-[11px] text-[#86efac] font-bold uppercase">
+                      Vercel Read Token
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowVercelToken((prev) => !prev)}
+                      className="text-slate-400 hover:text-[#86efac] cursor-pointer"
+                      title={showVercelToken ? 'Hide token' : 'Show token'}
+                    >
+                      {showVercelToken ? (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
                   <input
-                    type="password"
+                    type={showVercelToken ? 'text' : 'password'}
                     value={vercelToken}
                     onChange={(e) => setVercelToken(e.target.value)}
                     placeholder="Vercel Access Token..."
