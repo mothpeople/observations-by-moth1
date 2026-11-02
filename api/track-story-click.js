@@ -8,8 +8,8 @@ const TMP_FILE = '/tmp/moth1_story_telemetry.json';
 const DEFAULT_DATA = {
   issues: {
     'the-meat-grinder': {
-      instagram: { clicks: 2, scroll75: 0, subscribers: 0 },
-      facebook: { clicks: 10, scroll75: 0, subscribers: 0 },
+      instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
+      facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
     },
     'watering-grass-in-a-thunderstorm': {
       instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
@@ -17,8 +17,8 @@ const DEFAULT_DATA = {
     },
   },
   total: {
-    instagram: { clicks: 2, scroll75: 0, subscribers: 0 },
-    facebook: { clicks: 10, scroll75: 0, subscribers: 0 },
+    instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
+    facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
   },
   recent: [],
 };

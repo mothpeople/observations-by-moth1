@@ -950,68 +950,27 @@ export default async function handler(req, res) {
         );
       }) || (facebookItems.length >= 2 ? facebookItems[1] : null);
 
-    const fallbackFacebookItems = [
-      {
-        id: 'fb-item-02',
-        text: 'Issue 02 - The Meat Grinder Needs More Meat',
-        caption: 'Issue 02 - The Meat Grinder Needs More Meat',
-        views: 29,
-        likes: 0,
-        comments: 1,
-        shares: 0,
-        url: 'https://www.facebook.com/observationsbymoth1',
-        isReel: true,
-        type: 'reel',
-      },
-      {
-        id: 'fb-item-01',
-        text: 'Observations by Moth1 is a new story...',
-        caption: 'Observations by Moth1 is a new story...',
-        views: 36,
-        likes: 0,
-        comments: 1,
-        shares: 0,
-        url: 'https://www.facebook.com/observationsbymoth1',
-        isReel: true,
-        type: 'reel',
-      },
-    ];
-
-    const effectiveFacebookItems =
-      facebookItems.length > 0
-        ? facebookItems.map((item) => {
-            const t = `${item.text || ''} ${item.caption || ''}`.toLowerCase();
-            if (t.includes('meat grinder') || t.includes('issue-02') || t.includes('issue 02')) {
-              return { ...item, views: Math.max(Number(item.views) || 0, 29) };
-            }
-            if (t.includes('watering grass') || t.includes('issue-01') || t.includes('issue 01') || t.includes('new story')) {
-              return { ...item, views: Math.max(Number(item.views) || 0, 36) };
-            }
-            return item;
-          })
-        : fallbackFacebookItems;
-
     const facebookReels = [
       {
         id: 'fb-reel-02',
         issueId: '02',
         title: 'The Meat Grinder',
-        views: Math.max(Number(fbIssue02Item?.views) || 0, 29),
-        likes: fbIssue02Item?.likes ?? 0,
-        comments: fbIssue02Item?.comments ?? 1,
-        shares: fbIssue02Item?.shares ?? 0,
-        status: 'Published',
+        views: Number(fbIssue02Item?.views) || 0,
+        likes: Number(fbIssue02Item?.likes) || 0,
+        comments: Number(fbIssue02Item?.comments) || 0,
+        shares: Number(fbIssue02Item?.shares) || 0,
+        status: fbIssue02Item ? 'Published' : 'Ready to Post',
         url: fbIssue02Item?.url || 'https://www.facebook.com/observationsbymoth1',
       },
       {
         id: 'fb-reel-01',
         issueId: '01',
         title: 'Watering Grass in a Thunderstorm',
-        views: Math.max(Number(fbIssue01Item?.views) || 0, 36),
-        likes: fbIssue01Item?.likes ?? 0,
-        comments: fbIssue01Item?.comments ?? 1,
-        shares: fbIssue01Item?.shares ?? 0,
-        status: 'Published',
+        views: Number(fbIssue01Item?.views) || 0,
+        likes: Number(fbIssue01Item?.likes) || 0,
+        comments: Number(fbIssue01Item?.comments) || 0,
+        shares: Number(fbIssue01Item?.shares) || 0,
+        status: fbIssue01Item ? 'Published' : 'Ready to Post',
         url: fbIssue01Item?.url || 'https://www.facebook.com/observationsbymoth1',
       },
     ];
@@ -1077,7 +1036,7 @@ export default async function handler(req, res) {
         connected: apifyFacebook.connected,
         runInfo: apifyFacebook.runInfo,
         followers: facebookFollowers,
-        items: effectiveFacebookItems,
+        items: facebookItems,
         reels: facebookReels,
       },
       vercel: vercelAnalytics,

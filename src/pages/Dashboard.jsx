@@ -1219,10 +1219,7 @@ export default function Dashboard() {
                 return reel;
               }
 
-              const baselineViews =
-                reel.issueId === '02' ? 29 : (reel.issueId === '01' ? 36 : 0);
               const maxViews = Math.max(
-                baselineViews,
                 Number(reel.views) || 0,
                 ...effectiveMatches.map(
                   (m) =>
@@ -1663,52 +1660,9 @@ export default function Dashboard() {
   // Strict Video-Only Filter & Display Sorting for Facebook Scraper Data:
   // 1. Exclude non-reel posts, timeline artifacts, photo/status uploads, and zero-metric non-video items.
   // 2. Sort order: Row 1 = Issue 02 ("The Meat Grinder..."), Row 2 = Issue 01 ("Observations by Moth1 is a new story...")
-  const scrapedFacebookItems = sortFacebookReelsForDisplay(
+  const visibleFacebookItems = sortFacebookReelsForDisplay(
     facebookState.items.filter((item) => isFacebookVideoReel(item, item))
   );
-
-  const fallbackFacebookItems = [
-    {
-      id: 'fb-issue-02-fallback',
-      text: 'Issue 02 - The Meat Grinder Needs More Meat',
-      caption: 'Issue 02 - The Meat Grinder Needs More Meat',
-      views: Math.max(Number(ledger?.facebook?.reels?.find((r) => r.issueId === '02')?.views) || 0, 29),
-      likes: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '02')?.likes) || 0,
-      comments: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '02')?.comments) || 1,
-      shares: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '02')?.shares) || 0,
-      url: 'https://www.facebook.com/observationsbymoth1',
-      isReel: true,
-      type: 'reel',
-    },
-    {
-      id: 'fb-issue-01-fallback',
-      text: 'Observations by Moth1 is a new story...',
-      caption: 'Observations by Moth1 is a new story...',
-      views: Math.max(Number(ledger?.facebook?.reels?.find((r) => r.issueId === '01')?.views) || 0, 36),
-      likes: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '01')?.likes) || 0,
-      comments: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '01')?.comments) || 1,
-      shares: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '01')?.shares) || 0,
-      url: 'https://www.facebook.com/observationsbymoth1',
-      isReel: true,
-      type: 'reel',
-    },
-  ];
-
-  const candidateFacebookItems =
-    scrapedFacebookItems.length > 0 ? scrapedFacebookItems : fallbackFacebookItems;
-
-  const visibleFacebookItems = candidateFacebookItems.map((item) => {
-    const text = `${item.text || ''} ${item.caption || ''}`.toLowerCase();
-    const is02 = text.includes('meat grinder') || text.includes('issue-02') || text.includes('issue 02') || text.includes('billionaires panic');
-    const is01 = text.includes('watering grass') || text.includes('new story') || text.includes('thunderstorm') || text.includes('issue-01') || text.includes('issue 01');
-    if (is02) {
-      return { ...item, views: Math.max(Number(item.views) || 0, 29) };
-    }
-    if (is01) {
-      return { ...item, views: Math.max(Number(item.views) || 0, 36) };
-    }
-    return item;
-  });
 
   // Resolve pageviews and visitors for a given route, aggregating all visits with query parameters (?utm_...) and trailing slashes
   const getRouteMetrics = (routePath) => {
