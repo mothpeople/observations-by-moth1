@@ -598,15 +598,19 @@ function isFacebookVideoReel(rawItem, item) {
   const target = item || rawItem;
   const raw = rawItem || item;
 
-  const text = String(target.text || target.caption || raw.message || raw.text || raw.caption || '').trim();
+  const text = String(
+    target.text ||
+    target.caption ||
+    raw.message ||
+    raw.text ||
+    raw.caption ||
+    raw.title ||
+    raw.description ||
+    ''
+  ).trim();
   const lowerText = text.toLowerCase();
 
-  // 1. Filter out fallback matching /Facebook Post #\d+/i
-  if (/^Facebook Post #\d+/i.test(text)) {
-    return false;
-  }
-
-  // 2. Filter out profile updates / cover uploads
+  // Exclude profile photo / cover photo updates
   if (
     lowerText.includes('updated their cover photo') ||
     lowerText.includes('updated the cover photo') ||
@@ -617,13 +621,24 @@ function isFacebookVideoReel(rawItem, item) {
     return false;
   }
 
-  // 3. Filter out non-video post types: photo, status, album
-  const postType = String(raw.type || raw.postType || target.type || '').toLowerCase();
-  if (['photo', 'photos', 'status', 'album', 'profile_photo', 'cover_photo', 'avatar'].includes(postType)) {
-    return false;
+  // Known reel keyword match is ALWAYS accepted
+  const matchesKnownReelCaption =
+    lowerText.includes('meat grinder') ||
+    lowerText.includes('watering grass') ||
+    lowerText.includes('observations by moth1') ||
+    lowerText.includes('billionaires panic') ||
+    lowerText.includes('thunderstorm') ||
+    lowerText.includes('issue-02') ||
+    lowerText.includes('issue 02') ||
+    lowerText.includes('issue #02') ||
+    lowerText.includes('issue-01') ||
+    lowerText.includes('issue 01') ||
+    lowerText.includes('issue #01');
+
+  if (matchesKnownReelCaption) {
+    return true;
   }
 
-  // 4. Positive video / reel indicators
   const url = String(target.url || raw.url || raw.postUrl || raw.link || '').toLowerCase();
   const directReelUrl = String(
     raw.reelUrl || raw.reelsUrl || raw.videoUrl || raw.directUrl || target.reelUrl || ''
@@ -637,60 +652,27 @@ function isFacebookVideoReel(rawItem, item) {
     url.includes('/videos')
   );
 
-  const hasVideoObject = Boolean(
-    raw.video ||
-    (Array.isArray(raw.media) && raw.media.some((m) => String(m.type || '').toLowerCase() === 'video')) ||
-    (Array.isArray(raw.attachments) && raw.attachments.some((a) => String(a.type || '').toLowerCase() === 'video'))
-  );
-
-  const hasVideoType = Boolean(
-    raw.isVideo ||
-    raw.isReel ||
-    target.isReel ||
-    postType === 'video' ||
-    postType === 'reel' ||
-    hasVideoObject ||
-    hasVideoUrl
-  );
-
   const playCount = Number(
     raw.playCount ??
     raw.videoViewCount ??
     raw.video_play_count ??
     raw.video_view_count ??
+    raw.viewsCount ??
     raw.videoViews ??
     target.views ??
     0
   );
 
-  const matchesKnownReelCaption =
-    lowerText.includes('meat grinder') ||
-    lowerText.includes('watering grass') ||
-    lowerText.includes('observations by moth1 is a new story') ||
-    lowerText.includes('billionaires panic') ||
-    lowerText.includes('thunderstorm') ||
-    lowerText.includes('issue-02') ||
-    lowerText.includes('issue #02') ||
-    lowerText.includes('issue-01') ||
-    lowerText.includes('issue #01');
-
-  // Must have a video signal or valid reel caption
-  const isActualVideo = hasVideoType || hasVideoUrl || hasVideoObject || playCount > 0 || (matchesKnownReelCaption && postType !== 'photo');
-  if (!isActualVideo) {
-    return false;
+  if (hasVideoUrl || playCount > 0 || raw.isVideo || raw.isReel || target.isReel) {
+    return true;
   }
 
-  // 5. Filter out empty timeline artifacts (views === 0 && likes === 0 && comments === 0 && shares === 0) unless it's a confirmed video reel link/caption
-  const views = Number(target.views ?? raw.views ?? playCount) || 0;
-  const likes = Number(target.likes ?? raw.likes ?? raw.likesCount ?? 0) || 0;
-  const comments = Number(target.comments ?? raw.comments ?? raw.commentsCount ?? 0) || 0;
-  const shares = Number(target.shares ?? raw.shares ?? raw.sharesCount ?? 0) || 0;
-
-  if (views === 0 && likes === 0 && comments === 0 && shares === 0 && !hasVideoUrl && !matchesKnownReelCaption) {
-    return false;
+  // If text is present and not a generic placeholder
+  if (text && !/^Facebook Post #\d+/i.test(text)) {
+    return true;
   }
 
-  return true;
+  return Boolean(hasVideoUrl || playCount > 0);
 }
 
 function sortFacebookReelsForDisplay(items) {
@@ -798,6 +780,94 @@ async function fetchDirectActorDataset(actorId, token) {
         }
       }
     }
+
+    // 3. Fallback: If no items found via actor endpoint, query account-wide actor-runs & actor-tasks (captures task runs or alternative actor runs configured on Apify)
+    const isFb = actorId.includes('facebook');
+    try {
+      const allRunsRes = await fetch(
+        `https://api.apify.com/v2/actor-runs?desc=true&limit=40&token=${encodeURIComponent(token)}`
+      );
+      if (allRunsRes.ok) {
+        const allRunsJson = await allRunsRes.json();
+        const runsList = Array.isArray(allRunsJson?.data?.items) ? allRunsJson.data.items : [];
+        const matchingRuns = runsList.filter((r) => {
+          if (r.status !== 'SUCCEEDED' || !r.defaultDatasetId) return false;
+          const runAct = String(r.actId || r.options?.actId || '').toLowerCase();
+          if (isFb) {
+            return runAct.includes('facebook') || runAct.includes('posts-scraper') || runAct.includes('reels');
+          }
+          return runAct.includes(actorId.replace('~', '/').toLowerCase()) || runAct.includes(actorId.toLowerCase());
+        });
+
+        for (const r of matchingRuns) {
+          const dsRes = await fetch(
+            `https://api.apify.com/v2/datasets/${r.defaultDatasetId}/items?token=${encodeURIComponent(token)}&clean=true`
+          );
+          if (dsRes.ok) {
+            const parsed = await dsRes.json();
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              const runInfo = {
+                id: r.id,
+                status: r.status,
+                startedAt: r.startedAt,
+                finishedAt: r.finishedAt,
+                defaultDatasetId: r.defaultDatasetId,
+              };
+              return { connected: true, runInfo, items: parsed };
+            }
+          }
+        }
+      }
+    } catch {}
+
+    // 4. Also check account actor-tasks
+    try {
+      const tasksRes = await fetch(
+        `https://api.apify.com/v2/actor-tasks?limit=25&token=${encodeURIComponent(token)}`
+      );
+      if (tasksRes.ok) {
+        const tasksJson = await tasksRes.json();
+        const tasksList = Array.isArray(tasksJson?.data?.items) ? tasksJson.data.items : [];
+        const matchingTasks = tasksList.filter((t) => {
+          const tName = String(t.name || t.title || '').toLowerCase();
+          const tAct = String(t.actId || '').toLowerCase();
+          if (isFb) {
+            return tName.includes('facebook') || tName.includes('reels') || tAct.includes('facebook');
+          }
+          return tName.includes(actorId.toLowerCase()) || tAct.includes(actorId.toLowerCase());
+        });
+
+        for (const task of matchingTasks) {
+          const taskRunsRes = await fetch(
+            `https://api.apify.com/v2/actor-tasks/${task.id}/runs?status=SUCCEEDED&limit=5&desc=true&token=${encodeURIComponent(token)}`
+          );
+          if (taskRunsRes.ok) {
+            const taskRunsJson = await taskRunsRes.json();
+            const tRuns = Array.isArray(taskRunsJson?.data?.items) ? taskRunsJson.data.items : [];
+            for (const r of tRuns) {
+              if (r.defaultDatasetId) {
+                const dsRes = await fetch(
+                  `https://api.apify.com/v2/datasets/${r.defaultDatasetId}/items?token=${encodeURIComponent(token)}&clean=true`
+                );
+                if (dsRes.ok) {
+                  const parsed = await dsRes.json();
+                  if (Array.isArray(parsed) && parsed.length > 0) {
+                    const runInfo = {
+                      id: r.id,
+                      status: r.status,
+                      startedAt: r.startedAt,
+                      finishedAt: r.finishedAt,
+                      defaultDatasetId: r.defaultDatasetId,
+                    };
+                    return { connected: true, runInfo, items: parsed };
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch {}
 
     return { connected: true, runInfo: latestRunInfo, items: [] };
   } catch {
