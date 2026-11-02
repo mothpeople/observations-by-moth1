@@ -864,33 +864,19 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       fetchDimension('utmMedium'),
     ]);
 
-    // Prioritize true deduplicated totals from /visits/count; fall back to aggregate sums only if count failed
-    const totalPageviews =
-      countPageviews > 0
-        ? countPageviews
-        : Math.max(
-            days.reduce((sum, d) => sum + (Number(d.pageviews) || 0), 0),
-            paths.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0)
-          );
+    // Compute live totals incorporating real-time in-progress daily visits
+    // (Vercel's cached /visits/count rolls over daily, while daily aggregate includes real-time visits)
+    const aggregateViews = Math.max(
+      days.reduce((sum, d) => sum + (Number(d.pageviews) || 0), 0),
+      paths.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0)
+    );
+    const aggregateVisitors = days.reduce((sum, d) => sum + (Number(d.visitors) || 0), 0);
 
-    const totalVisitors =
-      countVisitors > 0
-        ? countVisitors
-        : Math.max(
-            days.reduce((sum, d) => sum + (Number(d.visitors) || 0), 0),
-            paths.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0)
-          );
+    const totalPageviews = Math.max(countPageviews, aggregateViews);
+    const totalVisitors = Math.max(countVisitors, aggregateVisitors);
 
-    // 100% Dynamic Bounce Rate Calculation:
-    // If Vercel returns bounceRate directly, use it.
-    // If Vercel API only returns count/aggregate, derive bounceRate dynamically from paths and totalVisitors
-    let bounceRate = countBounceRate;
-    if (bounceRate === null && totalVisitors > 0 && paths.length > 0) {
-      const sumPathVisitors = paths.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0);
-      const multiPathVisitors = Math.max(0, sumPathVisitors - totalVisitors);
-      const singlePathVisitors = Math.max(0, totalVisitors - multiPathVisitors);
-      bounceRate = Math.round((singlePathVisitors / totalVisitors) * 100);
-    }
+    // Vercel Web Analytics REST API exposes pageviews and visitors, but restricts session bounceRate to the web console
+    const bounceRate = countBounceRate;
 
     return {
       connected: true,
