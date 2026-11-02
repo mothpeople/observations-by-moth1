@@ -775,16 +775,22 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       fetchDimension('utmMedium'),
     ]);
 
-    const totalPageviews = Math.max(
-      countPageviews,
-      days.reduce((sum, d) => sum + (Number(d.pageviews) || 0), 0),
-      paths.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0)
-    );
-    const totalVisitors = Math.max(
-      countVisitors,
-      days.reduce((sum, d) => sum + (Number(d.visitors) || 0), 0),
-      paths.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0)
-    );
+    // Prioritize true deduplicated totals from /visits/count; fall back to aggregate sums only if count failed
+    const totalPageviews =
+      countPageviews > 0
+        ? countPageviews
+        : Math.max(
+            days.reduce((sum, d) => sum + (Number(d.pageviews) || 0), 0),
+            paths.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0)
+          );
+
+    const totalVisitors =
+      countVisitors > 0
+        ? countVisitors
+        : Math.max(
+            days.reduce((sum, d) => sum + (Number(d.visitors) || 0), 0),
+            paths.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0)
+          );
 
     return {
       connected: true,
