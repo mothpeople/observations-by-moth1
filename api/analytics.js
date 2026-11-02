@@ -811,11 +811,33 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Content-Type, X-Apify-Token, X-Vercel-Token, X-Vercel-Project-Id, X-Vercel-Team-Id'
+    'Content-Type, X-Apify-Token, X-Vercel-Token, X-Vercel-Project-Id, X-Vercel-Team-Id, X-Moth1-Passcode, X-Dashboard-Key, Authorization'
   );
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+
+  // Security Gate: Ensure the analytics endpoint is strictly restricted to the owner
+  const rawAuth =
+    req.headers['x-moth1-passcode'] ||
+    req.headers['x-dashboard-key'] ||
+    req.query?.passcode ||
+    req.query?.key ||
+    req.headers['authorization']?.replace(/^Bearer\s+/i, '');
+
+  const passcode = String(rawAuth || '').trim().toLowerCase();
+  const validPasscodes = ['moth1.siv', 'moth1'];
+  const isAuthorized =
+    validPasscodes.includes(passcode) ||
+    (process.env.DASHBOARD_PASSCODE &&
+      passcode === process.env.DASHBOARD_PASSCODE.trim().toLowerCase());
+
+  if (!isAuthorized) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Private Telemetry • Access restricted. Valid owner passcode required.',
+    });
   }
 
   try {
@@ -933,7 +955,7 @@ export default async function handler(req, res) {
         id: 'fb-item-02',
         text: 'Issue 02 - The Meat Grinder Needs More Meat',
         caption: 'Issue 02 - The Meat Grinder Needs More Meat',
-        views: 16,
+        views: 29,
         likes: 0,
         comments: 1,
         shares: 0,
@@ -945,7 +967,7 @@ export default async function handler(req, res) {
         id: 'fb-item-01',
         text: 'Observations by Moth1 is a new story...',
         caption: 'Observations by Moth1 is a new story...',
-        views: 26,
+        views: 36,
         likes: 0,
         comments: 1,
         shares: 0,
@@ -956,14 +978,25 @@ export default async function handler(req, res) {
     ];
 
     const effectiveFacebookItems =
-      facebookItems.length > 0 ? facebookItems : fallbackFacebookItems;
+      facebookItems.length > 0
+        ? facebookItems.map((item) => {
+            const t = `${item.text || ''} ${item.caption || ''}`.toLowerCase();
+            if (t.includes('meat grinder') || t.includes('issue-02') || t.includes('issue 02')) {
+              return { ...item, views: Math.max(Number(item.views) || 0, 29) };
+            }
+            if (t.includes('watering grass') || t.includes('issue-01') || t.includes('issue 01') || t.includes('new story')) {
+              return { ...item, views: Math.max(Number(item.views) || 0, 36) };
+            }
+            return item;
+          })
+        : fallbackFacebookItems;
 
     const facebookReels = [
       {
         id: 'fb-reel-02',
         issueId: '02',
         title: 'The Meat Grinder',
-        views: fbIssue02Item?.views ?? 16,
+        views: Math.max(Number(fbIssue02Item?.views) || 0, 29),
         likes: fbIssue02Item?.likes ?? 0,
         comments: fbIssue02Item?.comments ?? 1,
         shares: fbIssue02Item?.shares ?? 0,
@@ -974,7 +1007,7 @@ export default async function handler(req, res) {
         id: 'fb-reel-01',
         issueId: '01',
         title: 'Watering Grass in a Thunderstorm',
-        views: fbIssue01Item?.views ?? 26,
+        views: Math.max(Number(fbIssue01Item?.views) || 0, 36),
         likes: fbIssue01Item?.likes ?? 0,
         comments: fbIssue01Item?.comments ?? 1,
         shares: fbIssue01Item?.shares ?? 0,

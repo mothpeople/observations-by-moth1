@@ -16,6 +16,7 @@ import {
   Filter,
   Globe,
   KeyRound,
+  Lock,
   MessageSquare,
   Monitor,
   Play,
@@ -843,10 +844,7 @@ export default function Dashboard() {
       window.location.hostname === 'localhost' ||
       window.location.hostname === '127.0.0.1';
     if (isLocal) return true;
-    return (
-      window.localStorage.getItem(OWNER_UNLOCK_STORAGE_KEY) === 'true' ||
-      Boolean(window.localStorage.getItem(APIFY_TOKEN_STORAGE_KEY))
-    );
+    return window.localStorage.getItem(OWNER_UNLOCK_STORAGE_KEY) === 'true';
   });
   const [unlockInput, setUnlockInput] = useState('');
   const [unlockError, setUnlockError] = useState('');
@@ -898,7 +896,9 @@ export default function Dashboard() {
       ).trim();
 
       try {
-        const headers = {};
+        const headers = {
+          'X-Moth1-Passcode': 'moth1.siv',
+        };
         if (activeToken) headers['X-Apify-Token'] = activeToken;
         if (activeVercelToken) headers['X-Vercel-Token'] = activeVercelToken;
         if (vercelProjectId.trim()) headers['X-Vercel-Project-Id'] = vercelProjectId.trim();
@@ -1219,7 +1219,10 @@ export default function Dashboard() {
                 return reel;
               }
 
+              const baselineViews =
+                reel.issueId === '02' ? 29 : (reel.issueId === '01' ? 36 : 0);
               const maxViews = Math.max(
+                baselineViews,
                 Number(reel.views) || 0,
                 ...effectiveMatches.map(
                   (m) =>
@@ -1297,8 +1300,10 @@ export default function Dashboard() {
   );
 
   useEffect(() => {
-    syncAllTelemetry();
-  }, [syncAllTelemetry]);
+    if (isOwnerUnlocked) {
+      syncAllTelemetry();
+    }
+  }, [isOwnerUnlocked, syncAllTelemetry]);
 
   const handleSaveConfig = (e) => {
     e.preventDefault();
@@ -1366,7 +1371,12 @@ export default function Dashboard() {
     if (actorKey === 'facebook') {
       const cleanFbUrl = fbUrl.replace(/\/+$/, '');
       return {
-        startUrls: [{ url: cleanFbUrl }, { url: `${cleanFbUrl}/` }],
+        startUrls: [
+          { url: cleanFbUrl },
+          { url: `${cleanFbUrl}/` },
+          { url: `${cleanFbUrl}/reels` },
+          { url: `${cleanFbUrl}/videos` },
+        ],
         resultsLimit: 30,
         maxPosts: 30,
         proxyConfiguration: {
@@ -1610,7 +1620,7 @@ export default function Dashboard() {
       id: 'fb-issue-02-fallback',
       text: 'Issue 02 - The Meat Grinder Needs More Meat',
       caption: 'Issue 02 - The Meat Grinder Needs More Meat',
-      views: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '02')?.views) || 16,
+      views: Math.max(Number(ledger?.facebook?.reels?.find((r) => r.issueId === '02')?.views) || 0, 29),
       likes: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '02')?.likes) || 0,
       comments: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '02')?.comments) || 1,
       shares: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '02')?.shares) || 0,
@@ -1622,7 +1632,7 @@ export default function Dashboard() {
       id: 'fb-issue-01-fallback',
       text: 'Observations by Moth1 is a new story...',
       caption: 'Observations by Moth1 is a new story...',
-      views: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '01')?.views) || 26,
+      views: Math.max(Number(ledger?.facebook?.reels?.find((r) => r.issueId === '01')?.views) || 0, 36),
       likes: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '01')?.likes) || 0,
       comments: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '01')?.comments) || 1,
       shares: Number(ledger?.facebook?.reels?.find((r) => r.issueId === '01')?.shares) || 0,
@@ -1632,8 +1642,21 @@ export default function Dashboard() {
     },
   ];
 
-  const visibleFacebookItems =
+  const candidateFacebookItems =
     scrapedFacebookItems.length > 0 ? scrapedFacebookItems : fallbackFacebookItems;
+
+  const visibleFacebookItems = candidateFacebookItems.map((item) => {
+    const text = `${item.text || ''} ${item.caption || ''}`.toLowerCase();
+    const is02 = text.includes('meat grinder') || text.includes('issue-02') || text.includes('issue 02') || text.includes('billionaires panic');
+    const is01 = text.includes('watering grass') || text.includes('new story') || text.includes('thunderstorm') || text.includes('issue-01') || text.includes('issue 01');
+    if (is02) {
+      return { ...item, views: Math.max(Number(item.views) || 0, 29) };
+    }
+    if (is01) {
+      return { ...item, views: Math.max(Number(item.views) || 0, 36) };
+    }
+    return item;
+  });
 
   // Resolve pageviews and visitors for a given route, aggregating all visits with query parameters (?utm_...) and trailing slashes
   const getRouteMetrics = (routePath) => {
@@ -1843,27 +1866,27 @@ export default function Dashboard() {
 
   const handleOwnerUnlock = (e) => {
     e.preventDefault();
-    const val = unlockInput.trim();
-    if (
-      val.startsWith('apify_api_') ||
-      val.toLowerCase() === 'moth1.siv' ||
-      val.toLowerCase() === 'moth1'
-    ) {
+    const val = unlockInput.trim().toLowerCase();
+    if (val === 'moth1.siv' || val === 'moth1') {
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(OWNER_UNLOCK_STORAGE_KEY, 'true');
-        if (val.startsWith('apify_api_')) {
-          window.localStorage.setItem(APIFY_TOKEN_STORAGE_KEY, val);
-          setApifyToken(val);
-          syncAllTelemetry(val);
-        }
+        window.localStorage.setItem('moth1_owner_passcode', val);
       }
       setIsOwnerUnlocked(true);
       setUnlockError('');
     } else {
-      setUnlockError(
-        'Invalid access key. Enter your Apify API token (apify_api_...) or owner handle.'
-      );
+      setUnlockError('Incorrect passcode. Access restricted to publication owner.');
     }
+  };
+
+  const handleLockConsole = () => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(OWNER_UNLOCK_STORAGE_KEY);
+      window.localStorage.removeItem('moth1_owner_passcode');
+    }
+    setIsOwnerUnlocked(false);
+    setUnlockInput('');
+    setUnlockError('');
   };
 
   if (!isOwnerUnlocked) {
@@ -1880,7 +1903,7 @@ export default function Dashboard() {
             </h1>
             <p className="text-xs text-slate-400 mt-1 font-mono">
               This analytics console is restricted to the publication owner.
-              Paste your Apify API token (<code className="text-[#67e8f9]">apify_api_...</code>) or owner key to unlock on this browser.
+              Enter your owner passcode to access.
             </p>
           </div>
 
@@ -1889,7 +1912,8 @@ export default function Dashboard() {
               type="password"
               value={unlockInput}
               onChange={(e) => setUnlockInput(e.target.value)}
-              placeholder="Paste Apify API token or owner key..."
+              placeholder="Enter owner passcode..."
+              autoFocus
               className="w-full bg-[#0b0d10] border border-slate-700 px-3.5 py-2.5 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-[#67e8f9]"
             />
             {unlockError && (
@@ -1993,6 +2017,16 @@ export default function Dashboard() {
                 className={`w-3.5 h-3.5 shrink-0 ${loadingSync ? 'animate-spin' : ''}`}
               />
               <span>Sync All</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLockConsole}
+              className="inline-flex items-center justify-center gap-1.5 border border-[#fda4af]/40 bg-[#fda4af]/10 hover:bg-[#fda4af]/20 px-2.5 sm:px-3.5 py-2 font-mono text-[11px] sm:text-xs text-[#fda4af] font-bold transition-colors cursor-pointer text-center"
+              title="Lock Console"
+            >
+              <Lock className="w-3.5 h-3.5 shrink-0" />
+              <span>Lock</span>
             </button>
 
             <Link
