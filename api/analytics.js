@@ -785,6 +785,7 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
     let countPageviews = 0;
     let countVisitors = 0;
     let countBounceRate = null;
+    let debugCount = null;
     try {
       const countUrl = new URL('https://api.vercel.com/v1/query/web-analytics/visits/count');
       countUrl.searchParams.set('projectId', resolvedProjectId);
@@ -793,7 +794,9 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       countUrl.searchParams.set('until', untilMs);
 
       let cRes = await fetch(countUrl.toString(), { headers });
+      let cText = '';
       if (!cRes.ok) {
+        cText = await cRes.text().catch(() => '');
         // Fallback to ISO format if millisecond timestamp is rejected
         const altCountUrl = new URL('https://api.vercel.com/v1/query/web-analytics/visits/count');
         altCountUrl.searchParams.set('projectId', resolvedProjectId);
@@ -803,9 +806,16 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
         cRes = await fetch(altCountUrl.toString(), { headers });
       }
 
+      debugCount = {
+        status: cRes.status,
+        urlTried: countUrl.toString(),
+        firstError: cText,
+      };
+
       if (cRes.ok) {
         const cJson = await cRes.json();
         const cData = cJson.data || cJson;
+        debugCount.data = cData;
         countPageviews = Number(cData.pageviews || cData.totalPageviews || 0) || 0;
         countVisitors = Number(cData.visitors || cData.totalVisitors || 0) || 0;
         if (typeof cData.bounceRate === 'number') {
@@ -813,12 +823,15 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
         } else if (typeof cData.bounce_rate === 'number') {
           countBounceRate = Math.round(cData.bounce_rate);
         }
+      } else {
+        debugCount.secondError = await cRes.text().catch(() => '');
       }
-    } catch {
-      // fallback to aggregate
+    } catch (err) {
+      debugCount = { error: err.message };
     }
 
     // 2. Query dimensions via /visits/aggregate
+    let debugAggregate = null;
     const fetchDimension = async (byField) => {
       try {
         const u = new URL('https://api.vercel.com/v1/query/web-analytics/visits/aggregate');
@@ -830,7 +843,9 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
         u.searchParams.set('limit', '100');
 
         let r = await fetch(u.toString(), { headers });
+        let firstErr = '';
         if (!r.ok) {
+          firstErr = await r.text().catch(() => '');
           // If millisecond format failed, try ISO format
           const altU = new URL('https://api.vercel.com/v1/query/web-analytics/visits/aggregate');
           altU.searchParams.set('projectId', resolvedProjectId);
@@ -841,13 +856,30 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
           altU.searchParams.set('limit', '100');
 
           const altR = await fetch(altU.toString(), { headers });
+          if (!debugAggregate && byField === 'day') {
+            debugAggregate = {
+              firstStatus: r.status,
+              firstError: firstErr,
+              secondStatus: altR.status,
+              secondError: await altR.text().catch(() => ''),
+            };
+          }
           if (!altR.ok) return [];
           const altJson = await altR.json();
           return Array.isArray(altJson.data) ? altJson.data : [];
         }
         const resJson = await r.json();
+        if (!debugAggregate && byField === 'day') {
+          debugAggregate = {
+            status: r.status,
+            itemCount: Array.isArray(resJson.data) ? resJson.data.length : 0,
+          };
+        }
         return Array.isArray(resJson.data) ? resJson.data : [];
-      } catch {
+      } catch (err) {
+        if (!debugAggregate && byField === 'day') {
+          debugAggregate = { error: err.message };
+        }
         return [];
       }
     };
@@ -898,6 +930,8 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       totalPageviews,
       totalVisitors,
       bounceRate,
+      debugCount,
+      debugAggregate,
       days,
       paths,
       referrers,
