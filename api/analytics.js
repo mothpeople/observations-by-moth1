@@ -208,10 +208,19 @@ export function normalizeThreadsItem(item, idx = 0) {
   const views = Number(item.views ?? item.viewCount ?? 0) || 0;
   const followers =
     Number(
-      item.followersCount ??
-        item.user?.followersCount ??
-        item.author?.followersCount ??
+      item.follower_count ??
+        item.followers_count ??
+        item.followerCount ??
+        item.followersCount ??
         item.followers ??
+        item.user?.follower_count ??
+        item.user?.followers_count ??
+        item.user?.followersCount ??
+        item.user?.followers ??
+        item.author?.follower_count ??
+        item.author?.followers_count ??
+        item.author?.followersCount ??
+        item.author?.followers ??
         0
     ) || 0;
 
@@ -643,11 +652,23 @@ async function fetchPlatformTelemetry(platformKey, primaryActorId, alternateActo
                   ) || 0;
                 } else if (platformKey === 'threads') {
                   f = Number(
-                    item.followers ??
+                    item.follower_count ??
+                      item.followers_count ??
+                      item.followerCount ??
                       item.followersCount ??
+                      item.followers ??
+                      item.user?.follower_count ??
+                      item.user?.followers_count ??
                       item.user?.followersCount ??
+                      item.user?.followers ??
+                      item.author?.follower_count ??
+                      item.author?.followers_count ??
                       item.author?.followersCount ??
+                      item.author?.followers ??
+                      item.profile?.follower_count ??
+                      item.profile?.followers_count ??
                       item.profile?.followersCount ??
+                      item.profile?.followers ??
                       0
                   ) || 0;
                 } else if (platformKey === 'substack') {
