@@ -776,21 +776,33 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
     // Date range: Query from publication inception (2026-10-01) to capture all-time analytics
     const now = new Date();
     const inceptionDate = new Date('2026-10-01T00:00:00.000Z');
-    const since = inceptionDate.toISOString();
-    const until = now.toISOString();
+    const sinceMs = String(inceptionDate.getTime());
+    const untilMs = String(now.getTime());
+    const sinceIso = inceptionDate.toISOString();
+    const untilIso = now.toISOString();
 
     // 1. Query cumulative /visits/count
     let countPageviews = 0;
     let countVisitors = 0;
-    let countBounceRate = 50;
+    let countBounceRate = null;
     try {
       const countUrl = new URL('https://api.vercel.com/v1/query/web-analytics/visits/count');
       countUrl.searchParams.set('projectId', resolvedProjectId);
       if (activeTeamId) countUrl.searchParams.set('teamId', activeTeamId);
-      countUrl.searchParams.set('since', since);
-      countUrl.searchParams.set('until', until);
+      countUrl.searchParams.set('since', sinceMs);
+      countUrl.searchParams.set('until', untilMs);
 
-      const cRes = await fetch(countUrl.toString(), { headers });
+      let cRes = await fetch(countUrl.toString(), { headers });
+      if (!cRes.ok) {
+        // Fallback to ISO format if millisecond timestamp is rejected
+        const altCountUrl = new URL('https://api.vercel.com/v1/query/web-analytics/visits/count');
+        altCountUrl.searchParams.set('projectId', resolvedProjectId);
+        if (activeTeamId) altCountUrl.searchParams.set('teamId', activeTeamId);
+        altCountUrl.searchParams.set('since', sinceIso);
+        altCountUrl.searchParams.set('until', untilIso);
+        cRes = await fetch(altCountUrl.toString(), { headers });
+      }
+
       if (cRes.ok) {
         const cJson = await cRes.json();
         const cData = cJson.data || cJson;
@@ -798,6 +810,8 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
         countVisitors = Number(cData.visitors || cData.totalVisitors || 0) || 0;
         if (typeof cData.bounceRate === 'number') {
           countBounceRate = Math.round(cData.bounceRate);
+        } else if (typeof cData.bounce_rate === 'number') {
+          countBounceRate = Math.round(cData.bounce_rate);
         }
       }
     } catch {
@@ -810,19 +824,19 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
         const u = new URL('https://api.vercel.com/v1/query/web-analytics/visits/aggregate');
         u.searchParams.set('projectId', resolvedProjectId);
         if (activeTeamId) u.searchParams.set('teamId', activeTeamId);
-        u.searchParams.set('since', since);
-        u.searchParams.set('until', until);
+        u.searchParams.set('since', sinceMs);
+        u.searchParams.set('until', untilMs);
         u.searchParams.set('by', byField);
         u.searchParams.set('limit', '100');
 
-        const r = await fetch(u.toString(), { headers });
+        let r = await fetch(u.toString(), { headers });
         if (!r.ok) {
-          // If ISO format failed, try millisecond timestamp format
+          // If millisecond format failed, try ISO format
           const altU = new URL('https://api.vercel.com/v1/query/web-analytics/visits/aggregate');
           altU.searchParams.set('projectId', resolvedProjectId);
           if (activeTeamId) altU.searchParams.set('teamId', activeTeamId);
-          altU.searchParams.set('since', String(thirtyDaysAgo.getTime()));
-          altU.searchParams.set('until', String(now.getTime()));
+          altU.searchParams.set('since', sinceIso);
+          altU.searchParams.set('until', untilIso);
           altU.searchParams.set('by', byField);
           altU.searchParams.set('limit', '100');
 
@@ -866,13 +880,24 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
             paths.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0)
           );
 
+    // 100% Dynamic Bounce Rate Calculation:
+    // If Vercel returns bounceRate directly, use it.
+    // If Vercel API only returns count/aggregate, derive bounceRate dynamically from paths and totalVisitors
+    let bounceRate = countBounceRate;
+    if (bounceRate === null && totalVisitors > 0 && paths.length > 0) {
+      const sumPathVisitors = paths.reduce((sum, p) => sum + (Number(p.visitors) || 0), 0);
+      const multiPathVisitors = Math.max(0, sumPathVisitors - totalVisitors);
+      const singlePathVisitors = Math.max(0, totalVisitors - multiPathVisitors);
+      bounceRate = Math.round((singlePathVisitors / totalVisitors) * 100);
+    }
+
     return {
       connected: true,
       projectId: resolvedProjectId,
       projectName: resolvedProjectName,
       totalPageviews,
       totalVisitors,
-      bounceRate: countBounceRate,
+      bounceRate,
       days,
       paths,
       referrers,
