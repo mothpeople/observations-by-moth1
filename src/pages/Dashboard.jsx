@@ -29,6 +29,7 @@ import {
   Tablet,
   Timer,
   TrendingUp,
+  User,
   X,
   Zap,
 } from 'lucide-react';
@@ -184,6 +185,11 @@ const ACTORS = {
     label: 'apify/instagram-scraper',
     accent: '#fda4af',
   },
+  instagramProfile: {
+    id: 'apify~instagram-scraper',
+    label: 'apify/instagram-scraper (profile details)',
+    accent: '#fda4af',
+  },
   threads: {
     id: 'automation-lab~threads-scraper',
     label: 'automation-lab/threads-scraper',
@@ -192,6 +198,11 @@ const ACTORS = {
   facebook: {
     id: 'apify~facebook-posts-scraper',
     label: 'apify/facebook-posts-scraper',
+    accent: '#86efac',
+  },
+  facebookPage: {
+    id: 'apify~facebook-pages-scraper',
+    label: 'apify/facebook-pages-scraper',
     accent: '#86efac',
   },
 };
@@ -1198,17 +1209,27 @@ export default function Dashboard() {
 
         const igScrapedFollowers = Math.max(
           serverJson?.instagram?.followers || 0,
-          ...igItems.map((i) => i.followers || 0)
+          ...igItems.map((i) => i.followers || 0),
+          ...(directInstagram?.items || []).map((i) => Number(i.followersCount ?? i.followers ?? 0) || 0)
         );
 
-        setInstagramState({
-          connected:
-            Boolean(directInstagram?.connected) ||
-            Boolean(serverJson?.instagram?.connected),
-          runInfo:
-            directInstagram?.runInfo || serverJson?.instagram?.runInfo || null,
-          items: igItems,
-          followers: igScrapedFollowers,
+        setInstagramState((prev) => {
+          const effectiveFollowers =
+            igScrapedFollowers > 0
+              ? igScrapedFollowers
+              : prev.followers > 0
+                ? prev.followers
+                : ledger.instagram?.followers || 0;
+          return {
+            connected:
+              Boolean(directInstagram?.connected) ||
+              Boolean(serverJson?.instagram?.connected) ||
+              prev.connected,
+            runInfo:
+              directInstagram?.runInfo || serverJson?.instagram?.runInfo || prev.runInfo,
+            items: igItems.length > 0 ? igItems : (prev.items || []),
+            followers: effectiveFollowers,
+          };
         });
 
         // 3. Threads Items (automation-lab/threads-scraper)
@@ -1221,20 +1242,30 @@ export default function Dashboard() {
 
         const thScrapedFollowers = Math.max(
           serverJson?.threads?.followers || 0,
-          ...thItems.map((i) => i.followers || 0)
+          ...thItems.map((i) => i.followers || 0),
+          ...(directThreads?.items || []).map((i) => Number(i.followers ?? i.followersCount ?? 0) || 0)
         );
 
-        setThreadsState({
-          connected:
-            Boolean(directThreads?.connected) ||
-            Boolean(serverJson?.threads?.connected),
-          runInfo:
-            directThreads?.runInfo || serverJson?.threads?.runInfo || null,
-          items: thItems,
-          followers: thScrapedFollowers,
+        setThreadsState((prev) => {
+          const effectiveFollowers =
+            thScrapedFollowers > 0
+              ? thScrapedFollowers
+              : prev.followers > 0
+                ? prev.followers
+                : ledger.threads?.followers || 0;
+          return {
+            connected:
+              Boolean(directThreads?.connected) ||
+              Boolean(serverJson?.threads?.connected) ||
+              prev.connected,
+            runInfo:
+              directThreads?.runInfo || serverJson?.threads?.runInfo || prev.runInfo,
+            items: thItems.length > 0 ? thItems : (prev.items || []),
+            followers: effectiveFollowers,
+          };
         });
 
-        // 4. Facebook Items (apify/facebook-posts-scraper)
+        // 4. Facebook Items (apify/facebook-posts-scraper + apify/facebook-pages-scraper)
         const rawFbItems =
           directFacebook?.items?.length > 0
             ? directFacebook.items.map((item, i) =>
@@ -1262,6 +1293,12 @@ export default function Dashboard() {
               : prev.items?.length > 0
                 ? prev.items
                 : [];
+          const effectiveFollowers =
+            fbScrapedFollowers > 0
+              ? fbScrapedFollowers
+              : prev.followers > 0
+                ? prev.followers
+                : ledger.facebook?.followers || 0;
           return {
             connected:
               Boolean(directFacebook?.connected) ||
@@ -1270,7 +1307,7 @@ export default function Dashboard() {
             runInfo:
               directFacebook?.runInfo || serverJson?.facebook?.runInfo || prev.runInfo,
             items: effectiveItems,
-            followers: fbScrapedFollowers || prev.followers,
+            followers: effectiveFollowers,
           };
         });
 
@@ -1621,6 +1658,14 @@ export default function Dashboard() {
       };
     }
 
+    if (actorKey === 'instagramProfile') {
+      return {
+        directUrls: [igUrl],
+        usernames: [cleanIgHandle],
+        resultsType: 'details',
+      };
+    }
+
     if (actorKey === 'facebook') {
       const cleanFbUrl = fbUrl.replace(/\/+$/, '');
       return {
@@ -1635,8 +1680,21 @@ export default function Dashboard() {
       };
     }
 
+    if (actorKey === 'facebookPage') {
+      const cleanFbUrl = fbUrl.replace(/\/+$/, '');
+      return {
+        startUrls: [
+          { url: cleanFbUrl },
+        ],
+        proxyConfiguration: {
+          useApifyProxy: true,
+        },
+      };
+    }
+
     // threads: automation-lab/threads-scraper
     return {
+      mode: 'profile',
       startUrls: [{ url: threadsUrl }],
       urls: [threadsUrl],
       usernames: [cleanThreadsHandle],
@@ -3492,19 +3550,35 @@ export default function Dashboard() {
                     Verified video views, likes, and engagement metrics.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => triggerActorRun('instagram')}
-                  disabled={runningActor !== null}
-                  className="inline-flex items-center justify-center gap-1.5 border border-[#fda4af]/60 bg-[#fda4af]/10 hover:bg-[#fda4af]/20 px-3.5 py-1.5 font-mono text-xs text-[#fda4af] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
-                >
-                  <Play className="w-3.5 h-3.5" />
-                  <span>
-                    {runningActor === 'instagram'
-                      ? 'Scraping IG...'
-                      : 'Run Instagram Scraper'}
-                  </span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => triggerActorRun('instagram')}
+                    disabled={runningActor !== null}
+                    className="inline-flex items-center justify-center gap-1.5 border border-[#fda4af]/60 bg-[#fda4af]/10 hover:bg-[#fda4af]/20 px-3.5 py-1.5 font-mono text-xs text-[#fda4af] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    <span>
+                      {runningActor === 'instagram'
+                        ? 'Scraping Reels...'
+                        : 'Run Reels Scraper'}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => triggerActorRun('instagramProfile')}
+                    disabled={runningActor !== null}
+                    className="inline-flex items-center justify-center gap-1.5 border border-slate-700 bg-slate-900/80 hover:border-[#fda4af]/60 hover:text-[#fda4af] px-3.5 py-1.5 font-mono text-xs text-slate-300 font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
+                    title="Scrapes profile metadata to capture followers and bio"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>
+                      {runningActor === 'instagramProfile'
+                        ? 'Scraping Profile...'
+                        : 'Scrape Followers'}
+                    </span>
+                  </button>
+                </div>
               </div>
 
               {visibleInstagramItems.length === 0 ? (
@@ -3723,19 +3797,35 @@ export default function Dashboard() {
                     Verified video views, reach, and interaction metrics.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => triggerActorRun('facebook')}
-                  disabled={runningActor !== null}
-                  className="inline-flex items-center justify-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 hover:bg-[#86efac]/20 px-3.5 py-1.5 font-mono text-xs text-[#86efac] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
-                >
-                  <Play className="w-3.5 h-3.5" />
-                  <span>
-                    {runningActor === 'facebook'
-                      ? 'Scraping FB...'
-                      : 'Run Facebook Scraper'}
-                  </span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => triggerActorRun('facebook')}
+                    disabled={runningActor !== null}
+                    className="inline-flex items-center justify-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 hover:bg-[#86efac]/20 px-3.5 py-1.5 font-mono text-xs text-[#86efac] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    <span>
+                      {runningActor === 'facebook'
+                        ? 'Scraping FB Reels...'
+                        : 'Run Facebook Scraper'}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => triggerActorRun('facebookPage')}
+                    disabled={runningActor !== null}
+                    className="inline-flex items-center justify-center gap-1.5 border border-slate-700 bg-slate-900/80 hover:border-[#86efac]/60 hover:text-[#86efac] px-3.5 py-1.5 font-mono text-xs text-slate-300 font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
+                    title="Scrapes Facebook page metadata to capture followers and likes"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>
+                      {runningActor === 'facebookPage'
+                        ? 'Scraping Page...'
+                        : 'Scrape Page Followers'}
+                    </span>
+                  </button>
+                </div>
               </div>
 
               {visibleFacebookItems.length === 0 ? (

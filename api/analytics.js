@@ -518,41 +518,84 @@ async function fetchLiveSubstackArchive() {
   }
 }
 
-async function fetchActorLastDataset(actorId, token) {
+async function fetchPlatformTelemetry(platformKey, primaryActorId, alternateActorIds = [], token) {
   if (!token) {
-    return { connected: false, runInfo: null, items: [] };
+    return { connected: false, runInfo: null, items: [], followers: 0 };
   }
+
+  const allActorIds = [primaryActorId, ...(alternateActorIds || [])];
+
   try {
-    // 1. Fetch recent SUCCEEDED runs (up to 10) in reverse chronological order
+    // 1. Fetch recent SUCCEEDED runs across the entire account (up to 50)
     let candidateRuns = [];
-    const listRes = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/runs?status=SUCCEEDED&limit=10&desc=true&token=${encodeURIComponent(token)}`
-    );
-    if (listRes.ok) {
-      const listJson = await listRes.json();
-      if (Array.isArray(listJson?.data?.items)) {
-        candidateRuns = listJson.data.items;
-      }
-    }
-
-    // Fallback: If list endpoint was empty or failed, fetch /runs/last?status=SUCCEEDED
-    if (candidateRuns.length === 0) {
-      const runRes = await fetch(
-        `https://api.apify.com/v2/acts/${actorId}/runs/last?status=SUCCEEDED&token=${encodeURIComponent(token)}`
+    try {
+      const allRunsRes = await fetch(
+        `https://api.apify.com/v2/actor-runs?desc=true&limit=50&token=${encodeURIComponent(token)}`
       );
-      if (runRes.ok) {
-        const runJson = await runRes.json();
-        if (runJson?.data) candidateRuns = [runJson.data];
+      if (allRunsRes.ok) {
+        const allRunsJson = await allRunsRes.json();
+        const runsList = Array.isArray(allRunsJson?.data?.items) ? allRunsJson.data.items : [];
+        candidateRuns = runsList.filter((r) => {
+          if (r.status !== 'SUCCEEDED' || !r.defaultDatasetId) return false;
+          const runAct = String(r.actId || r.options?.actId || '').toLowerCase();
+          const runName = String(r.name || r.title || '').toLowerCase();
+          const target = `${runAct} ${runName}`;
+
+          if (platformKey === 'facebook') {
+            return (
+              target.includes('facebook') ||
+              target.includes('posts-scraper') ||
+              target.includes('pages-scraper') ||
+              target.includes('reels')
+            );
+          }
+          if (platformKey === 'instagram') {
+            return target.includes('instagram') || target.includes('insta');
+          }
+          if (platformKey === 'threads') {
+            return target.includes('threads');
+          }
+          if (platformKey === 'substack') {
+            return target.includes('substack');
+          }
+          return allActorIds.some((id) => target.includes(id.toLowerCase().replace('~', '/')));
+        });
+      }
+    } catch {}
+
+    // Fallback: If no account-wide runs found, fetch directly from specific actor endpoints
+    if (candidateRuns.length === 0) {
+      for (const actId of allActorIds) {
+        try {
+          const listRes = await fetch(
+            `https://api.apify.com/v2/acts/${actId}/runs?status=SUCCEEDED&limit=10&desc=true&token=${encodeURIComponent(token)}`
+          );
+          if (listRes.ok) {
+            const listJson = await listRes.json();
+            if (Array.isArray(listJson?.data?.items)) {
+              candidateRuns.push(...listJson.data.items);
+            }
+          }
+        } catch {}
       }
     }
 
     if (candidateRuns.length === 0) {
-      return { connected: false, runInfo: null, items: [] };
+      return { connected: false, runInfo: null, items: [], followers: 0 };
     }
 
-    // 2. Iterate through SUCCEEDED runs to find the latest run that actually contains dataset items
+    // Sort newest first
+    candidateRuns.sort(
+      (a, b) => new Date(b.startedAt || b.createdAt || 0) - new Date(a.startedAt || a.createdAt || 0)
+    );
+
     let latestRunInfo = null;
-    for (const runData of candidateRuns) {
+    let postItems = [];
+    let maxFollowers = 0;
+
+    // Inspect the datasets of recent matching runs (up to 8 runs to cover both profile and post runs)
+    const runsToInspect = candidateRuns.slice(0, 8);
+    for (const runData of runsToInspect) {
       const runInfo = {
         id: runData.id,
         status: runData.status,
@@ -560,113 +603,121 @@ async function fetchActorLastDataset(actorId, token) {
         finishedAt: runData.finishedAt,
         defaultDatasetId: runData.defaultDatasetId,
       };
-
       if (!latestRunInfo) latestRunInfo = runInfo;
 
       if (runInfo.defaultDatasetId) {
-        const dsRes = await fetch(
-          `https://api.apify.com/v2/datasets/${runInfo.defaultDatasetId}/items?token=${encodeURIComponent(token)}&clean=true`
-        );
-        if (dsRes.ok) {
-          const parsed = await dsRes.json();
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return { connected: true, runInfo, items: parsed };
-          }
-        }
-      }
-    }
-
-    // 3. Fallback: If no items found via actor endpoint, query account-wide actor-runs & actor-tasks (captures task runs or alternative actor runs configured on Apify)
-    const isFb = actorId.includes('facebook');
-    try {
-      const allRunsRes = await fetch(
-        `https://api.apify.com/v2/actor-runs?desc=true&limit=40&token=${encodeURIComponent(token)}`
-      );
-      if (allRunsRes.ok) {
-        const allRunsJson = await allRunsRes.json();
-        const runsList = Array.isArray(allRunsJson?.data?.items) ? allRunsJson.data.items : [];
-        const matchingRuns = runsList.filter((r) => {
-          if (r.status !== 'SUCCEEDED' || !r.defaultDatasetId) return false;
-          const runAct = String(r.actId || r.options?.actId || '').toLowerCase();
-          if (isFb) {
-            return runAct.includes('facebook') || runAct.includes('posts-scraper') || runAct.includes('reels');
-          }
-          return runAct.includes(actorId.replace('~', '/').toLowerCase()) || runAct.includes(actorId.toLowerCase());
-        });
-
-        for (const r of matchingRuns) {
+        try {
           const dsRes = await fetch(
-            `https://api.apify.com/v2/datasets/${r.defaultDatasetId}/items?token=${encodeURIComponent(token)}&clean=true`
+            `https://api.apify.com/v2/datasets/${runInfo.defaultDatasetId}/items?token=${encodeURIComponent(token)}&clean=true`
           );
           if (dsRes.ok) {
             const parsed = await dsRes.json();
             if (Array.isArray(parsed) && parsed.length > 0) {
-              const runInfo = {
-                id: r.id,
-                status: r.status,
-                startedAt: r.startedAt,
-                finishedAt: r.finishedAt,
-                defaultDatasetId: r.defaultDatasetId,
-              };
-              return { connected: true, runInfo, items: parsed };
-            }
-          }
-        }
-      }
-    } catch {}
+              for (const item of parsed) {
+                // Follower metric discovery across all possible schema variations
+                let f = 0;
+                if (platformKey === 'facebook') {
+                  f = Number(
+                    item.followers ??
+                      item.pageFollowersCount ??
+                      item.pageFollowers ??
+                      item.followersCount ??
+                      item.pageLikesCount ??
+                      item.pageLikes ??
+                      item.likesCount ??
+                      item.likes ??
+                      item.pageInfo?.followersCount ??
+                      item.pageInfo?.likesCount ??
+                      item.user?.followersCount ??
+                      0
+                  ) || 0;
+                } else if (platformKey === 'instagram') {
+                  f = Number(
+                    item.followersCount ??
+                      item.followers ??
+                      item.ownerFollowersCount ??
+                      item.user?.followersCount ??
+                      item.owner?.followersCount ??
+                      item.profile?.followersCount ??
+                      0
+                  ) || 0;
+                } else if (platformKey === 'threads') {
+                  f = Number(
+                    item.followers ??
+                      item.followersCount ??
+                      item.user?.followersCount ??
+                      item.author?.followersCount ??
+                      item.profile?.followersCount ??
+                      0
+                  ) || 0;
+                } else if (platformKey === 'substack') {
+                  f = Number(
+                    item.subscribers ??
+                      item.subscribersCount ??
+                      item.subscriberCount ??
+                      0
+                  ) || 0;
+                }
 
-    // 4. Also check account actor-tasks
-    try {
-      const tasksRes = await fetch(
-        `https://api.apify.com/v2/actor-tasks?limit=25&token=${encodeURIComponent(token)}`
-      );
-      if (tasksRes.ok) {
-        const tasksJson = await tasksRes.json();
-        const tasksList = Array.isArray(tasksJson?.data?.items) ? tasksJson.data.items : [];
-        const matchingTasks = tasksList.filter((t) => {
-          const tName = String(t.name || t.title || '').toLowerCase();
-          const tAct = String(t.actId || '').toLowerCase();
-          if (isFb) {
-            return tName.includes('facebook') || tName.includes('reels') || tAct.includes('facebook');
-          }
-          return tName.includes(actorId.toLowerCase()) || tAct.includes(actorId.toLowerCase());
-        });
+                if (f > maxFollowers) {
+                  maxFollowers = f;
+                }
 
-        for (const task of matchingTasks) {
-          const taskRunsRes = await fetch(
-            `https://api.apify.com/v2/actor-tasks/${task.id}/runs?status=SUCCEEDED&limit=5&desc=true&token=${encodeURIComponent(token)}`
-          );
-          if (taskRunsRes.ok) {
-            const taskRunsJson = await taskRunsRes.json();
-            const tRuns = Array.isArray(taskRunsJson?.data?.items) ? taskRunsJson.data.items : [];
-            for (const r of tRuns) {
-              if (r.defaultDatasetId) {
-                const dsRes = await fetch(
-                  `https://api.apify.com/v2/datasets/${r.defaultDatasetId}/items?token=${encodeURIComponent(token)}&clean=true`
-                );
-                if (dsRes.ok) {
-                  const parsed = await dsRes.json();
-                  if (Array.isArray(parsed) && parsed.length > 0) {
-                    const runInfo = {
-                      id: r.id,
-                      status: r.status,
-                      startedAt: r.startedAt,
-                      finishedAt: r.finishedAt,
-                      defaultDatasetId: r.defaultDatasetId,
-                    };
-                    return { connected: true, runInfo, items: parsed };
+                // If this is a post/reel/thread item, retain it for the feed
+                // (Profile metadata items with no url/caption/views are treated as metadata only)
+                if (platformKey === 'facebook') {
+                  if (
+                    item.url ||
+                    item.postUrl ||
+                    item.reelUrl ||
+                    item.message ||
+                    item.text ||
+                    item.playCount ||
+                    item.views ||
+                    item.isReel ||
+                    item.isVideo
+                  ) {
+                    postItems.push(item);
                   }
+                } else if (platformKey === 'instagram') {
+                  if (
+                    item.url ||
+                    item.shortCode ||
+                    item.displayUrl ||
+                    item.caption ||
+                    item.views ||
+                    item.likesCount
+                  ) {
+                    postItems.push(item);
+                  }
+                } else if (platformKey === 'threads') {
+                  if (
+                    item.url ||
+                    item.code ||
+                    item.text ||
+                    item.replies ||
+                    item.likes
+                  ) {
+                    postItems.push(item);
+                  }
+                } else {
+                  postItems.push(item);
                 }
               }
             }
           }
-        }
+        } catch {}
       }
-    } catch {}
+    }
 
-    return { connected: true, runInfo: latestRunInfo, items: [] };
+    return {
+      connected: true,
+      runInfo: latestRunInfo,
+      items: postItems,
+      followers: maxFollowers,
+    };
   } catch {
-    return { connected: false, runInfo: null, items: [] };
+    return { connected: false, runInfo: null, items: [], followers: 0 };
   }
 }
 
@@ -969,10 +1020,10 @@ export default async function handler(req, res) {
       vercelAnalytics,
     ] = await Promise.all([
       fetchLiveSubstackArchive(),
-      fetchActorLastDataset(ACTORS.substack, apifyToken),
-      fetchActorLastDataset(ACTORS.instagram, apifyToken),
-      fetchActorLastDataset(ACTORS.threads, apifyToken),
-      fetchActorLastDataset(ACTORS.facebook, apifyToken),
+      fetchPlatformTelemetry('substack', ACTORS.substack, [], apifyToken),
+      fetchPlatformTelemetry('instagram', ACTORS.instagram, ['apify~instagram-profile-scraper'], apifyToken),
+      fetchPlatformTelemetry('threads', ACTORS.threads, [], apifyToken),
+      fetchPlatformTelemetry('facebook', ACTORS.facebook, ['apify~facebook-pages-scraper'], apifyToken),
       fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId),
     ]);
 
@@ -1069,7 +1120,7 @@ export default async function handler(req, res) {
     ];
 
     const facebookFollowers = Math.max(
-      0,
+      apifyFacebook.followers || 0,
       ...apifyFacebook.items.map(
         (item) =>
           Number(
@@ -1086,17 +1137,17 @@ export default async function handler(req, res) {
           ) || 0
       )
     );
-    const instagramFollowers = instagramItems.reduce(
-      (max, item) => Math.max(max, item.followers || 0),
-      0
+    const instagramFollowers = Math.max(
+      apifyInstagram.followers || 0,
+      ...instagramItems.map((item) => item.followers || 0)
     );
-    const threadsFollowers = threadsItems.reduce(
-      (max, item) => Math.max(max, item.followers || 0),
-      0
+    const threadsFollowers = Math.max(
+      apifyThreads.followers || 0,
+      ...threadsItems.map((item) => item.followers || 0)
     );
-    const substackSubscribers = substackPosts.reduce(
-      (max, item) => Math.max(max, item.subscribers || 0),
-      0
+    const substackSubscribers = Math.max(
+      apifySubstack.followers || 0,
+      ...substackPosts.map((item) => item.subscribers || 0)
     );
 
     return res.status(200).json({
