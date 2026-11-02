@@ -107,14 +107,14 @@ const DEFAULT_CHANNEL_LEDGER = {
         slug: 'the-meat-grinder',
         title: 'Issue #02: The Meat Grinder Needs More Meat',
         instagram: {
-          entrances: 0, // Story Entrances (utm_source=instagram & utm_medium=story)
-          clicks: 0,
+          entrances: 2, // Story Entrances (utm_source=instagram & utm_medium=story)
+          clicks: 2,
           scroll75: 0, // Story Scroll Retention (read past 75%)
           subscribers: 0, // Story Subscriber Conversions
         },
         facebook: {
-          entrances: 0, // Story Entrances (utm_source=facebook & utm_medium=story)
-          clicks: 0,
+          entrances: 10, // Story Entrances (utm_source=facebook & utm_medium=story)
+          clicks: 10,
           scroll75: 0, // Story Scroll Retention (read past 75%)
           subscribers: 0, // Story Subscriber Conversions
         },

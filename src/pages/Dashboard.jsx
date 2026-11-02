@@ -1286,6 +1286,58 @@ export default function Dashboard() {
             next.facebook = { ...next.facebook, reels: updatedFbReels };
           }
 
+          // 4. Auto-ratchet Story Conversion Funnel from /api/track-story-click AND Vercel Referrers
+          if (Array.isArray(next.storyFunnel?.dispatches)) {
+            const vercelReferrers = Array.isArray(serverJson?.vercel?.referrers)
+              ? serverJson.vercel.referrers
+              : [];
+            const vercelIg = vercelReferrers
+              .filter((r) => (r.referrerHostname || '').toLowerCase().includes('instagram'))
+              .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
+            const vercelFb = vercelReferrers
+              .filter((r) => {
+                const h = (r.referrerHostname || '').toLowerCase();
+                return h.includes('facebook') || h.includes('fb.me');
+              })
+              .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
+
+            const updatedDispatches = next.storyFunnel.dispatches.map((d) => {
+              const serverIgClicks = Number(storyClickStats?.issues?.[d.slug]?.instagram?.clicks || 0);
+              const serverFbClicks = Number(storyClickStats?.issues?.[d.slug]?.facebook?.clicks || 0);
+              const currentIgClicks = Number(d.instagram?.entrances ?? d.instagram?.clicks ?? 0);
+              const currentFbClicks = Number(d.facebook?.entrances ?? d.facebook?.clicks ?? 0);
+
+              // Distribute or ratchet to the latest issue (the-meat-grinder)
+              const igTarget =
+                d.slug === 'the-meat-grinder'
+                  ? Math.max(currentIgClicks, serverIgClicks, vercelIg)
+                  : Math.max(currentIgClicks, serverIgClicks);
+              const fbTarget =
+                d.slug === 'the-meat-grinder'
+                  ? Math.max(currentFbClicks, serverFbClicks, vercelFb)
+                  : Math.max(currentFbClicks, serverFbClicks);
+
+              if (igTarget !== currentIgClicks || fbTarget !== currentFbClicks) {
+                changed = true;
+                return {
+                  ...d,
+                  instagram: {
+                    ...d.instagram,
+                    entrances: igTarget,
+                    clicks: igTarget,
+                  },
+                  facebook: {
+                    ...d.facebook,
+                    entrances: fbTarget,
+                    clicks: fbTarget,
+                  },
+                };
+              }
+              return d;
+            });
+            next.storyFunnel = { ...next.storyFunnel, dispatches: updatedDispatches };
+          }
+
           if (changed) {
             saveChannelLedger(next);
             return next;
@@ -1708,13 +1760,29 @@ export default function Dashboard() {
   const storyDispatches = ledger.storyFunnel?.dispatches || [];
   const serverStoryTotal = storyClickStats?.total || {};
 
+  // Extract verified network-level referrer counts from Vercel Web Analytics
+  const vercelReferrersList = Array.isArray(vercelAnalytics?.referrers)
+    ? vercelAnalytics.referrers
+    : [];
+  const vercelIgReferrals = vercelReferrersList
+    .filter((r) => (r.referrerHostname || '').toLowerCase().includes('instagram'))
+    .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
+  const vercelFbReferrals = vercelReferrersList
+    .filter((r) => {
+      const h = (r.referrerHostname || '').toLowerCase();
+      return h.includes('facebook') || h.includes('fb.me');
+    })
+    .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
+
   // Instagram Story Aggregates (Bypassing Vercel Plus Paywall)
-  const igStoryEntrances =
+  const igStoryEntrances = Math.max(
     storyDispatches.reduce((sum, d) => {
       const serverClicks = Number(storyClickStats?.issues?.[d.slug]?.instagram?.clicks || 0);
       const ledgerClicks = Number(d.instagram?.entrances ?? d.instagram?.clicks ?? 0);
       return sum + Math.max(serverClicks, ledgerClicks);
-    }, 0) || Number(serverStoryTotal.instagram?.clicks || 0);
+    }, 0) || Number(serverStoryTotal.instagram?.clicks || 0),
+    vercelIgReferrals
+  );
 
   const igStoryScroll75 =
     storyDispatches.reduce((sum, d) => {
@@ -1740,12 +1808,14 @@ export default function Dashboard() {
       : '0.0';
 
   // Facebook Story Aggregates (Bypassing Vercel Plus Paywall)
-  const fbStoryEntrances =
+  const fbStoryEntrances = Math.max(
     storyDispatches.reduce((sum, d) => {
       const serverClicks = Number(storyClickStats?.issues?.[d.slug]?.facebook?.clicks || 0);
       const ledgerClicks = Number(d.facebook?.entrances ?? d.facebook?.clicks ?? 0);
       return sum + Math.max(serverClicks, ledgerClicks);
-    }, 0) || Number(serverStoryTotal.facebook?.clicks || 0);
+    }, 0) || Number(serverStoryTotal.facebook?.clicks || 0),
+    vercelFbReferrals
+  );
 
   const fbStoryScroll75 =
     storyDispatches.reduce((sum, d) => {
