@@ -10,38 +10,55 @@ export default function CyberPanel({
   accent = '#86efac',
   className = '',
   style = {},
+  theme = 'dark',
+  ...rest
 }) {
+  const isLight = theme === 'light';
   return (
     <div
       style={style}
-      className={`relative bg-[#121316]/94 backdrop-blur-md border border-slate-800/90 p-3.5 sm:p-5 md:p-7 shadow-[0_24px_60px_rgba(0,0,0,0.85)] ${className}`}
+      data-panel="cyber"
+      {...rest}
+      className={`relative backdrop-blur-md p-3.5 sm:p-5 md:p-7 transition-colors duration-200 ${
+        isLight
+          ? 'bg-white/95 border border-slate-200/90 shadow-[0_12px_36px_rgba(0,0,0,0.06)] text-slate-800'
+          : 'bg-[#121316]/94 border border-slate-800/90 shadow-[0_24px_60px_rgba(0,0,0,0.85)] text-[#e2e8f0]'
+      } ${className}`}
     >
       {/* Subtle '+' Corner Brackets */}
       <span
         aria-hidden="true"
         style={{ color: accent }}
-        className="pointer-events-none select-none absolute -top-2 -left-1.5 font-mono text-xs leading-none opacity-75"
+        className={`pointer-events-none select-none absolute -top-2 -left-1.5 font-mono text-xs leading-none ${
+          isLight ? 'opacity-90 font-bold' : 'opacity-75'
+        }`}
       >
         +
       </span>
       <span
         aria-hidden="true"
         style={{ color: accent }}
-        className="pointer-events-none select-none absolute -top-2 -right-1.5 font-mono text-xs leading-none opacity-75"
+        className={`pointer-events-none select-none absolute -top-2 -right-1.5 font-mono text-xs leading-none ${
+          isLight ? 'opacity-90 font-bold' : 'opacity-75'
+        }`}
       >
         +
       </span>
       <span
         aria-hidden="true"
         style={{ color: accent }}
-        className="pointer-events-none select-none absolute -bottom-2 -left-1.5 font-mono text-xs leading-none opacity-75"
+        className={`pointer-events-none select-none absolute -bottom-2 -left-1.5 font-mono text-xs leading-none ${
+          isLight ? 'opacity-90 font-bold' : 'opacity-75'
+        }`}
       >
         +
       </span>
       <span
         aria-hidden="true"
         style={{ color: accent }}
-        className="pointer-events-none select-none absolute -bottom-2 -right-1.5 font-mono text-xs leading-none opacity-75"
+        className={`pointer-events-none select-none absolute -bottom-2 -right-1.5 font-mono text-xs leading-none ${
+          isLight ? 'opacity-90 font-bold' : 'opacity-75'
+        }`}
       >
         +
       </span>

@@ -125,3 +125,275 @@ a:focus-visible {
     clip-path: none !important;
   }
 }
+
+/* ==========================================================================
+   Observations by Moth1: Analytics Dashboard Light Mode Gallery Theme
+   Standardized white, grey, and black menus with high contrast.
+   Colors strictly reserved for channel titles, numbers, and visualizers.
+   ========================================================================== */
+.dashboard-light {
+  background-color: #f8f7f4 !important;
+  color: #0f172a !important;
+}
+
+.dashboard-light .dashboard-canvas {
+  background-color: #f8f7f4 !important;
+  color: #0f172a !important;
+}
+
+/* CyberPanel in Light Mode */
+.dashboard-light [data-panel="cyber"] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.03) !important;
+  color: #0f172a !important;
+}
+
+/* Backgrounds & Panels */
+.dashboard-light .bg-\[\#0b0d10\] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+.dashboard-light .bg-\[\#121316\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+.dashboard-light .bg-slate-900\/60,
+.dashboard-light .bg-slate-900\/70,
+.dashboard-light .bg-slate-900\/80,
+.dashboard-light .bg-slate-900 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Borders */
+.dashboard-light .border-slate-800,
+.dashboard-light .border-slate-800\/60,
+.dashboard-light .border-slate-800\/80,
+.dashboard-light .border-slate-800\/90,
+.dashboard-light .border-slate-700 {
+  border-color: #cbd5e1 !important;
+}
+
+/* Body / Monospace Text */
+.dashboard-light .text-\[\#e2e8f0\],
+.dashboard-light .text-\[\#e6e4dd\] {
+  color: #0f172a !important;
+}
+
+/* Muted Text */
+.dashboard-light .text-slate-300,
+.dashboard-light .text-slate-400 {
+  color: #475569 !important;
+}
+
+.dashboard-light .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* ==========================================================================
+   MENUS & NAVIGATION (White, Grey, Black with High Contrast)
+   ========================================================================== */
+/* Active Menu Items / Pills / Tabs */
+.dashboard-light .bg-\[\#0f172a\],
+.dashboard-light .bg-black,
+.dashboard-light button.bg-\[\#0f172a\],
+.dashboard-light button.bg-black {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+.dashboard-light .bg-\[\#0f172a\] *,
+.dashboard-light .bg-black * {
+  color: #ffffff !important;
+}
+
+/* Inactive Menu Buttons / Switchers */
+.dashboard-light button.text-slate-600:hover,
+.dashboard-light button.text-slate-400:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Action & Scraper Buttons in Light Mode: Monochromatic White / Grey / Black */
+.dashboard-light button[class*="border-\[#"] {
+  background-color: #ffffff !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+.dashboard-light button[class*="border-\[#"]:hover {
+  background-color: #0f172a !important;
+  border-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+.dashboard-light button[class*="border-\[#"] * {
+  color: inherit !important;
+}
+
+/* Primary CTA Action Buttons */
+.dashboard-light button.bg-\[\#67e8f9\],
+.dashboard-light button.bg-\[\#86efac\] {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+.dashboard-light button.bg-\[\#67e8f9\]:hover,
+.dashboard-light button.bg-\[\#86efac\]:hover {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+}
+
+/* Inputs, Selects & Forms */
+.dashboard-light input,
+.dashboard-light select,
+.dashboard-light textarea {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.dashboard-light input:focus,
+.dashboard-light select:focus {
+  border-color: #0f172a !important;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1) !important;
+}
+
+/* Tables */
+.dashboard-light table th {
+  background-color: #f1f5f9 !important;
+  color: #1e293b !important;
+  border-color: #e2e8f0 !important;
+}
+
+.dashboard-light table td {
+  border-color: #e2e8f0 !important;
+}
+
+.dashboard-light table tr:hover td {
+  background-color: #f8fafc !important;
+}
+
+/* ==========================================================================
+   PRESERVE COLOURS: TITLES OF CHANNELS, NUMBERS & VISUALISERS
+   ========================================================================== */
+/* High-Contrast Colors on Numbers in Light Mode */
+.dashboard-light .tabular-nums.text-\[\#86efac\],
+.dashboard-light strong.text-\[\#86efac\],
+.dashboard-light span.text-\[\#86efac\] {
+  color: #16a34a !important; /* High-contrast emerald */
+}
+
+.dashboard-light .tabular-nums.text-\[\#67e8f9\],
+.dashboard-light strong.text-\[\#67e8f9\],
+.dashboard-light span.text-\[\#67e8f9\] {
+  color: #0284c7 !important; /* High-contrast cyan/sky */
+}
+
+.dashboard-light .tabular-nums.text-\[\#fda4af\],
+.dashboard-light strong.text-\[\#fda4af\],
+.dashboard-light span.text-\[\#fda4af\] {
+  color: #e11d48 !important; /* High-contrast rose */
+}
+
+.dashboard-light .tabular-nums.text-\[\#60a5fa\],
+.dashboard-light strong.text-\[\#60a5fa\],
+.dashboard-light span.text-\[\#60a5fa\] {
+  color: #2563eb !important; /* High-contrast royal blue */
+}
+
+.dashboard-light .tabular-nums.text-\[\#c084fc\],
+.dashboard-light strong.text-\[\#c084fc\],
+.dashboard-light span.text-\[\#c084fc\] {
+  color: #9333ea !important; /* High-contrast purple */
+}
+
+.dashboard-light .tabular-nums.text-\[\#fbbf24\],
+.dashboard-light strong.text-\[\#fbbf24\],
+.dashboard-light span.text-\[\#fbbf24\] {
+  color: #d97706 !important; /* High-contrast amber */
+}
+
+.dashboard-light .tabular-nums.text-\[\#f472b6\],
+.dashboard-light strong.text-\[\#f472b6\],
+.dashboard-light span.text-\[\#f472b6\] {
+  color: #db2777 !important; /* High-contrast magenta */
+}
+
+/* Titles of Channels (Keep Brand Colors) */
+.dashboard-light [data-channel-title="instagram"],
+.dashboard-light .text-\[\#fda4af\].font-bold,
+.dashboard-light .text-\[\#fda4af\].font-semibold {
+  color: #e11d48 !important;
+}
+
+.dashboard-light [data-channel-title="facebook"],
+.dashboard-light .text-\[\#60a5fa\].font-bold,
+.dashboard-light .text-\[\#60a5fa\].font-semibold {
+  color: #2563eb !important;
+}
+
+.dashboard-light [data-channel-title="threads"],
+.dashboard-light .text-\[\#c084fc\].font-bold,
+.dashboard-light .text-\[\#c084fc\].font-semibold {
+  color: #9333ea !important;
+}
+
+.dashboard-light [data-channel-title="substack"],
+.dashboard-light .text-\[\#67e8f9\].font-bold,
+.dashboard-light .text-\[\#67e8f9\].font-semibold {
+  color: #0284c7 !important;
+}
+
+.dashboard-light [data-channel-title="website"],
+.dashboard-light .text-\[\#86efac\].font-bold,
+.dashboard-light .text-\[\#86efac\].font-semibold {
+  color: #16a34a !important;
+}
+
+/* Visualisers: Retain Saturated Chart, Gauge & Funnel Progress Bars */
+.dashboard-light .bg-slate-900.overflow-hidden,
+.dashboard-light .bg-slate-900.rounded-full {
+  background-color: #e2e8f0 !important;
+}
+
+.dashboard-light .h-full.bg-\[\#86efac\],
+.dashboard-light .h-1\.5.bg-\[\#86efac\],
+.dashboard-light .h-2.bg-\[\#86efac\] {
+  background-color: #16a34a !important;
+}
+
+.dashboard-light .h-full.bg-\[\#60a5fa\],
+.dashboard-light .h-1\.5.bg-\[\#60a5fa\],
+.dashboard-light .h-2.bg-\[\#60a5fa\] {
+  background-color: #2563eb !important;
+}
+
+.dashboard-light .h-full.bg-\[\#fda4af\],
+.dashboard-light .h-1\.5.bg-\[\#fda4af\],
+.dashboard-light .h-2.bg-\[\#fda4af\] {
+  background-color: #e11d48 !important;
+}
+
+.dashboard-light .h-full.bg-\[\#fbbf24\],
+.dashboard-light .h-1\.5.bg-\[\#fbbf24\],
+.dashboard-light .h-2.bg-\[\#fbbf24\] {
+  background-color: #f59e0b !important;
+}
+
+.dashboard-light .h-full.bg-\[\#67e8f9\],
+.dashboard-light .h-1\.5.bg-\[\#67e8f9\],
+.dashboard-light .h-2.bg-\[\#67e8f9\] {
+  background-color: #0284c7 !important;
+}
+
+.dashboard-light .h-full.bg-\[\#c084fc\],
+.dashboard-light .h-1\.5.bg-\[\#c084fc\],
+.dashboard-light .h-2.bg-\[\#c084fc\] {
+  background-color: #9333ea !important;
+}

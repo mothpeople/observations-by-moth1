@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Activity,
@@ -7,6 +7,7 @@ import {
   BookOpen,
   Check,
   CheckCircle2,
+  Compass,
   Copy,
   Cpu,
   Edit2,
@@ -18,14 +19,17 @@ import {
   Gauge,
   Globe,
   KeyRound,
+  Link2,
   Lock,
   MessageSquare,
   Monitor,
+  Moon,
   Play,
   RefreshCw,
   Share2,
   Smartphone,
   Sparkles,
+  Sun,
   Tablet,
   Timer,
   TrendingUp,
@@ -958,8 +962,8 @@ function isFacebookVideoReel(rawItem, item) {
 function getReelDisplayTitle(item, fallbackIdx = 0) {
   if (!item) return `Reel #${fallbackIdx + 1}`;
   const issueId = matchItemToIssueId(item);
-  if (issueId === '02') return 'Issue #02: The Meat Grinder';
-  if (issueId === '01') return 'Issue #01: Watering Grass';
+  if (issueId === '02') return 'Issue #02: The Meat Grinder Needs More Meat';
+  if (issueId === '01') return 'Issue #01: Watering Grass in a Thunderstorm';
   return item.title || item.text || item.caption || `Reel #${fallbackIdx + 1}`;
 }
 
@@ -1152,6 +1156,184 @@ async function fetchDirectActorDataset(actorId, token) {
   }
 }
 
+// Pre-configured UTM links for Observations by Moth1 distribution campaigns
+const PRECONFIGURED_UTM_LINKS = [
+  // Issue #02: The Meat Grinder Needs More Meat
+  {
+    id: '02-instagram-story',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'instagram',
+    platformLabel: 'Instagram Story',
+    medium: 'story',
+    campaign: 'the-meat-grinder',
+    badge: 'IG Story',
+    color: '#fda4af',
+    description: 'Instagram 9:16 Reel/Story swipe-up or sticker link to Issue #02',
+  },
+  {
+    id: '02-facebook-story',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'facebook',
+    platformLabel: 'Facebook Reel / Story',
+    medium: 'story',
+    campaign: 'the-meat-grinder',
+    badge: 'FB Story',
+    color: '#60a5fa',
+    description: 'Facebook 9:16 Reel pinned comment or story sticker link to Issue #02',
+  },
+  {
+    id: '02-x-thread',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'x',
+    platformLabel: 'X (Twitter) Thread',
+    medium: 'thread',
+    campaign: 'the-meat-grinder',
+    badge: '𝕏 Thread',
+    color: '#e2e8f0',
+    description: 'Final call-to-action link in the 10-tweet summary thread on @Moth1NFTs for Issue #02',
+  },
+  {
+    id: '02-x-video',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'x',
+    platformLabel: 'X Video / Reel',
+    medium: 'video',
+    campaign: 'the-meat-grinder',
+    badge: '𝕏 Video',
+    color: '#67e8f9',
+    description: 'Direct tweet accompanying 9:16 vertical video reel pointing to Issue #02',
+  },
+  {
+    id: '02-threads-post',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'threads',
+    platformLabel: 'Threads Post',
+    medium: 'post',
+    campaign: 'the-meat-grinder',
+    badge: 'Threads Post',
+    color: '#c084fc',
+    description: 'Threads carousel or launch post link for Issue #02 dispatch',
+  },
+
+  // Issue #01: Watering Grass in a Thunderstorm
+  {
+    id: '01-instagram-story',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'instagram',
+    platformLabel: 'Instagram Story',
+    medium: 'story',
+    campaign: 'watering-grass-in-a-thunderstorm',
+    badge: 'IG Story',
+    color: '#fda4af',
+    description: 'Instagram 9:16 Reel/Story swipe-up or sticker link to Issue #01',
+  },
+  {
+    id: '01-facebook-story',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'facebook',
+    platformLabel: 'Facebook Reel / Story',
+    medium: 'story',
+    campaign: 'watering-grass-in-a-thunderstorm',
+    badge: 'FB Story',
+    color: '#60a5fa',
+    description: 'Facebook 9:16 Reel pinned comment or story sticker link to Issue #01',
+  },
+  {
+    id: '01-x-thread',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'x',
+    platformLabel: 'X (Twitter) Thread',
+    medium: 'thread',
+    campaign: 'watering-grass-in-a-thunderstorm',
+    badge: '𝕏 Thread',
+    color: '#e2e8f0',
+    description: 'Final call-to-action link in the summary thread on @Moth1NFTs to Issue #01',
+  },
+  {
+    id: '01-x-video',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'x',
+    platformLabel: 'X Video / Reel',
+    medium: 'video',
+    campaign: 'watering-grass-in-a-thunderstorm',
+    badge: '𝕏 Video',
+    color: '#67e8f9',
+    description: 'Direct tweet accompanying 9:16 vertical video reel pointing to Issue #01',
+  },
+  {
+    id: '01-threads-post',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'threads',
+    platformLabel: 'Threads Post',
+    medium: 'post',
+    campaign: 'watering-grass-in-a-thunderstorm',
+    badge: 'Threads Post',
+    color: '#c084fc',
+    description: 'Threads carousel or launch post link for Issue #01 dispatch',
+  },
+
+  // Main Publication Landing Page
+  {
+    id: 'home-instagram-bio',
+    issueId: 'home',
+    issueTitle: 'Main Publication Landing Page',
+    slug: '',
+    platform: 'instagram',
+    platformLabel: 'Instagram Bio Link',
+    medium: 'bio',
+    campaign: 'profile',
+    badge: 'IG Bio',
+    color: '#fda4af',
+    description: 'Primary link in @moth1.siv Instagram bio pointing to publication root',
+  },
+  {
+    id: 'home-x-bio',
+    issueId: 'home',
+    issueTitle: 'Main Publication Landing Page',
+    slug: '',
+    platform: 'x',
+    platformLabel: 'X (Twitter) Bio Link',
+    medium: 'bio',
+    campaign: 'profile',
+    badge: '𝕏 Bio',
+    color: '#e2e8f0',
+    description: 'Primary link in @Moth1NFTs X profile bio pointing to publication root',
+  },
+  {
+    id: 'home-threads-bio',
+    issueId: 'home',
+    issueTitle: 'Main Publication Landing Page',
+    slug: '',
+    platform: 'threads',
+    platformLabel: 'Threads Bio Link',
+    medium: 'bio',
+    campaign: 'profile',
+    badge: 'Threads Bio',
+    color: '#c084fc',
+    description: 'Primary link in @moth1.siv Threads profile pointing to publication root',
+  },
+];
+
 export default function Dashboard() {
   const [ledger, setLedger] = useState(() => loadChannelLedger());
   const [loadingSync, setLoadingSync] = useState(true);
@@ -1162,6 +1344,37 @@ export default function Dashboard() {
   const [copiedLink, setCopiedLink] = useState('');
   const [editingPlatform, setEditingPlatform] = useState(null); // 'substack' | 'instagram' | 'threads' | 'facebook' | null
   const [tempEditVal, setTempEditVal] = useState('');
+
+  // Layout View Tabs & Filter States for Compact, Less-Scroll Experience
+  const [activeMacroSection, setActiveMacroSection] = useState('analytics'); // 'analytics' | 'funnel'
+  const [analyticsTab, setAnalyticsTab] = useState('website'); // 'website' | 'reels' | 'substack' | 'social' | 'all'
+  const [socialPlatformTab, setSocialPlatformTab] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'threads' | 'x'
+  const [utmLinksFilterIssue, setUtmLinksFilterIssue] = useState('all'); // 'all' | '02' | '01' | 'home'
+  const [utmLinksFilterPlatform, setUtmLinksFilterPlatform] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'x' | 'threads'
+
+  // Custom UTM Generator Form State
+  const [customUtmIssue, setCustomUtmIssue] = useState('the-meat-grinder');
+  const [customUtmSource, setCustomUtmSource] = useState('instagram');
+  const [customUtmMedium, setCustomUtmMedium] = useState('story');
+  const [customUtmCampaign, setCustomUtmCampaign] = useState('the-meat-grinder');
+
+  // Dark / Light Theme State with LocalStorage Persistence
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.localStorage.getItem('moth1_dashboard_theme') || 'dark';
+    }
+    return 'dark';
+  });
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('moth1_dashboard_theme', nextTheme);
+    }
+  };
+
+  const isLight = theme === 'light';
 
   const [apifyToken, setApifyToken] = useState(() => {
     if (typeof window === 'undefined') return '';
@@ -2331,6 +2544,14 @@ export default function Dashboard() {
     }
   };
 
+  const copyDirectUrl = (url, linkKey) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      setCopiedLink(linkKey);
+      setTimeout(() => setCopiedLink(''), 2200);
+    }
+  };
+
   // Filtered Social Items (#observations filter)
   const activeFilterTag = targets.filterTag || '#observations';
 
@@ -2558,6 +2779,42 @@ export default function Dashboard() {
       ? ((totalStorySubscribers / totalStoryEntrances) * 100).toFixed(1)
       : '0.0';
 
+  // Filtered Pre-configured Specific UTM Links
+  const activeUtmLinks = useMemo(() => {
+    const origin =
+      typeof window !== 'undefined' &&
+      window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1'
+        ? window.location.origin
+        : 'https://observations.moth1.xyz';
+
+    return PRECONFIGURED_UTM_LINKS.filter((item) => {
+      if (utmLinksFilterIssue !== 'all' && item.issueId !== utmLinksFilterIssue) return false;
+      if (utmLinksFilterPlatform !== 'all' && item.platform !== utmLinksFilterPlatform) return false;
+      return true;
+    }).map((item) => {
+      const url = `${origin}${item.slug ? '/' + item.slug : '/'}?utm_source=${item.platform}&utm_medium=${item.medium}&utm_campaign=${item.campaign}`;
+      return { ...item, url };
+    });
+  }, [utmLinksFilterIssue, utmLinksFilterPlatform]);
+
+  // Real-Time Generated Custom Campaign Link
+  const generatedCustomUrl = useMemo(() => {
+    const origin =
+      typeof window !== 'undefined' &&
+      window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1'
+        ? window.location.origin
+        : 'https://observations.moth1.xyz';
+    const path = customUtmIssue ? `/${customUtmIssue}` : '/';
+    const params = new URLSearchParams();
+    if (customUtmSource) params.set('utm_source', customUtmSource.trim().toLowerCase());
+    if (customUtmMedium) params.set('utm_medium', customUtmMedium.trim().toLowerCase());
+    if (customUtmCampaign) params.set('utm_campaign', customUtmCampaign.trim().toLowerCase());
+    const qs = params.toString();
+    return `${origin}${path}${qs ? '?' + qs : ''}`;
+  }, [customUtmIssue, customUtmSource, customUtmMedium, customUtmCampaign]);
+
   // Backward-compatible aliases for Story Funnel telemetry
   const totalStoryClicks = totalStoryEntrances;
   const igStoryClicks = igStoryEntrances;
@@ -2733,13 +2990,20 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0c0d10] text-[#e2e8f0] pt-14 sm:pt-20 pb-20 px-3 sm:px-6 lg:px-8 overflow-x-hidden">
-      {/* Subtle Cyberpunk Grid Backdrop */}
+    <div
+      className={`min-h-screen pt-14 sm:pt-20 pb-24 px-3 sm:px-6 lg:px-8 overflow-x-hidden transition-colors duration-200 ${
+        isLight ? 'bg-[#f8f7f4] text-[#0f172a] dashboard-light' : 'bg-[#0c0d10] text-[#e2e8f0]'
+      }`}
+    >
+      {/* Subtle Cyberpunk / Japanese Rice Paper Grid Backdrop */}
       <div
-        className="pointer-events-none fixed inset-0 opacity-15"
+        className={`pointer-events-none fixed inset-0 transition-opacity duration-200 ${
+          isLight ? 'opacity-[0.06]' : 'opacity-15'
+        }`}
         style={{
-          backgroundImage:
-            'linear-gradient(to right, #334155 1px, transparent 1px), linear-gradient(to bottom, #334155 1px, transparent 1px)',
+          backgroundImage: isLight
+            ? 'linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)'
+            : 'linear-gradient(to right, #334155 1px, transparent 1px), linear-gradient(to bottom, #334155 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       />
@@ -2766,6 +3030,25 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full lg:w-auto">
+            {/* Theme Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={`inline-flex items-center justify-center gap-1.5 sm:gap-2 border px-2.5 sm:px-3.5 py-2 font-mono text-[11px] sm:text-xs font-bold transition-all cursor-pointer text-center ${
+                isLight
+                  ? 'border-amber-400/80 bg-amber-50 text-amber-900 hover:bg-amber-100 shadow-sm'
+                  : 'border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20'
+              }`}
+              title={isLight ? 'Switch to Dark Cyber-Zen theme' : 'Switch to Light Gallery theme'}
+            >
+              {isLight ? (
+                <Moon className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              ) : (
+                <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              )}
+              <span>{isLight ? 'Dark Mode' : 'Light Mode'}</span>
+            </button>
+
             {/* #observations Filter Toggle Button */}
             <button
               type="button"
@@ -2827,6 +3110,76 @@ export default function Dashboard() {
               <span>← Back to Site</span>
             </Link>
           </div>
+        </div>
+
+        {/* Top Sticky Macro-Navigation Bar: Instant Section Switching (Analytics Hub vs Funnel Tracking) */}
+        <div
+          className={`sticky top-0 z-40 -mx-3 sm:-mx-6 lg:-mx-8 px-3 sm:px-6 lg:px-8 py-2.5 backdrop-blur-md border-b flex flex-wrap items-center justify-between gap-3 transition-colors duration-200 ${
+            isLight
+              ? 'bg-[#f8f7f4]/95 border-slate-300 text-slate-800 shadow-sm'
+              : 'bg-[#0c0d10]/95 border-slate-800 text-[#e2e8f0]'
+          }`}
+        >
+          <div className={`flex items-center gap-1 p-1 border ${
+            isLight ? 'bg-white border-slate-300 shadow-sm' : 'bg-slate-900/60 border border-slate-800'
+          }`}>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveMacroSection('analytics');
+                document.getElementById('analytics-hub')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                activeMacroSection === 'analytics'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#86efac] text-[#0c0d10] font-black shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
+              }`}
+            >
+              📊 Analytics Hub
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveMacroSection('funnel');
+                document.getElementById('funnel-tracking')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                activeMacroSection === 'funnel'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#f472b6] text-[#0c0d10] font-black shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
+              }`}
+            >
+              🎯 UTM Funnel Tracking &amp; Links
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-slate-400 hidden md:inline">
+              Active Mode: <strong className="text-[#86efac] uppercase font-bold">{theme}</strong>
+            </span>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 border text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                isLight
+                  ? 'border-slate-300 bg-white text-slate-800 shadow-sm hover:border-amber-400'
+                  : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-amber-400/60'
+              }`}
+            >
+              {isLight ? (
+                <>
+                  <Moon className="w-3 h-3 text-amber-600" />
+                  <span>Dark Mode</span>
+                </>
+              ) : (
+                <>
+                  <Sun className="w-3 h-3 text-amber-400" />
+                  <span>Light Mode</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
         </div>
 
         {/* Status Toast */}
@@ -3076,14 +3429,43 @@ export default function Dashboard() {
           </CyberPanel>
         )}
 
-        {/* 7-Channel Executive Summary KPI Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7 gap-4">
-          {/* KPI 1: Website (Vercel Analytics) */}
-          <CyberPanel
-            label="Website • Vercel"
-            accent="#86efac"
-            className="p-4 flex flex-col justify-between"
-          >
+        {/* ================================================================= */}
+        {/* MACRO-SECTION 1: ANALYTICS HUB & MULTI-CHANNEL METRICS           */}
+        {/* ================================================================= */}
+        <section id="analytics-hub" className="space-y-6 pt-2">
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 className="w-4 h-4 text-[#86efac]" />
+                <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
+                  Analytics Hub
+                </h2>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold tracking-wider">
+                  Multi-Channel Telemetry
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Live Vercel Web Analytics, Apify social scrapers, publication reach, and speed insights.
+              </p>
+            </div>
+            <div className="text-[11px] font-mono text-slate-400">
+              Tip: Click any KPI card below to filter the detailed view
+            </div>
+          </div>
+
+          {/* 7-Channel Executive Summary KPI Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7 gap-4">
+            {/* KPI 1: Website (Vercel Analytics) */}
+            <CyberPanel
+              theme={theme}
+              label="Website • Vercel"
+              accent="#86efac"
+              className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
+                analyticsTab === 'website' ? 'ring-1 ring-[#86efac]' : ''
+              }`}
+              onClick={() => setAnalyticsTab('website')}
+            >
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-mono text-[11px] text-slate-400 truncate">
@@ -3123,9 +3505,13 @@ export default function Dashboard() {
 
           {/* KPI 2: Substack (automation-lab/substack-scraper) */}
           <CyberPanel
+            theme={theme}
             label="Substack • Apify"
             accent="#67e8f9"
-            className="p-4 flex flex-col justify-between"
+            className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
+              analyticsTab === 'substack' ? 'ring-1 ring-[#67e8f9]' : ''
+            }`}
+            onClick={() => setAnalyticsTab('substack')}
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -3203,9 +3589,16 @@ export default function Dashboard() {
 
           {/* KPI 3: Instagram (apify/instagram-scraper) */}
           <CyberPanel
+            theme={theme}
             label="Instagram • Apify"
             accent="#fda4af"
-            className="p-4 flex flex-col justify-between"
+            className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
+              analyticsTab === 'social' && socialPlatformTab === 'instagram' ? 'ring-1 ring-[#fda4af]' : ''
+            }`}
+            onClick={() => {
+              setAnalyticsTab('social');
+              setSocialPlatformTab('instagram');
+            }}
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -3284,9 +3677,16 @@ export default function Dashboard() {
 
           {/* KPI 4: Threads (automation-lab/threads-scraper) */}
           <CyberPanel
+            theme={theme}
             label="Threads • Apify"
             accent="#c084fc"
-            className="p-4 flex flex-col justify-between"
+            className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
+              analyticsTab === 'social' && socialPlatformTab === 'threads' ? 'ring-1 ring-[#c084fc]' : ''
+            }`}
+            onClick={() => {
+              setAnalyticsTab('social');
+              setSocialPlatformTab('threads');
+            }}
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -3365,9 +3765,16 @@ export default function Dashboard() {
 
           {/* KPI 5: Facebook (apify/facebook-posts-scraper) */}
           <CyberPanel
+            theme={theme}
             label="Facebook • Apify"
             accent="#86efac"
-            className="p-4 flex flex-col justify-between"
+            className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
+              analyticsTab === 'social' && socialPlatformTab === 'facebook' ? 'ring-1 ring-[#86efac]' : ''
+            }`}
+            onClick={() => {
+              setAnalyticsTab('social');
+              setSocialPlatformTab('facebook');
+            }}
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -3446,9 +3853,16 @@ export default function Dashboard() {
 
           {/* KPI 6: X (Twitter) */}
           <CyberPanel
+            theme={theme}
             label={`X • @${targets.xHandle || 'Moth1NFTs'}`}
             accent="#e2e8f0"
-            className="p-4 flex flex-col justify-between"
+            className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
+              analyticsTab === 'social' && socialPlatformTab === 'x' ? 'ring-1 ring-white' : ''
+            }`}
+            onClick={() => {
+              setAnalyticsTab('social');
+              setSocialPlatformTab('x');
+            }}
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -3527,9 +3941,14 @@ export default function Dashboard() {
 
           {/* KPI 7: UTM Funnel Tracker (100% Automated Telemetry) */}
           <CyberPanel
+            theme={theme}
             label="UTM Funnel Tracker • Automated"
             accent="#f472b6"
-            className="p-4 flex flex-col justify-between border border-[#f472b6]/40 bg-[#121316]"
+            className="p-4 flex flex-col justify-between border border-[#f472b6]/40 bg-[#121316] cursor-pointer transition-all hover:scale-[1.01] hover:ring-1 hover:ring-[#f472b6]"
+            onClick={() => {
+              setActiveMacroSection('funnel');
+              document.getElementById('funnel-tracking')?.scrollIntoView({ behavior: 'smooth' });
+            }}
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -3581,12 +4000,82 @@ export default function Dashboard() {
           </CyberPanel>
         </div>
 
-        {/* SECTION 1: Website Audience & Route Breakdown */}
-        <CyberPanel
-          label="Website Audience • observations.moth1.xyz"
-          accent="#86efac"
-          className="p-4 sm:p-6"
-        >
+        {/* Analytics Hub Sub-Navigation Segmented Switcher (Reduces vertical scrolling by ~75%) */}
+        <div className={`p-1.5 border flex flex-wrap items-center justify-between gap-2 ${
+          isLight ? 'bg-white border-slate-300 shadow-sm' : 'bg-slate-900/70 border border-slate-800'
+        }`}>
+          <div className="flex flex-wrap items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setAnalyticsTab('website')}
+              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                analyticsTab === 'website'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#86efac] text-[#0c0d10] font-black shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
+              }`}
+            >
+              🌐 Website &amp; Traffic
+            </button>
+            <button
+              type="button"
+              onClick={() => setAnalyticsTab('reels')}
+              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                analyticsTab === 'reels'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#67e8f9] text-[#0c0d10] font-black shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
+              }`}
+            >
+              🎬 Comparative Reels (FB vs IG)
+            </button>
+            <button
+              type="button"
+              onClick={() => setAnalyticsTab('substack')}
+              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                analyticsTab === 'substack'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#facc15] text-[#0c0d10] font-black shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
+              }`}
+            >
+              📰 Substack Publication
+            </button>
+            <button
+              type="button"
+              onClick={() => setAnalyticsTab('social')}
+              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                analyticsTab === 'social'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#c084fc] text-[#0c0d10] font-black shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
+              }`}
+            >
+              📱 Social Feeds (Apify)
+            </button>
+            <button
+              type="button"
+              onClick={() => setAnalyticsTab('all')}
+              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                analyticsTab === 'all'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-white text-[#0c0d10] font-black shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
+              }`}
+            >
+              📑 View Full Deck
+            </button>
+          </div>
+
+          <div className="text-[11px] font-mono text-slate-400 px-2 hidden sm:block">
+            Active View: <strong className={isLight ? 'text-[#0f172a] uppercase font-bold' : 'text-[#86efac] uppercase font-bold'}>{analyticsTab}</strong>
+          </div>
+        </div>
+
+        {/* Sub-Section 1: Website Audience & Route Breakdown + Speed Insights */}
+        {(analyticsTab === 'website' || analyticsTab === 'all') && (
+          <div className="space-y-6">
+            <CyberPanel
+              theme={theme}
+              label="Website Audience • observations.moth1.xyz"
+              accent="#86efac"
+              className="p-4 sm:p-6"
+            >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
             <div>
               <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
@@ -4099,13 +4588,204 @@ export default function Dashboard() {
             </div>
           </div>
         </CyberPanel>
+      </div>
+    )}
 
-        {/* SECTION 2: Substack Publication */}
-        <CyberPanel
-          label="Substack Publication"
-          accent="#67e8f9"
-          className="p-4 sm:p-6"
-        >
+    {/* Sub-Section 2: Dedicated Comparative Reels Visualizer (Facebook vs Instagram) */}
+    {(analyticsTab === 'reels' || analyticsTab === 'all') && (
+      <CyberPanel
+        theme={theme}
+        label="Comparative Reel Visualizer • Facebook vs Instagram Performance"
+        accent="#67e8f9"
+        className="p-4 sm:p-6"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-5 border-b border-slate-800">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Film className="w-4 h-4 text-[#67e8f9]" />
+              <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
+                Reel Performance &amp; Cross-Platform Comparison
+              </h2>
+            </div>
+            <p className="text-xs text-slate-400">
+              Direct comparison of 9:16 video reel metrics across Facebook (observationsbymoth1) and Instagram (@moth1.siv).
+            </p>
+          </div>
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className="px-2.5 py-1 bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa] font-bold">
+              FB: {fbScrapedViews.toLocaleString()} views
+            </span>
+            <span className="px-2.5 py-1 bg-[#fda4af]/10 border border-[#fda4af]/30 text-[#fda4af] font-bold">
+              IG: {igScrapedViews.toLocaleString()} views
+            </span>
+          </div>
+        </div>
+
+        {/* Cross-Channel Comparison Grid: Issue #02 vs Issue #01 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Issue #02: The Meat Grinder Needs More Meat Comparison Card */}
+          <div className="p-4 bg-[#0b0d10] border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div>
+                <div className="font-mono text-[10px] text-[#f472b6] font-bold uppercase tracking-wider">
+                  Issue #02
+                </div>
+                <div className="font-mono text-sm font-bold text-[#e2e8f0]">
+                  The Meat Grinder Needs More Meat
+                </div>
+              </div>
+              <span className="text-[10px] font-mono text-slate-400">
+                9:16 Video Reel
+              </span>
+            </div>
+
+            {(() => {
+              const fbItem = visibleFacebookItems.find((i) => matchItemToIssueId(i) === '02') || visibleFacebookItems[0];
+              const igItem = visibleInstagramItems.find((i) => matchItemToIssueId(i) === '02') || visibleInstagramItems[0];
+              const fbViews = fbItem?.views || 0;
+              const igViews = igItem?.views || 0;
+              const maxV = Math.max(1, fbViews, igViews);
+              return (
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#60a5fa] font-bold flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#60a5fa]" />
+                        Facebook Reel
+                      </span>
+                      <span className="text-white font-bold">{fbViews.toLocaleString()} views</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-900 overflow-hidden">
+                      <div
+                        className="h-full bg-[#60a5fa] transition-all duration-500"
+                        style={{ width: `${Math.min(100, Math.max(2, (fbViews / maxV) * 100))}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                      <span>Likes: {fbItem?.likes || 0} • Comments: {fbItem?.comments || 0}</span>
+                      {fbItem?.url && (
+                        <a href={fbItem.url} target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:underline">
+                          Watch on FB ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-2 border-t border-slate-800/60">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#fda4af] font-bold flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#fda4af]" />
+                        Instagram Reel
+                      </span>
+                      <span className="text-white font-bold">{igViews.toLocaleString()} views</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-900 overflow-hidden">
+                      <div
+                        className="h-full bg-[#fda4af] transition-all duration-500"
+                        style={{ width: `${Math.min(100, Math.max(2, (igViews / maxV) * 100))}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                      <span>Likes: {igItem?.likes || 0} • Comments: {igItem?.comments || 0}</span>
+                      {igItem?.url && (
+                        <a href={igItem.url} target="_blank" rel="noopener noreferrer" className="text-[#fda4af] hover:underline">
+                          Watch on IG ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Issue #01: Watering Grass in a Thunderstorm Comparison Card */}
+          <div className="p-4 bg-[#0b0d10] border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div>
+                <div className="font-mono text-[10px] text-[#fbbf24] font-bold uppercase tracking-wider">
+                  Issue #01
+                </div>
+                <div className="font-mono text-sm font-bold text-[#e2e8f0]">
+                  Watering Grass in a Thunderstorm
+                </div>
+              </div>
+              <span className="text-[10px] font-mono text-slate-400">
+                9:16 Video Reel
+              </span>
+            </div>
+
+            {(() => {
+              const fbItem = visibleFacebookItems.find((i) => matchItemToIssueId(i) === '01') || visibleFacebookItems[1];
+              const igItem = visibleInstagramItems.find((i) => matchItemToIssueId(i) === '01') || visibleInstagramItems[1];
+              const fbViews = fbItem?.views || 0;
+              const igViews = igItem?.views || 0;
+              const maxV = Math.max(1, fbViews, igViews);
+              return (
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#60a5fa] font-bold flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#60a5fa]" />
+                        Facebook Reel
+                      </span>
+                      <span className="text-white font-bold">{fbViews.toLocaleString()} views</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-900 overflow-hidden">
+                      <div
+                        className="h-full bg-[#60a5fa] transition-all duration-500"
+                        style={{ width: `${Math.min(100, Math.max(2, (fbViews / maxV) * 100))}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                      <span>Likes: {fbItem?.likes || 0} • Comments: {fbItem?.comments || 0}</span>
+                      {fbItem?.url && (
+                        <a href={fbItem.url} target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:underline">
+                          Watch on FB ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-2 border-t border-slate-800/60">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#fda4af] font-bold flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#fda4af]" />
+                        Instagram Reel
+                      </span>
+                      <span className="text-white font-bold">{igViews.toLocaleString()} views</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-900 overflow-hidden">
+                      <div
+                        className="h-full bg-[#fda4af] transition-all duration-500"
+                        style={{ width: `${Math.min(100, Math.max(2, (igViews / maxV) * 100))}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                      <span>Likes: {igItem?.likes || 0} • Comments: {igItem?.comments || 0}</span>
+                      {igItem?.url && (
+                        <a href={igItem.url} target="_blank" rel="noopener noreferrer" className="text-[#fda4af] hover:underline">
+                          Watch on IG ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      </CyberPanel>
+    )}
+
+    {/* Sub-Section 3: Substack Publication */}
+    {(analyticsTab === 'substack' || analyticsTab === 'all') && (
+      <CyberPanel
+        theme={theme}
+        label="Substack Publication"
+        accent="#67e8f9"
+        className="p-4 sm:p-6"
+      >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
             <div>
               <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
@@ -4220,16 +4900,86 @@ export default function Dashboard() {
             </div>
           )}
         </CyberPanel>
+      )}
 
-        {/* SECTION 3: Instagram Scraper (apify/instagram-scraper) + Threads & Facebook Scrapers */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          {/* Instagram Apify Scraper Feed */}
-          {/* Instagram Reels */}
-          <CyberPanel
-            label="Instagram Reels • @moth1.siv"
-            accent="#fda4af"
-            className="p-4 sm:p-6 flex flex-col justify-between"
-          >
+      {/* Sub-Section 4: Social Scrapers (Instagram, Threads, Facebook, X) */}
+        {(analyticsTab === 'social' || analyticsTab === 'all') && (
+          <div className="space-y-4">
+            {/* Platform Sub-Tabs when in Social View */}
+            {analyticsTab === 'social' && (
+              <div className={`flex flex-wrap items-center gap-1.5 p-2 border font-mono text-xs ${
+                isLight ? 'bg-white border-slate-300 shadow-sm' : 'bg-[#0b0d10] border-slate-800'
+              }`}>
+                <span className={`uppercase font-bold text-[10px] mr-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                  Platform Filter:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSocialPlatformTab('all')}
+                  className={`px-2.5 py-1 transition-all cursor-pointer ${
+                    socialPlatformTab === 'all'
+                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-white text-black font-bold shadow')
+                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
+                  }`}
+                >
+                  All Channels ({visibleInstagramItems.length + visibleFacebookItems.length + visibleThreadsItems.length + visibleXItems.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSocialPlatformTab('instagram')}
+                  className={`px-2.5 py-1 transition-all cursor-pointer ${
+                    socialPlatformTab === 'instagram'
+                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#fda4af] text-black font-bold shadow')
+                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#fda4af] hover:bg-[#fda4af]/10')
+                  }`}
+                >
+                  Instagram ({visibleInstagramItems.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSocialPlatformTab('threads')}
+                  className={`px-2.5 py-1 transition-all cursor-pointer ${
+                    socialPlatformTab === 'threads'
+                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#c084fc] text-black font-bold shadow')
+                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#c084fc] hover:bg-[#c084fc]/10')
+                  }`}
+                >
+                  Threads ({visibleThreadsItems.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSocialPlatformTab('facebook')}
+                  className={`px-2.5 py-1 transition-all cursor-pointer ${
+                    socialPlatformTab === 'facebook'
+                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#86efac] text-black font-bold shadow')
+                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#86efac] hover:bg-[#86efac]/10')
+                  }`}
+                >
+                  Facebook ({visibleFacebookItems.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSocialPlatformTab('x')}
+                  className={`px-2.5 py-1 transition-all cursor-pointer ${
+                    socialPlatformTab === 'x'
+                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-white text-black font-bold shadow')
+                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-300 hover:bg-white/10')
+                  }`}
+                >
+                  𝕏 (Twitter) ({visibleXItems.length})
+                </button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              {/* Instagram Apify Scraper Feed */}
+              {(socialPlatformTab === 'all' || socialPlatformTab === 'instagram') && (
+                <CyberPanel
+                  theme={theme}
+                  label="Instagram Reels • @moth1.siv"
+                  accent="#fda4af"
+                  className="p-4 sm:p-6 flex flex-col justify-between"
+                >
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
                 <div>
@@ -4364,10 +5114,13 @@ export default function Dashboard() {
               )}
             </div>
           </CyberPanel>
+        )}
 
-          {/* Threads Scraper (automation-lab/threads-scraper) + Facebook Scraper (apify/facebook-posts-scraper) */}
-          <div className="space-y-4 sm:space-y-6">
+        {/* Threads Scraper (automation-lab/threads-scraper) + Facebook Scraper (apify/facebook-posts-scraper) */}
+        <div className="space-y-4 sm:space-y-6">
+          {(socialPlatformTab === 'all' || socialPlatformTab === 'threads') && (
             <CyberPanel
+              theme={theme}
               label="Threads Discussions • @moth1.siv"
               accent="#c084fc"
               className="p-4 sm:p-6"
@@ -4471,9 +5224,12 @@ export default function Dashboard() {
                 </div>
               )}
             </CyberPanel>
+          )}
 
-            {/* Facebook Scraper & Reels Panel */}
+          {/* Facebook Scraper & Reels Panel */}
+          {(socialPlatformTab === 'all' || socialPlatformTab === 'facebook') && (
             <CyberPanel
+              theme={theme}
               label="Facebook Reels"
               accent="#86efac"
               className="p-4 sm:p-6"
@@ -4610,9 +5366,12 @@ export default function Dashboard() {
                 </div>
               )}
             </CyberPanel>
+          )}
 
-            {/* X Dispatches & Campaign Feed Panel */}
+          {/* X Dispatches & Campaign Feed Panel */}
+          {(socialPlatformTab === 'all' || socialPlatformTab === 'x') && (
             <CyberPanel
+              theme={theme}
               label={`X Dispatches • @${targets.xHandle || 'Moth1NFTs'}`}
               accent="#e2e8f0"
               className="p-4 sm:p-6"
@@ -4772,43 +5531,383 @@ export default function Dashboard() {
                 </div>
               )}
             </CyberPanel>
+          )}
+        </div>
+      </div>
+    </div>
+  )}
+</section>
+
+{/* ================================================================= */}
+{/* SECTION DIVIDER: TRANSITION TO FUNNEL TRACKING ENGINE            */}
+{/* ================================================================= */}
+<div className="relative py-4">
+  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+    <div className="w-full border-t border-slate-800" />
+  </div>
+  <div className="relative flex justify-center">
+    <span className="px-4 bg-[#0c0d10] text-[10px] font-mono uppercase tracking-[0.25em] text-[#f472b6] font-bold border border-slate-800">
+      Campaign Inbound Attribution &amp; Conversion Pipeline
+    </span>
+  </div>
+</div>
+
+{/* ================================================================= */}
+{/* MACRO-SECTION 2: UTM FUNNEL TRACKING & SPECIFIC UTM LINKS HUB     */}
+{/* ================================================================= */}
+<section id="funnel-tracking" className="space-y-6 pt-2">
+  <CyberPanel
+    theme={theme}
+    label="UTM Funnel Tracker • Automated Telemetry & Campaign Hub"
+    accent="#f472b6"
+    className="p-4 sm:p-6"
+  >
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
+      <div>
+        <div className="flex flex-wrap items-center gap-2.5 mb-1">
+          <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
+            UTM Campaign &amp; Funnel Tracker
+          </h2>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#86efac] animate-pulse" />
+            100% AUTOMATED TELEMETRY
+          </span>
+        </div>
+        <p className="text-xs text-slate-400">
+          Inbound traffic from Instagram &amp; Facebook stories, X campaigns, 75%+ scroll retention, and Substack subscriptions.
+        </p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 text-xs font-mono shrink-0">
+        <span className="px-2 py-1 bg-[#fda4af]/10 border border-[#fda4af]/30 text-[#fda4af]">
+          IG: <strong>{igStoryEntrances}</strong> clicks • <strong>{igStoryRetentionPct}%</strong> 75% read • <strong>{igStorySubscribers}</strong> subs
+        </span>
+        <span className="px-2 py-1 bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa]">
+          FB: <strong>{fbStoryEntrances}</strong> clicks • <strong>{fbStoryRetentionPct}%</strong> 75% read • <strong>{fbStorySubscribers}</strong> subs
+        </span>
+        <span className="px-2 py-1 bg-white/10 border border-neutral-600 text-white">
+          𝕏: <strong>{xStoryEntrances}</strong> clicks • <strong>{xStoryRetentionPct}%</strong> 75% read • <strong>{xStorySubscribers}</strong> subs
+        </span>
+      </div>
+    </div>
+
+    {/* Specific UTM Campaign Links Hub */}
+    <div className="p-4 sm:p-5 bg-[#0b0d10] border border-slate-800 space-y-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+        <div>
+          <div className="flex items-center gap-2">
+            <Link2 className="w-4 h-4 text-[#f472b6]" />
+            <h3 className="text-sm sm:text-base font-bold text-[#e2e8f0]">
+              Specific UTM Campaign Links Hub
+            </h3>
+            <span className="px-2 py-0.5 bg-[#f472b6]/10 border border-[#f472b6]/30 text-[#f472b6] text-[10px] font-mono uppercase font-bold">
+              {activeUtmLinks.length} Active Links
+            </span>
           </div>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Pre-configured distribution URLs with verified <code>utm_source</code>, <code>utm_medium</code>, and <code>utm_campaign</code> parameters for automated tracking.
+          </p>
         </div>
 
-        {/* SECTION 4: UTM Funnel Tracker (100% Automated Telemetry) */}
-        <CyberPanel
-          label="UTM Funnel Tracker • Automated Telemetry"
-          accent="#f472b6"
-          className="p-4 sm:p-6"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5 mb-1">
-                <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
-                  UTM Campaign &amp; Funnel Tracker
-                </h2>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#86efac] animate-pulse" />
-                  100% AUTOMATED TELEMETRY
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">
-                Inbound traffic from Instagram &amp; Facebook stories, X campaigns, 75%+ scroll retention, and Substack subscriptions.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 text-xs font-mono shrink-0">
-              <span className="px-2 py-1 bg-[#fda4af]/10 border border-[#fda4af]/30 text-[#fda4af]">
-                IG: <strong>{igStoryEntrances}</strong> clicks • <strong>{igStoryRetentionPct}%</strong> 75% read • <strong>{igStorySubscribers}</strong> subs
-              </span>
-              <span className="px-2 py-1 bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa]">
-                FB: <strong>{fbStoryEntrances}</strong> clicks • <strong>{fbStoryRetentionPct}%</strong> 75% read • <strong>{fbStorySubscribers}</strong> subs
-              </span>
-              <span className="px-2 py-1 bg-white/10 border border-neutral-600 text-white">
-                𝕏: <strong>{xStoryEntrances}</strong> clicks • <strong>{xStoryRetentionPct}%</strong> 75% read • <strong>{xStorySubscribers}</strong> subs
-              </span>
-            </div>
+        {/* Filter Pills */}
+        <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
+          {/* Issue Filter */}
+          <div className={`flex items-center gap-1 p-1 border ${
+            isLight ? 'bg-white border-slate-300' : 'bg-[#121316] border-slate-800'
+          }`}>
+            <span className={`text-[10px] px-1 font-bold uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Issue:</span>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterIssue('all')}
+              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterIssue === 'all'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#f472b6] text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
+              }`}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterIssue('02')}
+              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterIssue === '02'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#f472b6] text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
+              }`}
+            >
+              #02
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterIssue('01')}
+              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterIssue === '01'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#f472b6] text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
+              }`}
+            >
+              #01
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterIssue('home')}
+              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterIssue === 'home'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#f472b6] text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
+              }`}
+            >
+              Home
+            </button>
           </div>
+
+          {/* Platform Filter */}
+          <div className={`flex items-center gap-1 p-1 border ${
+            isLight ? 'bg-white border-slate-300' : 'bg-[#121316] border-slate-800'
+          }`}>
+            <span className={`text-[10px] px-1 font-bold uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Channel:</span>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterPlatform('all')}
+              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterPlatform === 'all'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-white text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
+              }`}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterPlatform('instagram')}
+              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterPlatform === 'instagram'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#fda4af] text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#fda4af] hover:bg-[#fda4af]/10')
+              }`}
+            >
+              IG
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterPlatform('facebook')}
+              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterPlatform === 'facebook'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#60a5fa] text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#60a5fa] hover:bg-[#60a5fa]/10')
+              }`}
+            >
+              FB
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterPlatform('x')}
+              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterPlatform === 'x'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-white text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-300 hover:bg-white/10')
+              }`}
+            >
+              𝕏
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterPlatform('threads')}
+              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterPlatform === 'threads'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#c084fc] text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#c084fc] hover:bg-[#c084fc]/10')
+              }`}
+            >
+              Threads
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Specific Links Card Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {activeUtmLinks.map((link) => {
+          const isCopied = copiedLink === link.id;
+          return (
+            <div
+              key={link.id}
+              className="p-3 bg-[#121316] border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between space-y-3"
+            >
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span
+                    style={{ color: link.color }}
+                    className="text-[11px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5"
+                  >
+                    <span
+                      style={{ backgroundColor: link.color }}
+                      className="w-2 h-2 rounded-full shrink-0"
+                    />
+                    {link.platformLabel}
+                  </span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
+                    {link.badge}
+                  </span>
+                </div>
+
+                <div className="text-xs font-bold text-[#e2e8f0]">
+                  {link.issueTitle}
+                </div>
+                <p className="text-[11px] text-slate-400 leading-snug">
+                  {link.description}
+                </p>
+              </div>
+
+              {/* URL Box */}
+              <div className="space-y-2 pt-1 border-t border-slate-800/80">
+                <div className="p-2 bg-[#0b0d10] border border-slate-800 text-[10px] font-mono text-slate-300 break-all select-all max-h-16 overflow-y-auto">
+                  {link.url}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => copyDirectUrl(link.url, link.id)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 px-3 bg-[#f472b6]/15 hover:bg-[#f472b6]/25 border border-[#f472b6]/40 text-[#f472b6] font-mono text-xs font-bold transition-all cursor-pointer"
+                  >
+                    {isCopied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-[#86efac]" />
+                        <span className="text-[#86efac]">Copied Link!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy UTM Link</span>
+                      </>
+                    )}
+                  </button>
+
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1 py-1.5 px-2.5 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 text-slate-300 font-mono text-xs transition-colors"
+                    title="Test open link in new tab"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
+    {/* Custom Campaign UTM Link Generator */}
+    <div className="p-4 sm:p-5 bg-[#0b0d10] border border-slate-800 space-y-3 mb-6">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <div className="flex items-center gap-2">
+          <Compass className="w-4 h-4 text-[#67e8f9]" />
+          <h3 className="text-sm sm:text-base font-bold text-[#e2e8f0]">
+            Custom Campaign UTM Generator
+          </h3>
+        </div>
+        <span className="text-[10px] font-mono text-slate-400">
+          Instant live preview &amp; copy
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-xs">
+        <div className="space-y-1">
+          <label className="text-[10px] text-slate-400 uppercase font-bold">Target Route / Issue:</label>
+          <select
+            value={customUtmIssue}
+            onChange={(e) => setCustomUtmIssue(e.target.value)}
+            className="w-full bg-[#121316] border border-slate-700 px-2.5 py-1.5 text-xs font-mono text-[#e2e8f0] outline-none"
+          >
+            <option value="the-meat-grinder">Issue #02: The Meat Grinder Needs More Meat</option>
+            <option value="watering-grass-in-a-thunderstorm">Issue #01: Watering Grass in a Thunderstorm</option>
+            <option value="">Home: Main Publication Page</option>
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-[10px] text-slate-400 uppercase font-bold">utm_source:</label>
+          <input
+            type="text"
+            value={customUtmSource}
+            onChange={(e) => setCustomUtmSource(e.target.value)}
+            placeholder="instagram, facebook, x, threads..."
+            className="w-full bg-[#121316] border border-slate-700 px-2.5 py-1.5 text-xs font-mono text-[#e2e8f0] outline-none"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-[10px] text-slate-400 uppercase font-bold">utm_medium:</label>
+          <input
+            type="text"
+            value={customUtmMedium}
+            onChange={(e) => setCustomUtmMedium(e.target.value)}
+            placeholder="story, thread, video, post..."
+            className="w-full bg-[#121316] border border-slate-700 px-2.5 py-1.5 text-xs font-mono text-[#e2e8f0] outline-none"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-[10px] text-slate-400 uppercase font-bold">utm_campaign:</label>
+          <input
+            type="text"
+            value={customUtmCampaign}
+            onChange={(e) => setCustomUtmCampaign(e.target.value)}
+            placeholder="launch, issue-02, promo..."
+            className="w-full bg-[#121316] border border-slate-700 px-2.5 py-1.5 text-xs font-mono text-[#e2e8f0] outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Generated URL & One-Click Copy */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2 border-t border-slate-800">
+        <div className="flex-1 p-2 bg-[#121316] border border-slate-800 text-[11px] font-mono text-[#67e8f9] break-all select-all">
+          {generatedCustomUrl}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => copyDirectUrl(generatedCustomUrl, 'custom-generator')}
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#67e8f9] text-[#0c0d10] font-mono text-xs font-bold uppercase transition-all cursor-pointer hover:bg-[#86efac]"
+          >
+            {copiedLink === 'custom-generator' ? (
+              <>
+                <Check className="w-3.5 h-3.5" />
+                <span>Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy Custom Link</span>
+              </>
+            )}
+          </button>
+          <a
+            href={generatedCustomUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-3 py-2 border border-slate-700 bg-slate-900 text-slate-300 font-mono text-xs hover:border-white transition-colors"
+          >
+            <span>Test ↗</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {/* Section Header: Issue Cross-Channel Funnels */}
+    <div className="flex items-center justify-between pb-2 border-b border-slate-800/80 mb-4">
+      <div className="font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+        Cross-Platform Funnel Attribution by Issue
+      </div>
+      <div className="text-[11px] font-mono text-slate-400">
+        Story Entrances → 75% Scroll Retention → Substack Subscriptions
+      </div>
+    </div>
 
           <div className="space-y-4 sm:space-y-6">
             {storyDispatches.map((dispatch) => {
@@ -5242,7 +6341,7 @@ export default function Dashboard() {
             })}
           </div>
         </CyberPanel>
-      </div>
+      </section>
     </div>
   );
 }
