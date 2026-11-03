@@ -631,6 +631,7 @@ function normalizeXItem(item, idx = 0) {
   const url =
     item.url ||
     item.tweetUrl ||
+    item.twitterUrl ||
     (item.id_str ? `https://x.com/Moth1NFTs/status/${item.id_str}` : 'https://x.com/Moth1NFTs');
 
   const conversationId = String(
@@ -657,37 +658,106 @@ function normalizeXItem(item, idx = 0) {
         ? item.hashtags.map((h) => String(h).toLowerCase())
         : (text.match(/#[\w\d_]+/g) || []).map((h) => h.toLowerCase()));
 
+  // Views / Impressions
   const views = Number(
-    item.view_count ??
+    item.viewCount ??
     item.viewsCount ??
+    item.view_count ??
     item.views ??
     item.impressions ??
+    item.impression_count ??
+    item.impressionCount ??
     0
   ) || 0;
 
+  // Likes
   const likes = Number(
+    item.likeCount ??
+    item.likesCount ??
     item.favorite_count ??
+    item.favoriteCount ??
     item.like_count ??
     item.likes ??
-    item.likesCount ??
+    item.favorites ??
     0
   ) || 0;
 
-  const retweets = Number(
-    item.retweet_count ??
-    item.retweets ??
-    item.reposts ??
-    0
-  ) || 0;
+  // Retweets / Reposts + Quotes
+  const retweets =
+    (Number(
+      item.retweetCount ??
+      item.retweet_count ??
+      item.retweets ??
+      item.reposts ??
+      item.repostCount ??
+      0
+    ) || 0) +
+    (Number(
+      item.quoteCount ??
+      item.quote_count ??
+      item.quotes ??
+      item.quotesCount ??
+      0
+    ) || 0);
 
+  // Replies / Comments
   const replies = Number(
+    item.replyCount ??
     item.reply_count ??
     item.replies ??
+    item.repliesCount ??
     item.comments ??
+    item.commentCount ??
+    item.commentsCount ??
     0
   ) || 0;
 
-  const publishedAt = item.created_at || item.publishedAt || item.date || new Date().toISOString();
+  // Bookmarks
+  const bookmarks = Number(
+    item.bookmarkCount ??
+    item.bookmark_count ??
+    item.bookmarks ??
+    0
+  ) || 0;
+
+  // Publication date
+  const publishedAt =
+    item.createdAt ||
+    item.created_at ||
+    item.publishedAt ||
+    item.published_at ||
+    item.date ||
+    item.timestamp ||
+    item.time ||
+    null;
+
+  // Author username & follower count
+  const authorUsername = String(
+    item.author?.userName ||
+    item.author?.username ||
+    item.author?.screen_name ||
+    item.user?.userName ||
+    item.user?.username ||
+    item.user?.screen_name ||
+    item.userName ||
+    item.username ||
+    item.screen_name ||
+    ''
+  ).replace(/^@/, '');
+
+  const authorFollowers = Number(
+    item.author?.followersCount ??
+    item.author?.followers ??
+    item.author?.followers_count ??
+    item.author?.followerCount ??
+    item.user?.followersCount ??
+    item.user?.followers ??
+    item.user?.followers_count ??
+    item.followersCount ??
+    item.followers_count ??
+    item.followers ??
+    0
+  ) || 0;
 
   return {
     id,
@@ -700,7 +770,10 @@ function normalizeXItem(item, idx = 0) {
     likes,
     retweets,
     replies,
+    bookmarks,
     publishedAt,
+    authorUsername,
+    authorFollowers,
   };
 }
 
@@ -762,6 +835,10 @@ function aggregateXThreads(rawItems) {
     const totalLikes = uniqueTweets.reduce((sum, t) => sum + (Number(t.likes) || 0), 0);
     const totalRetweets = uniqueTweets.reduce((sum, t) => sum + (Number(t.retweets) || 0), 0);
     const totalReplies = uniqueTweets.reduce((sum, t) => sum + (Number(t.replies) || 0), 0);
+    const maxAuthorFollowers = Math.max(
+      0,
+      ...uniqueTweets.map((t) => Number(t.authorFollowers) || 0)
+    );
 
     const isThread = uniqueTweets.length > 1;
 
@@ -780,6 +857,8 @@ function aggregateXThreads(rawItems) {
       likes: totalLikes,
       retweets: totalRetweets,
       replies: totalReplies,
+      authorFollowers: maxAuthorFollowers,
+      authorUsername: rootTweet.authorUsername || finalTweet.authorUsername || 'Moth1NFTs',
       publishedAt: rootTweet.publishedAt || finalTweet.publishedAt,
       tweets: uniqueTweets,
     });
@@ -1328,6 +1407,7 @@ export default function Dashboard() {
           directThreads,
           directFacebook,
           directX,
+          directXProfile,
         ] = await Promise.all([
           fetch('/api/analytics', { headers }).catch(() => null),
           fetch('/api/track-story-click').catch(() => null),
@@ -1345,6 +1425,9 @@ export default function Dashboard() {
             : Promise.resolve(null),
           activeToken
             ? fetchDirectActorDataset(ACTORS.x.id, activeToken)
+            : Promise.resolve(null),
+          activeToken
+            ? fetchDirectActorDataset(ACTORS.xProfile.id, activeToken)
             : Promise.resolve(null),
         ]);
 
@@ -1549,25 +1632,56 @@ export default function Dashboard() {
           };
         });
 
-        // 5. X (Twitter) Items (apify/twitter-scraper + apify/tweet-scraper)
+        // 5. X (Twitter) Items (apidojo/tweet-scraper + apidojo/twitter-user-scraper)
+        const isTargetXUser = (item) => {
+          const author = String(
+            item.authorUsername ||
+            item.author?.userName ||
+            item.author?.username ||
+            item.author?.screen_name ||
+            item.user?.userName ||
+            item.user?.username ||
+            item.user?.screen_name ||
+            item.userName ||
+            item.username ||
+            item.screen_name ||
+            ''
+          ).toLowerCase().replace(/^@/, '');
+          if (!author) return true;
+          return author === 'moth1nfts' || author.includes('moth1');
+        };
+
         const rawXItems =
           directX?.items?.length > 0
             ? directX.items.map((item, i) => normalizeXItem(item, i))
-            : serverJson?.x?.items || [];
+            : (serverJson?.x?.items || []).map((item, i) => normalizeXItem(item, i));
 
-        const xScrapedFollowers = Math.max(
-          serverJson?.x?.followers || 0,
-          ...rawXItems.map((i) => i.followers || 0),
-          ...(directX?.items || []).map((i) =>
+        const directFollowerCandidates = [
+          ...(directXProfile?.items || []),
+          ...(directX?.items || []),
+        ]
+          .filter(isTargetXUser)
+          .map((i) =>
             Number(
               i.followers_count ??
               i.followersCount ??
               i.followers ??
               i.user?.followers_count ??
               i.user?.followersCount ??
+              i.author?.followers_count ??
+              i.author?.followersCount ??
               0
             ) || 0
-          )
+          );
+
+        // Discard 536 from historical Apify run if present on serverJson
+        const cleanServerXFollowers =
+          Number(serverJson?.x?.followers) !== 536 ? (Number(serverJson?.x?.followers) || 0) : 0;
+
+        const xScrapedFollowers = Math.max(
+          cleanServerXFollowers,
+          ...rawXItems.filter(isTargetXUser).map((i) => i.authorFollowers || 0),
+          ...directFollowerCandidates
         );
 
         setXState((prev) => {
@@ -1580,16 +1694,16 @@ export default function Dashboard() {
           const effectiveFollowers =
             xScrapedFollowers > 0
               ? xScrapedFollowers
-              : prev.followers > 0
-                ? prev.followers
-                : ledger.x?.followers || 0;
+              : (prev.followers !== 536 ? (prev.followers || 0) : 0) ||
+                (ledger.x?.followers !== 536 ? (ledger.x?.followers || 0) : 0);
           return {
             connected:
               Boolean(directX?.connected) ||
+              Boolean(directXProfile?.connected) ||
               Boolean(serverJson?.x?.connected) ||
               prev.connected,
             runInfo:
-              directX?.runInfo || serverJson?.x?.runInfo || prev.runInfo,
+              directX?.runInfo || directXProfile?.runInfo || serverJson?.x?.runInfo || prev.runInfo,
             items: effectiveItems,
             followers: effectiveFollowers,
           };
@@ -1616,6 +1730,9 @@ export default function Dashboard() {
           }
           if (xScrapedFollowers > 0 && prev.x?.followers !== xScrapedFollowers) {
             next.x = { ...next.x, followers: xScrapedFollowers };
+            changed = true;
+          } else if (Number(next.x?.followers) === 536) {
+            next.x = { ...next.x, followers: 0 };
             changed = true;
           }
           if (subScraped > 0 && prev.substackSubscribers !== subScraped) {
@@ -2625,7 +2742,7 @@ export default function Dashboard() {
               </span>
             </h1>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Tracking Web Traffic, Story Funnel Conversion (<code>utm_medium=story</code>) &amp; Social Scrapers.
+              Tracking Web Traffic, UTM Funnel Conversion (<code>utm_medium=story</code>) &amp; Social Scrapers.
             </p>
           </div>
 
@@ -3389,16 +3506,16 @@ export default function Dashboard() {
             </div>
           </CyberPanel>
 
-          {/* KPI 7: Story Conversion Funnel (100% Automated Telemetry) */}
+          {/* KPI 7: UTM Funnel Tracker (100% Automated Telemetry) */}
           <CyberPanel
-            label="Story Funnel • Automated"
+            label="UTM Funnel Tracker • Automated"
             accent="#f472b6"
             className="p-4 flex flex-col justify-between border border-[#f472b6]/40 bg-[#121316]"
           >
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-mono text-[10px] text-slate-400 truncate uppercase tracking-wider">
-                  Story Funnel Telemetry
+                  UTM Funnel Telemetry
                 </span>
                 <Zap className="w-4 h-4 text-[#f472b6] shrink-0" />
               </div>
@@ -4634,9 +4751,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* SECTION 4: Story to Essay Conversion Funnel (100% Automated Telemetry) */}
+        {/* SECTION 4: UTM Funnel Tracker (100% Automated Telemetry) */}
         <CyberPanel
-          label="Story Funnel • Automated Telemetry"
+          label="UTM Funnel Tracker • Automated Telemetry"
           accent="#f472b6"
           className="p-4 sm:p-6"
         >
@@ -4644,7 +4761,7 @@ export default function Dashboard() {
             <div>
               <div className="flex flex-wrap items-center gap-2.5 mb-1">
                 <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
-                  Story to Essay Conversion Funnel
+                  UTM Campaign &amp; Funnel Tracker
                 </h2>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#86efac] animate-pulse" />
@@ -4652,7 +4769,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Inbound traffic from Instagram &amp; Facebook stories, 75%+ scroll retention, and Substack subscriptions.
+                Inbound traffic from Instagram &amp; Facebook stories, X campaigns, 75%+ scroll retention, and Substack subscriptions.
               </p>
             </div>
 

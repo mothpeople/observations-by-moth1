@@ -425,37 +425,98 @@ export function normalizeXItem(item, idx = 0) {
         ? item.hashtags.map((h) => String(h).toLowerCase())
         : (text.match(/#[\w\d_]+/g) || []).map((h) => h.toLowerCase()));
 
+  // Views / Impressions
   const views = Number(
-    item.view_count ??
+    item.viewCount ??
     item.viewsCount ??
+    item.view_count ??
     item.views ??
     item.impressions ??
+    item.impression_count ??
+    item.impressionCount ??
     0
   ) || 0;
 
+  // Likes
   const likes = Number(
+    item.likeCount ??
+    item.likesCount ??
     item.favorite_count ??
+    item.favoriteCount ??
     item.like_count ??
     item.likes ??
-    item.likesCount ??
+    item.favorites ??
     0
   ) || 0;
 
-  const retweets = Number(
-    item.retweet_count ??
-    item.retweets ??
-    item.reposts ??
-    0
-  ) || 0;
+  // Retweets / Reposts + Quotes
+  const retweets =
+    (Number(
+      item.retweetCount ??
+      item.retweet_count ??
+      item.retweets ??
+      item.reposts ??
+      item.repostCount ??
+      0
+    ) || 0) +
+    (Number(
+      item.quoteCount ??
+      item.quote_count ??
+      item.quotes ??
+      item.quotesCount ??
+      0
+    ) || 0);
 
+  // Replies / Comments
   const replies = Number(
+    item.replyCount ??
     item.reply_count ??
     item.replies ??
+    item.repliesCount ??
     item.comments ??
+    item.commentCount ??
+    item.commentsCount ??
     0
   ) || 0;
 
-  const publishedAt = item.created_at || item.publishedAt || item.date || new Date().toISOString();
+  // Publication date
+  const publishedAt =
+    item.createdAt ||
+    item.created_at ||
+    item.publishedAt ||
+    item.published_at ||
+    item.date ||
+    item.timestamp ||
+    item.time ||
+    null;
+
+  // Author username & follower count
+  const authorUsername = String(
+    item.author?.userName ||
+    item.author?.username ||
+    item.author?.screen_name ||
+    item.user?.userName ||
+    item.user?.username ||
+    item.user?.screen_name ||
+    item.userName ||
+    item.username ||
+    item.screen_name ||
+    ''
+  ).replace(/^@/, '');
+
+  const authorFollowers = Number(
+    item.author?.followersCount ??
+    item.author?.followers ??
+    item.author?.followers_count ??
+    item.author?.followerCount ??
+    item.user?.followersCount ??
+    item.user?.followers ??
+    item.user?.followers_count ??
+    item.followersCount ??
+    item.followers_count ??
+    item.followers ??
+    0
+  ) || 0;
 
   return {
     id,
@@ -469,6 +530,8 @@ export function normalizeXItem(item, idx = 0) {
     retweets,
     replies,
     publishedAt,
+    authorUsername,
+    authorFollowers,
   };
 }
 
@@ -530,6 +593,10 @@ export function aggregateXThreads(rawItems) {
     const totalLikes = uniqueTweets.reduce((sum, t) => sum + (Number(t.likes) || 0), 0);
     const totalRetweets = uniqueTweets.reduce((sum, t) => sum + (Number(t.retweets) || 0), 0);
     const totalReplies = uniqueTweets.reduce((sum, t) => sum + (Number(t.replies) || 0), 0);
+    const maxAuthorFollowers = Math.max(
+      0,
+      ...uniqueTweets.map((t) => Number(t.authorFollowers) || 0)
+    );
 
     const isThread = uniqueTweets.length > 1;
 
@@ -548,6 +615,8 @@ export function aggregateXThreads(rawItems) {
       likes: totalLikes,
       retweets: totalRetweets,
       replies: totalReplies,
+      authorFollowers: maxAuthorFollowers,
+      authorUsername: rootTweet.authorUsername || finalTweet.authorUsername || 'Moth1NFTs',
       publishedAt: rootTweet.publishedAt || finalTweet.publishedAt,
       tweets: uniqueTweets,
     });
@@ -868,21 +937,42 @@ async function fetchPlatformTelemetry(platformKey, primaryActorId, alternateActo
                       0
                   ) || 0;
                 } else if (platformKey === 'x') {
-                  f = Number(
-                    item.followers_count ??
-                      item.followersCount ??
-                      item.followers ??
-                      item.user?.followers_count ??
-                      item.user?.followersCount ??
-                      item.user?.followers ??
-                      item.author?.followers_count ??
-                      item.author?.followersCount ??
-                      item.author?.followers ??
-                      item.profile?.followersCount ??
-                      item.profile?.followers_count ??
-                      item.profile?.followers ??
-                      0
-                  ) || 0;
+                  const authorUser = String(
+                    item.author?.userName ||
+                    item.author?.username ||
+                    item.author?.screen_name ||
+                    item.user?.userName ||
+                    item.user?.username ||
+                    item.user?.screen_name ||
+                    item.userName ||
+                    item.username ||
+                    item.screen_name ||
+                    ''
+                  ).toLowerCase().replace(/^@/, '');
+
+                  const isTargetAuthor =
+                    !authorUser ||
+                    authorUser === 'moth1nfts' ||
+                    authorUser.includes('moth1') ||
+                    String(item.url || item.tweetUrl || '').toLowerCase().includes('moth1nfts');
+
+                  if (isTargetAuthor) {
+                    f = Number(
+                      item.followers_count ??
+                        item.followersCount ??
+                        item.followers ??
+                        item.user?.followers_count ??
+                        item.user?.followersCount ??
+                        item.user?.followers ??
+                        item.author?.followers_count ??
+                        item.author?.followersCount ??
+                        item.author?.followers ??
+                        item.profile?.followersCount ??
+                        item.profile?.followers_count ??
+                        item.profile?.followers ??
+                        0
+                    ) || 0;
+                  }
                 }
 
                 if (f > maxFollowers) {
@@ -927,14 +1017,37 @@ async function fetchPlatformTelemetry(platformKey, primaryActorId, alternateActo
                     postItems.push(item);
                   }
                 } else if (platformKey === 'x') {
+                  const authorUser = String(
+                    item.author?.userName ||
+                    item.author?.username ||
+                    item.author?.screen_name ||
+                    item.user?.userName ||
+                    item.user?.username ||
+                    item.user?.screen_name ||
+                    item.userName ||
+                    item.username ||
+                    item.screen_name ||
+                    ''
+                  ).toLowerCase().replace(/^@/, '');
+
+                  const isTargetAuthor =
+                    !authorUser ||
+                    authorUser === 'moth1nfts' ||
+                    authorUser.includes('moth1') ||
+                    String(item.url || item.tweetUrl || '').toLowerCase().includes('moth1nfts');
+
                   if (
-                    item.full_text ||
-                    item.text ||
-                    item.tweetText ||
-                    item.url ||
-                    item.id_str ||
-                    item.view_count ||
-                    item.impressions
+                    isTargetAuthor && (
+                      item.full_text ||
+                      item.text ||
+                      item.tweetText ||
+                      item.url ||
+                      item.id_str ||
+                      item.id ||
+                      item.viewCount ||
+                      item.view_count ||
+                      item.impressions
+                    )
                   ) {
                     postItems.push(item);
                   }

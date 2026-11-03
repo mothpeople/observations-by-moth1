@@ -247,6 +247,12 @@ export function loadChannelLedger() {
         ...(parsed.facebook || {}),
         reels: fbReels,
       },
+      x: {
+        ...DEFAULT_CHANNEL_LEDGER.x,
+        ...(parsed.x || {}),
+        // Cleanse corrupted foreign 536 count from historical Apify run
+        followers: Number(parsed.x?.followers) === 536 ? 0 : (Number(parsed.x?.followers) || 0),
+      },
       storyFunnel: {
         ...DEFAULT_CHANNEL_LEDGER.storyFunnel,
         ...(parsed.storyFunnel || {}),
