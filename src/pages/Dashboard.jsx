@@ -3120,7 +3120,7 @@ export default function Dashboard() {
               : 'bg-[#0c0d10]/95 border-slate-800 text-[#e2e8f0]'
           }`}
         >
-          <div className={`flex items-center gap-1 p-1 border ${
+          <div className={`w-full sm:w-auto flex items-center gap-1 p-1 border ${
             isLight ? 'bg-white border-slate-300 shadow-sm' : 'bg-slate-900/60 border border-slate-800'
           }`}>
             <button
@@ -3129,7 +3129,7 @@ export default function Dashboard() {
                 setActiveMacroSection('analytics');
                 document.getElementById('analytics-hub')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial text-center px-2.5 sm:px-3 py-1.5 font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeMacroSection === 'analytics'
                   ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#86efac] text-[#0c0d10] font-black shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
@@ -3143,17 +3143,17 @@ export default function Dashboard() {
                 setActiveMacroSection('funnel');
                 document.getElementById('funnel-tracking')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial text-center px-2.5 sm:px-3 py-1.5 font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 activeMacroSection === 'funnel'
                   ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#f472b6] text-[#0c0d10] font-black shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
               }`}
             >
-              🎯 UTM Funnel Tracking &amp; Links
+              🎯 UTM Funnel <span className="hidden xs:inline">&amp; Links</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2">
             <span className="text-[10px] font-mono text-slate-400 hidden md:inline">
               Active Mode: <strong className="text-[#86efac] uppercase font-bold">{theme}</strong>
             </span>
@@ -4001,14 +4001,14 @@ export default function Dashboard() {
         </div>
 
         {/* Analytics Hub Sub-Navigation Segmented Switcher (Reduces vertical scrolling by ~75%) */}
-        <div className={`p-1.5 border flex flex-wrap items-center justify-between gap-2 ${
+        <div className={`p-1.5 border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
           isLight ? 'bg-white border-slate-300 shadow-sm' : 'bg-slate-900/70 border border-slate-800'
         }`}>
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth w-full sm:w-auto pb-1 sm:pb-0">
             <button
               type="button"
               onClick={() => setAnalyticsTab('website')}
-              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 analyticsTab === 'website'
                   ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#86efac] text-[#0c0d10] font-black shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
@@ -4019,7 +4019,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setAnalyticsTab('reels')}
-              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 analyticsTab === 'reels'
                   ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#67e8f9] text-[#0c0d10] font-black shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
@@ -4030,7 +4030,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setAnalyticsTab('substack')}
-              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 analyticsTab === 'substack'
                   ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#facc15] text-[#0c0d10] font-black shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
@@ -4041,7 +4041,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setAnalyticsTab('social')}
-              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 analyticsTab === 'social'
                   ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-[#c084fc] text-[#0c0d10] font-black shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
@@ -4052,7 +4052,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setAnalyticsTab('all')}
-              className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 analyticsTab === 'all'
                   ? (isLight ? 'bg-[#0f172a] text-white font-black shadow' : 'bg-white text-[#0c0d10] font-black shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
@@ -4907,16 +4907,16 @@ export default function Dashboard() {
           <div className="space-y-4">
             {/* Platform Sub-Tabs when in Social View */}
             {analyticsTab === 'social' && (
-              <div className={`flex flex-wrap items-center gap-1.5 p-2 border font-mono text-xs ${
+              <div className={`flex items-center gap-1.5 p-2 border font-mono text-xs overflow-x-auto no-scrollbar scroll-smooth w-full ${
                 isLight ? 'bg-white border-slate-300 shadow-sm' : 'bg-[#0b0d10] border-slate-800'
               }`}>
-                <span className={`uppercase font-bold text-[10px] mr-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                <span className={`uppercase font-bold text-[10px] mr-1 shrink-0 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                   Platform Filter:
                 </span>
                 <button
                   type="button"
                   onClick={() => setSocialPlatformTab('all')}
-                  className={`px-2.5 py-1 transition-all cursor-pointer ${
+                  className={`whitespace-nowrap shrink-0 px-2.5 py-1 transition-all cursor-pointer ${
                     socialPlatformTab === 'all'
                       ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-white text-black font-bold shadow')
                       : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
@@ -4927,7 +4927,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setSocialPlatformTab('instagram')}
-                  className={`px-2.5 py-1 transition-all cursor-pointer ${
+                  className={`whitespace-nowrap shrink-0 px-2.5 py-1 transition-all cursor-pointer ${
                     socialPlatformTab === 'instagram'
                       ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#fda4af] text-black font-bold shadow')
                       : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#fda4af] hover:bg-[#fda4af]/10')
@@ -4937,19 +4937,8 @@ export default function Dashboard() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSocialPlatformTab('threads')}
-                  className={`px-2.5 py-1 transition-all cursor-pointer ${
-                    socialPlatformTab === 'threads'
-                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#c084fc] text-black font-bold shadow')
-                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#c084fc] hover:bg-[#c084fc]/10')
-                  }`}
-                >
-                  Threads ({visibleThreadsItems.length})
-                </button>
-                <button
-                  type="button"
                   onClick={() => setSocialPlatformTab('facebook')}
-                  className={`px-2.5 py-1 transition-all cursor-pointer ${
+                  className={`whitespace-nowrap shrink-0 px-2.5 py-1 transition-all cursor-pointer ${
                     socialPlatformTab === 'facebook'
                       ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#86efac] text-black font-bold shadow')
                       : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#86efac] hover:bg-[#86efac]/10')
@@ -4959,8 +4948,19 @@ export default function Dashboard() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => setSocialPlatformTab('threads')}
+                  className={`whitespace-nowrap shrink-0 px-2.5 py-1 transition-all cursor-pointer ${
+                    socialPlatformTab === 'threads'
+                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#c084fc] text-black font-bold shadow')
+                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#c084fc] hover:bg-[#c084fc]/10')
+                  }`}
+                >
+                  Threads ({visibleThreadsItems.length})
+                </button>
+                <button
+                  type="button"
                   onClick={() => setSocialPlatformTab('x')}
-                  className={`px-2.5 py-1 transition-all cursor-pointer ${
+                  className={`whitespace-nowrap shrink-0 px-2.5 py-1 transition-all cursor-pointer ${
                     socialPlatformTab === 'x'
                       ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-white text-black font-bold shadow')
                       : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-300 hover:bg-white/10')
@@ -4971,16 +4971,15 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div className={socialPlatformTab === "all" ? "grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start" : "space-y-4 sm:space-y-6"}>
               {/* Instagram Apify Scraper Feed */}
               {(socialPlatformTab === 'all' || socialPlatformTab === 'instagram') && (
                 <CyberPanel
                   theme={theme}
                   label="Instagram Reels • @moth1.siv"
                   accent="#fda4af"
-                  className="p-4 sm:p-6 flex flex-col justify-between"
+                  className="p-4 sm:p-6"
                 >
-            <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
@@ -5112,121 +5111,8 @@ export default function Dashboard() {
                   )}
                 </div>
               )}
-            </div>
           </CyberPanel>
         )}
-
-        {/* Threads Scraper (automation-lab/threads-scraper) + Facebook Scraper (apify/facebook-posts-scraper) */}
-        <div className="space-y-4 sm:space-y-6">
-          {(socialPlatformTab === 'all' || socialPlatformTab === 'threads') && (
-            <CyberPanel
-              theme={theme}
-              label="Threads Discussions • @moth1.siv"
-              accent="#c084fc"
-              className="p-4 sm:p-6"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
-                    Threads Discussions (@{targets.threadsHandle})
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Short-form dispatches, replies, and discussion metrics.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => triggerActorRun('threads')}
-                  disabled={runningActor !== null}
-                  className="inline-flex items-center justify-center gap-1.5 border border-[#c084fc]/60 bg-[#c084fc]/10 hover:bg-[#c084fc]/20 px-3.5 py-1.5 font-mono text-xs text-[#c084fc] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
-                >
-                  <Play className="w-3.5 h-3.5" />
-                  <span>
-                    {runningActor === 'threads'
-                      ? 'Scraping Threads...'
-                      : 'Run Threads Scraper'}
-                  </span>
-                </button>
-              </div>
-
-              {visibleThreadsItems.length === 0 ? (
-                <div className="py-6 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 space-y-2">
-                  {threadsState.items.length > 0 && filterOnlyObservations ? (
-                    <>
-                      <div>
-                        Scraped{' '}
-                        <strong className="text-[#c084fc]">
-                          {threadsState.items.length}
-                        </strong>{' '}
-                        threads from @{targets.threadsHandle}, but none contain{' '}
-                        <code className="text-[#86efac]">{activeFilterTag}</code>{' '}
-                        yet.
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setFilterOnlyObservations(false)}
-                        className="border border-slate-700 bg-[#121316] px-3 py-1 text-[11px] text-[#c084fc] hover:border-[#c084fc] cursor-pointer"
-                      >
-                        Show all {threadsState.items.length} scraped Threads
-                      </button>
-                    </>
-                  ) : (
-                    <div>
-                      No Apify dataset items loaded yet for{' '}
-                      <code className="text-[#c084fc]">
-                        @{targets.threadsHandle}
-                      </code>
-                      . Click &ldquo;Run Threads Scraper&rdquo; above.
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="overflow-x-auto max-h-[260px] -mx-1 sm:mx-0">
-                  <table className="w-full text-left border-collapse min-w-[460px]">
-                    <thead>
-                      <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
-                        <th className="py-2 pr-3">Thread Post</th>
-                        <th className="py-2 px-2">Likes</th>
-                        <th className="py-2 px-2">Replies</th>
-                        <th className="py-2 px-2">Reposts</th>
-                        <th className="py-2 pl-2 text-right">Link</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/70 text-xs">
-                      {visibleThreadsItems.slice(0, 15).map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-900/40">
-                          <td className="py-2.5 pr-3 max-w-[220px] truncate text-[#e2e8f0]">
-                            {item.text}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono font-bold text-[#86efac]">
-                            {item.likes.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
-                            {item.replies.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#c084fc]">
-                            {item.reposts.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 pl-2 text-right">
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-[11px] text-[#c084fc] hover:underline"
-                            >
-                              ↗
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CyberPanel>
-          )}
-
-          {/* Facebook Scraper & Reels Panel */}
           {(socialPlatformTab === 'all' || socialPlatformTab === 'facebook') && (
             <CyberPanel
               theme={theme}
@@ -5367,8 +5253,113 @@ export default function Dashboard() {
               )}
             </CyberPanel>
           )}
+          {(socialPlatformTab === 'all' || socialPlatformTab === 'threads') && (
+            <CyberPanel
+              theme={theme}
+              label="Threads Discussions • @moth1.siv"
+              accent="#c084fc"
+              className="p-4 sm:p-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
+                    Threads Discussions (@{targets.threadsHandle})
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Short-form dispatches, replies, and discussion metrics.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => triggerActorRun('threads')}
+                  disabled={runningActor !== null}
+                  className="inline-flex items-center justify-center gap-1.5 border border-[#c084fc]/60 bg-[#c084fc]/10 hover:bg-[#c084fc]/20 px-3.5 py-1.5 font-mono text-xs text-[#c084fc] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
+                >
+                  <Play className="w-3.5 h-3.5" />
+                  <span>
+                    {runningActor === 'threads'
+                      ? 'Scraping Threads...'
+                      : 'Run Threads Scraper'}
+                  </span>
+                </button>
+              </div>
 
-          {/* X Dispatches & Campaign Feed Panel */}
+              {visibleThreadsItems.length === 0 ? (
+                <div className="py-6 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 space-y-2">
+                  {threadsState.items.length > 0 && filterOnlyObservations ? (
+                    <>
+                      <div>
+                        Scraped{' '}
+                        <strong className="text-[#c084fc]">
+                          {threadsState.items.length}
+                        </strong>{' '}
+                        threads from @{targets.threadsHandle}, but none contain{' '}
+                        <code className="text-[#86efac]">{activeFilterTag}</code>{' '}
+                        yet.
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFilterOnlyObservations(false)}
+                        className="border border-slate-700 bg-[#121316] px-3 py-1 text-[11px] text-[#c084fc] hover:border-[#c084fc] cursor-pointer"
+                      >
+                        Show all {threadsState.items.length} scraped Threads
+                      </button>
+                    </>
+                  ) : (
+                    <div>
+                      No Apify dataset items loaded yet for{' '}
+                      <code className="text-[#c084fc]">
+                        @{targets.threadsHandle}
+                      </code>
+                      . Click &ldquo;Run Threads Scraper&rdquo; above.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="overflow-x-auto max-h-[260px] -mx-1 sm:mx-0">
+                  <table className="w-full text-left border-collapse min-w-[460px]">
+                    <thead>
+                      <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
+                        <th className="py-2 pr-3">Thread Post</th>
+                        <th className="py-2 px-2">Likes</th>
+                        <th className="py-2 px-2">Replies</th>
+                        <th className="py-2 px-2">Reposts</th>
+                        <th className="py-2 pl-2 text-right">Link</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/70 text-xs">
+                      {visibleThreadsItems.slice(0, 15).map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-900/40">
+                          <td className="py-2.5 pr-3 max-w-[220px] truncate text-[#e2e8f0]">
+                            {item.text}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono font-bold text-[#86efac]">
+                            {item.likes.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
+                            {item.replies.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[#c084fc]">
+                            {item.reposts.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 pl-2 text-right">
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono text-[11px] text-[#c084fc] hover:underline"
+                            >
+                              ↗
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CyberPanel>
+          )}
           {(socialPlatformTab === 'all' || socialPlatformTab === 'x') && (
             <CyberPanel
               theme={theme}
@@ -5532,8 +5523,7 @@ export default function Dashboard() {
               )}
             </CyberPanel>
           )}
-        </div>
-      </div>
+            </div>
     </div>
   )}
 </section>
@@ -5610,16 +5600,16 @@ export default function Dashboard() {
         </div>
 
         {/* Filter Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 font-mono text-xs w-full">
           {/* Issue Filter */}
-          <div className={`flex items-center gap-1 p-1 border ${
+          <div className={`flex items-center gap-1 p-1 border overflow-x-auto no-scrollbar scroll-smooth ${
             isLight ? 'bg-white border-slate-300' : 'bg-[#121316] border-slate-800'
           }`}>
-            <span className={`text-[10px] px-1 font-bold uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Issue:</span>
+            <span className={`text-[10px] px-1 font-bold uppercase shrink-0 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Issue:</span>
             <button
               type="button"
               onClick={() => setUtmLinksFilterIssue('all')}
-              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
                 utmLinksFilterIssue === 'all'
                   ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#f472b6] text-black font-bold shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
@@ -5630,7 +5620,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setUtmLinksFilterIssue('02')}
-              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
                 utmLinksFilterIssue === '02'
                   ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#f472b6] text-black font-bold shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
@@ -5641,7 +5631,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setUtmLinksFilterIssue('01')}
-              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
                 utmLinksFilterIssue === '01'
                   ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#f472b6] text-black font-bold shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
@@ -5652,7 +5642,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setUtmLinksFilterIssue('home')}
-              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
                 utmLinksFilterIssue === 'home'
                   ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#f472b6] text-black font-bold shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
@@ -5663,14 +5653,14 @@ export default function Dashboard() {
           </div>
 
           {/* Platform Filter */}
-          <div className={`flex items-center gap-1 p-1 border ${
+          <div className={`flex items-center gap-1 p-1 border overflow-x-auto no-scrollbar scroll-smooth ${
             isLight ? 'bg-white border-slate-300' : 'bg-[#121316] border-slate-800'
           }`}>
-            <span className={`text-[10px] px-1 font-bold uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Channel:</span>
+            <span className={`text-[10px] px-1 font-bold uppercase shrink-0 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Channel:</span>
             <button
               type="button"
               onClick={() => setUtmLinksFilterPlatform('all')}
-              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
                 utmLinksFilterPlatform === 'all'
                   ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-white text-black font-bold shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
@@ -5681,7 +5671,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setUtmLinksFilterPlatform('instagram')}
-              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
                 utmLinksFilterPlatform === 'instagram'
                   ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#fda4af] text-black font-bold shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#fda4af] hover:bg-[#fda4af]/10')
@@ -5692,7 +5682,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setUtmLinksFilterPlatform('facebook')}
-              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
                 utmLinksFilterPlatform === 'facebook'
                   ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#60a5fa] text-black font-bold shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#60a5fa] hover:bg-[#60a5fa]/10')
@@ -5703,7 +5693,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setUtmLinksFilterPlatform('x')}
-              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
                 utmLinksFilterPlatform === 'x'
                   ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-white text-black font-bold shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-300 hover:bg-white/10')
@@ -5714,7 +5704,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setUtmLinksFilterPlatform('threads')}
-              className={`px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
                 utmLinksFilterPlatform === 'threads'
                   ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#c084fc] text-black font-bold shadow')
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#c084fc] hover:bg-[#c084fc]/10')

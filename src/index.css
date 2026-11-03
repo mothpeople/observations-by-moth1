@@ -126,6 +126,16 @@ a:focus-visible {
   }
 }
 
+/* Utility: Hide scrollbar for mobile swipeable nav rails */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ==========================================================================
    Observations by Moth1: Analytics Dashboard Light Mode Gallery Theme
    Standardized white, grey, and black menus with high contrast.
