@@ -1267,16 +1267,55 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       fetchDimension('utmCampaign'),
     ]);
 
-    // Compute live totals incorporating real-time in-progress daily visits
+    // Isolate and exclude /analytics dashboard visits so telemetry strictly measures pure publication readership
+    const isAnalyticsRoute = (p) => {
+      const clean = (p.requestPath || p.path || p.route || '')
+        .split('?')[0]
+        .replace(/\/+$/, '')
+        .toLowerCase();
+      return clean === '/analytics';
+    };
+
+    const analyticsEntries = (paths || []).filter(isAnalyticsRoute);
+    const analyticsPageviews = analyticsEntries.reduce(
+      (sum, p) => sum + (Number(p.pageviews) || 0),
+      0
+    );
+    const analyticsVisitors = analyticsEntries.reduce(
+      (sum, p) => sum + (Number(p.visitors) || 0),
+      0
+    );
+
+    // Pure publication content paths (omitting /analytics dashboard hits)
+    const contentPaths = (paths || []).filter((p) => !isAnalyticsRoute(p));
+    const contentPathsViews = contentPaths.reduce(
+      (sum, p) => sum + (Number(p.pageviews) || 0),
+      0
+    );
+    const contentPathsVisitors = contentPaths.reduce(
+      (sum, p) => sum + (Number(p.visitors) || 0),
+      0
+    );
+
+    // Compute live totals incorporating real-time in-progress daily visits, subtracting /analytics dashboard visits
     // (Vercel's cached /visits/count rolls over daily, while daily aggregate includes real-time visits)
     const aggregateViews = Math.max(
-      days.reduce((sum, d) => sum + (Number(d.pageviews) || 0), 0),
-      paths.reduce((sum, p) => sum + (Number(p.pageviews) || 0), 0)
+      Math.max(0, days.reduce((sum, d) => sum + (Number(d.pageviews) || 0), 0) - analyticsPageviews),
+      contentPathsViews
     );
-    const aggregateVisitors = days.reduce((sum, d) => sum + (Number(d.visitors) || 0), 0);
+    const aggregateVisitors = Math.max(
+      Math.max(0, days.reduce((sum, d) => sum + (Number(d.visitors) || 0), 0) - analyticsVisitors),
+      contentPathsVisitors
+    );
 
-    const totalPageviews = Math.max(countPageviews, aggregateViews);
-    const totalVisitors = Math.max(countVisitors, aggregateVisitors);
+    const totalPageviews = Math.max(
+      Math.max(0, countPageviews - analyticsPageviews),
+      aggregateViews
+    );
+    const totalVisitors = Math.max(
+      Math.max(0, countVisitors - analyticsVisitors),
+      aggregateVisitors
+    );
 
     // Vercel Web Analytics REST API exposes pageviews and visitors, but restricts session bounceRate to the web console
     const bounceRate = countBounceRate;
@@ -1288,8 +1327,12 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       totalPageviews,
       totalVisitors,
       bounceRate,
+      analyticsExcluded: {
+        pageviews: analyticsPageviews,
+        visitors: analyticsVisitors,
+      },
       days,
-      paths,
+      paths: contentPaths,
       referrers,
       countries,
       devices,

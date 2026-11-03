@@ -2375,15 +2375,34 @@ export default function Dashboard() {
     };
   };
 
-  // 100% Dynamic Aggregates directly from live Vercel Analytics API
-  const totalWebViews =
+  // 100% Dynamic Aggregates directly from live Vercel Analytics API (Strictly isolating pure publication readership from /analytics dashboard visits)
+  const clientAnalyticsExclusions = (() => {
+    if (!vercelAnalytics?.connected || !Array.isArray(vercelAnalytics.paths)) {
+      return { pageviews: 0, visitors: 0 };
+    }
+    const hits = vercelAnalytics.paths.filter((p) => {
+      const clean = (p.requestPath || p.path || p.route || '').split('?')[0].replace(/\/+$/, '').toLowerCase();
+      return clean === '/analytics';
+    });
+    return {
+      pageviews: hits.reduce((s, p) => s + (Number(p.pageviews) || 0), 0),
+      visitors: hits.reduce((s, p) => s + (Number(p.visitors) || 0), 0),
+    };
+  })();
+
+  const rawWebViews =
     vercelAnalytics?.connected && typeof vercelAnalytics.totalPageviews === 'number'
       ? vercelAnalytics.totalPageviews
       : ledger.website.routes.reduce((sum, r) => sum + (Number(r.views) || 0), 0);
-  const totalWebVisitors =
+  const alreadyExcludedViews = Number(vercelAnalytics?.analyticsExcluded?.pageviews || 0);
+  const totalWebViews = Math.max(0, rawWebViews - (alreadyExcludedViews === 0 ? clientAnalyticsExclusions.pageviews : 0));
+
+  const rawWebVisitors =
     vercelAnalytics?.connected && typeof vercelAnalytics.totalVisitors === 'number'
       ? vercelAnalytics.totalVisitors
       : 0;
+  const alreadyExcludedVisitors = Number(vercelAnalytics?.analyticsExcluded?.visitors || 0);
+  const totalWebVisitors = Math.max(0, rawWebVisitors - (alreadyExcludedVisitors === 0 ? clientAnalyticsExclusions.visitors : 0));
   const webBounceRate =
     vercelAnalytics?.connected && typeof vercelAnalytics.bounceRate === 'number'
       ? vercelAnalytics.bounceRate
@@ -3617,11 +3636,16 @@ export default function Dashboard() {
                   Live Vercel Analytics Connected ({vercelAnalytics.projectName || vercelAnalytics.projectId})
                 </span>
               </div>
-              <div className="text-[11px] text-slate-300">
-                <strong>{totalWebViews.toLocaleString()}</strong> Total Pageviews • <strong>{totalWebVisitors.toLocaleString()}</strong> Unique Visitors
-                {webBounceRate !== null && (
-                  <> • <strong className="text-[#67e8f9]">{webBounceRate}%</strong> Bounce Rate</>
-                )}
+              <div className="text-[11px] text-slate-300 flex flex-wrap items-center gap-2">
+                <span>
+                  <strong>{totalWebViews.toLocaleString()}</strong> Total Pageviews • <strong>{totalWebVisitors.toLocaleString()}</strong> Unique Visitors
+                  {webBounceRate !== null && (
+                    <> • <strong className="text-[#67e8f9]">{webBounceRate}%</strong> Bounce Rate</>
+                  )}
+                </span>
+                <span className="px-1.5 py-0.5 rounded bg-slate-900/90 text-[10px] text-emerald-400 border border-emerald-500/30">
+                  Pure Readership (Excludes /analytics)
+                </span>
               </div>
             </div>
           )}

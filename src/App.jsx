@@ -247,6 +247,16 @@ function DynamicDispatchRoute() {
   return <DispatchShell dispatch={matched} />;
 }
 
+// Filter out /analytics dashboard traffic so Vercel only tracks pure publication visitors
+function filterOutAnalytics(event) {
+  if (!event) return null;
+  const rawUrl = event.url || (typeof window !== 'undefined' ? window.location.pathname : '');
+  if (rawUrl && (rawUrl.includes('/analytics') || rawUrl.startsWith('/analytics'))) {
+    return null;
+  }
+  return event;
+}
+
 export default function App() {
   return (
     <>
@@ -280,8 +290,8 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
-      <Analytics />
-      <SpeedInsights />
+      <Analytics beforeSend={filterOutAnalytics} />
+      <SpeedInsights beforeSend={filterOutAnalytics} />
     </>
   );
 }
