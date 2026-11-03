@@ -177,6 +177,9 @@ const DEFAULT_TARGETS = {
   threadsHandle: 'moth1.siv',
   facebookUrl: 'https://www.facebook.com/observationsbymoth1',
   xHandle: 'Moth1NFTs',
+  youtubeHandle: 'sivaraj.pragasm',
+  youtubeChannelUrl: 'https://www.youtube.com/@sivaraj.pragasm',
+  youtubePlaylistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
   filterTag: '#observations',
 };
 
@@ -4098,7 +4101,7 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-mono text-[11px] text-slate-400 truncate">
-                  {ledger.youtube?.handle || '@ObservationsByMoth1'}
+                  @{targets.youtubeHandle || ledger.youtube?.handle || 'sivaraj.pragasm'}
                 </span>
                 <Youtube className="w-4 h-4 text-[#ef4444] shrink-0" />
               </div>
@@ -5782,28 +5785,48 @@ export default function Dashboard() {
           {(socialPlatformTab === 'all' || socialPlatformTab === 'youtube') && (
             <CyberPanel
               theme={theme}
-              label={`YouTube Shorts & Dispatches • ${ledger.youtube?.handle || '@ObservationsByMoth1'}`}
+              label={`YouTube Shorts & Playlist • @${targets.youtubeHandle || 'sivaraj.pragasm'}`}
               accent="#ef4444"
               className="p-4 sm:p-6"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
-                    YouTube Channel &amp; Shorts ({ledger.youtube?.handle || '@ObservationsByMoth1'})
+                    YouTube Channel &amp; Playlist (@{targets.youtubeHandle || 'sivaraj.pragasm'})
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Verified dispatches, YouTube Shorts, and inbound tracking telemetry.
+                    Playlist: <strong className="text-[#f87171]">Observations by Moth 1</strong> • Verified YouTube Shorts &amp; Inbound Telemetry.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                   <a
-                    href="https://www.youtube.com"
+                    href="https://www.youtube.com/playlist?list=PLXNcetLtk5xU"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 border border-[#ef4444]/60 bg-[#ef4444]/10 hover:bg-[#ef4444]/20 px-3.5 py-1.5 font-mono text-xs text-[#f87171] font-bold transition-colors cursor-pointer w-full sm:w-auto shrink-0"
+                    className="inline-flex items-center justify-center gap-1.5 border border-[#ef4444]/60 bg-[#ef4444]/15 hover:bg-[#ef4444]/25 px-3 py-1.5 font-mono text-xs text-[#f87171] font-bold transition-colors cursor-pointer w-full sm:w-auto shrink-0"
+                    title="Open YouTube playlist Observations by Moth 1"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-[#ef4444]" />
+                    <span>View Playlist ↗</span>
+                  </a>
+                  <a
+                    href="https://www.youtube.com/@sivaraj.pragasm"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 border border-slate-700 bg-slate-900 hover:border-white hover:text-white px-3 py-1.5 font-mono text-xs text-slate-300 font-bold transition-colors cursor-pointer w-full sm:w-auto shrink-0"
+                    title="Open YouTube Channel @sivaraj.pragasm"
                   >
                     <Youtube className="w-3.5 h-3.5" />
-                    <span>Open YouTube Studio ↗</span>
+                    <span>Channel Profile ↗</span>
+                  </a>
+                  <a
+                    href="https://studio.youtube.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 border border-slate-700 bg-slate-900 hover:border-white hover:text-white px-3 py-1.5 font-mono text-xs text-slate-300 font-bold transition-colors cursor-pointer w-full sm:w-auto shrink-0"
+                    title="Open YouTube Studio"
+                  >
+                    <span>Studio ↗</span>
                   </a>
                 </div>
               </div>
@@ -5816,7 +5839,7 @@ export default function Dashboard() {
                       <th className="py-2 px-2">Medium</th>
                       <th className="py-2 px-2">Campaign</th>
                       <th className="py-2 px-2">Inbound Clicks</th>
-                      <th className="py-2 pl-2 text-right">Action</th>
+                      <th className="py-2 pl-2 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/70 text-xs">
@@ -5835,13 +5858,24 @@ export default function Dashboard() {
                         {Number(storyClickStats?.issues?.['the-meat-grinder']?.youtube?.clicks || 0)}
                       </td>
                       <td className="py-2.5 pl-2 text-right">
-                        <button
-                          type="button"
-                          onClick={() => copyDirectUrl('https://observations.moth1.xyz/the-meat-grinder?utm_source=youtube&utm_medium=profile&utm_campaign=issue-02', 'yt-copy-02')}
-                          className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
-                        >
-                          {copiedLink === 'yt-copy-02' ? 'Copied!' : 'Copy Link'}
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <a
+                            href="https://www.youtube.com/playlist?list=PLXNcetLtk5xU"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-[11px] text-[#f87171] hover:underline"
+                            title="Open in Playlist Observations by Moth 1"
+                          >
+                            Playlist ↗
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => copyDirectUrl('https://observations.moth1.xyz/the-meat-grinder?utm_source=youtube&utm_medium=profile&utm_campaign=issue-02', 'yt-copy-02')}
+                            className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
+                          >
+                            {copiedLink === 'yt-copy-02' ? 'Copied!' : 'Copy Link'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     <tr className="hover:bg-slate-900/40">
@@ -5859,13 +5893,24 @@ export default function Dashboard() {
                         {Number(storyClickStats?.issues?.['watering-grass-in-a-thunderstorm']?.youtube?.clicks || 0)}
                       </td>
                       <td className="py-2.5 pl-2 text-right">
-                        <button
-                          type="button"
-                          onClick={() => copyDirectUrl('https://observations.moth1.xyz/watering-grass-in-a-thunderstorm?utm_source=youtube&utm_medium=community&utm_campaign=issue-01', 'yt-copy-01')}
-                          className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
-                        >
-                          {copiedLink === 'yt-copy-01' ? 'Copied!' : 'Copy Link'}
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <a
+                            href="https://www.youtube.com/playlist?list=PLXNcetLtk5xU"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-[11px] text-[#f87171] hover:underline"
+                            title="Open in Playlist Observations by Moth 1"
+                          >
+                            Playlist ↗
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => copyDirectUrl('https://observations.moth1.xyz/watering-grass-in-a-thunderstorm?utm_source=youtube&utm_medium=community&utm_campaign=issue-01', 'yt-copy-01')}
+                            className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
+                          >
+                            {copiedLink === 'yt-copy-01' ? 'Copied!' : 'Copy Link'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   </tbody>

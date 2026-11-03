@@ -104,7 +104,10 @@ const DEFAULT_CHANNEL_LEDGER = {
     posts: [],
   },
   youtube: {
-    handle: '@ObservationsByMoth1',
+    handle: 'sivaraj.pragasm',
+    channelUrl: 'https://www.youtube.com/@sivaraj.pragasm',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
+    playlistTitle: 'Observations by Moth 1',
     platform: 'YouTube Shorts',
     subscribers: 0,
     videos: [
@@ -116,6 +119,7 @@ const DEFAULT_CHANNEL_LEDGER = {
         likes: 0,
         comments: 0,
         trackingUrl: 'https://observations.moth1.xyz/the-meat-grinder?utm_source=youtube&utm_medium=profile&utm_campaign=issue-02',
+        playlistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
       },
       {
         id: 'yt-shorts-01',
@@ -125,6 +129,7 @@ const DEFAULT_CHANNEL_LEDGER = {
         likes: 0,
         comments: 0,
         trackingUrl: 'https://observations.moth1.xyz/watering-grass-in-a-thunderstorm?utm_source=youtube&utm_medium=community&utm_campaign=issue-01',
+        playlistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
       },
     ],
   },
