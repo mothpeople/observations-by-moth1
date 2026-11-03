@@ -11,6 +11,10 @@ out/
 .env
 .env.local
 .env.*.local
+.secrets/
+*client_secret*.json
+*credentials*.json
+youtube_token.json
 
 # OS & Editor files
 .DS_Store
@@ -21,6 +25,10 @@ out/
 # Unoptimized large draft GIFs
 substack-header-clean-loop.gif
 substack-header-titled-loop.gif
+
+# Large audio soundtracks
+*.wav
+public/audio/
 
 # Local runtime telemetry
 .story-clicks.json

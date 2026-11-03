@@ -13,7 +13,7 @@ const baseHtml = fs.readFileSync(baseHtmlPath, 'utf-8');
 
 const routes = [
   {
-    paths: ['watering-grass-in-a-thunderstorm', 'issue-01', 'issue/01'],
+    paths: ['watering-grass-in-a-thunderstorm', 'watering-grass', 'issue-01', 'issue/01'],
     title: 'Issue #01: Watering Grass in a Thunderstorm | Observations by Moth1',
     description:
       'Why protests keep exploding, why geriatrics keep lecturing, and why nothing gets solved.',

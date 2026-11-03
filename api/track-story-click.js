@@ -11,17 +11,23 @@ const DEFAULT_DATA = {
       instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
       facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
       x: { clicks: 0, scroll75: 0, subscribers: 0 },
+      youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
+      pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
     },
     'watering-grass-in-a-thunderstorm': {
       instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
       facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
       x: { clicks: 0, scroll75: 0, subscribers: 0 },
+      youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
+      pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
     },
   },
   total: {
     instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
     facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
     x: { clicks: 0, scroll75: 0, subscribers: 0 },
+    youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
+    pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
   },
   recent: [],
 };
@@ -160,7 +166,7 @@ export default async function handler(req, res) {
         issueKey = 'the-meat-grinder';
       }
 
-      // Normalize platform key: 'x' for twitter/x, 'facebook' for fb, else 'instagram'
+      // Normalize platform key: 'x' for twitter/x, 'facebook' for fb, 'youtube' for yt, 'pinterest' for pin, else 'instagram'
       let platformKey = 'instagram';
       if (rawSource.includes('facebook') || rawSource === 'fb') {
         platformKey = 'facebook';
@@ -171,6 +177,17 @@ export default async function handler(req, res) {
         rawSource === 'x.com'
       ) {
         platformKey = 'x';
+      } else if (
+        rawSource.includes('youtube') ||
+        rawSource.includes('youtu.be') ||
+        rawSource === 'yt'
+      ) {
+        platformKey = 'youtube';
+      } else if (
+        rawSource.includes('pinterest') ||
+        rawSource.includes('pin')
+      ) {
+        platformKey = 'pinterest';
       }
 
       let store = getStoryClickStore();
@@ -182,6 +199,8 @@ export default async function handler(req, res) {
           instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
           facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
           x: { clicks: 0, scroll75: 0, subscribers: 0 },
+          youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
+          pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
         };
       }
       if (!store.issues[issueKey][platformKey]) {
@@ -192,6 +211,8 @@ export default async function handler(req, res) {
           instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
           facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
           x: { clicks: 0, scroll75: 0, subscribers: 0 },
+          youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
+          pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
         };
       }
       if (!store.total[platformKey]) {

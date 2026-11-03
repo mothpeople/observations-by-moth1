@@ -5,6 +5,7 @@ export const dispatches = [
   {
     id: '01',
     slug: 'watering-grass-in-a-thunderstorm',
+    aliases: ['watering-grass', 'watering-grass-in-a-thunderstorm'],
     title: 'Watering Grass in a Thunderstorm',
     subtitle:
       'Why protests keep exploding, why geriatrics keep lecturing, and why nothing gets solved.',
@@ -16,6 +17,7 @@ export const dispatches = [
   {
     id: '02',
     slug: 'the-meat-grinder',
+    aliases: ['meat-grinder', 'the-meat-grinder', 'the-meat-grinder-needs-more-meat'],
     title: 'The Meat Grinder Needs More Meat',
     subtitle:
       'Why billionaires panic about birth rates, why the Venn diagram collapsed, and why the earth is quietly exhausted.',
@@ -37,6 +39,7 @@ export function findDispatchByParam(param) {
     dispatches.find(
       (item) =>
         item.slug.toLowerCase() === normalized ||
+        (Array.isArray(item.aliases) && item.aliases.includes(normalized)) ||
         item.id.toLowerCase() === normalized ||
         `issue-${item.id.toLowerCase()}` === normalized ||
         Number(item.id) === Number(normalized)

@@ -103,6 +103,37 @@ const DEFAULT_CHANNEL_LEDGER = {
     followers: 0,
     posts: [],
   },
+  youtube: {
+    handle: '@ObservationsByMoth1',
+    platform: 'YouTube Shorts',
+    subscribers: 0,
+    videos: [
+      {
+        id: 'yt-shorts-02',
+        issueId: '02',
+        title: 'The Meat Grinder Needs More Meat (Short)',
+        views: 0,
+        likes: 0,
+        comments: 0,
+        trackingUrl: 'https://observations.moth1.xyz/the-meat-grinder?utm_source=youtube&utm_medium=profile&utm_campaign=issue-02',
+      },
+      {
+        id: 'yt-shorts-01',
+        issueId: '01',
+        title: 'Watering Grass in a Thunderstorm (Short)',
+        views: 0,
+        likes: 0,
+        comments: 0,
+        trackingUrl: 'https://observations.moth1.xyz/watering-grass-in-a-thunderstorm?utm_source=youtube&utm_medium=community&utm_campaign=issue-01',
+      },
+    ],
+  },
+  pinterest: {
+    handle: '@ObservationsByMoth1',
+    platform: 'Pinterest',
+    followers: 0,
+    pins: [],
+  },
   threads: {
     handle: 'moth1.siv',
     platform: 'Threads',
@@ -135,6 +166,18 @@ const DEFAULT_CHANNEL_LEDGER = {
           scroll75: 0,
           subscribers: 0,
         },
+        youtube: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        pinterest: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
       },
       {
         id: '01',
@@ -154,6 +197,18 @@ const DEFAULT_CHANNEL_LEDGER = {
           subscribers: 0,
         },
         x: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        youtube: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        pinterest: {
           entrances: 0,
           clicks: 0,
           scroll75: 0,
@@ -191,6 +246,14 @@ export function loadChannelLedger() {
       const fbScroll75 = Number(found.facebook?.scroll75) || 0;
       const fbSubs = Number(found.facebook?.subscribers) || 0;
 
+      const xEntrances = Number(found.x?.entrances ?? found.x?.clicks) || 0;
+      const xScroll75 = Number(found.x?.scroll75) || 0;
+      const xSubs = Number(found.x?.subscribers) || 0;
+
+      const ytEntrances = Number(found.youtube?.entrances ?? found.youtube?.clicks) || 0;
+      const ytScroll75 = Number(found.youtube?.scroll75) || 0;
+      const ytSubs = Number(found.youtube?.subscribers) || 0;
+
       return {
         ...def,
         ...found,
@@ -205,6 +268,18 @@ export function loadChannelLedger() {
           clicks: fbEntrances,
           scroll75: fbScroll75,
           subscribers: fbSubs,
+        },
+        x: {
+          entrances: xEntrances,
+          clicks: xEntrances,
+          scroll75: xScroll75,
+          subscribers: xSubs,
+        },
+        youtube: {
+          entrances: ytEntrances,
+          clicks: ytEntrances,
+          scroll75: ytScroll75,
+          subscribers: ytSubs,
         },
       };
     });
@@ -252,6 +327,11 @@ export function loadChannelLedger() {
         ...(parsed.x || {}),
         // Cleanse corrupted foreign 536 count from historical Apify run
         followers: Number(parsed.x?.followers) === 536 ? 0 : (Number(parsed.x?.followers) || 0),
+      },
+      youtube: {
+        ...DEFAULT_CHANNEL_LEDGER.youtube,
+        ...(parsed.youtube || {}),
+        videos: parsed.youtube?.videos || DEFAULT_CHANNEL_LEDGER.youtube.videos,
       },
       storyFunnel: {
         ...DEFAULT_CHANNEL_LEDGER.storyFunnel,
@@ -367,12 +447,13 @@ export function recordSiteEvent(eventName, payload = {}) {
       saveChannelLedger(ledger);
     } else if (eventName === 'scroll_depth' && payload.depth >= 75) {
       // 3. Automated Scroll Retention (75%+ threshold reached)
-      let isStoryOrigin = utmMedium === 'story';
+      let isStoryOrigin = ['story', 'thread', 'video', 'teaser', 'community', 'shorts', 'short', 'post', 'profile', 'bio'].includes((utmMedium || '').toLowerCase());
       let originSource = platformKey;
       if (typeof window !== 'undefined') {
         try {
           if (!isStoryOrigin) {
-            isStoryOrigin = window.sessionStorage.getItem('moth1_utm_medium') === 'story';
+            const m = (window.sessionStorage.getItem('moth1_utm_medium') || '').toLowerCase();
+            isStoryOrigin = ['story', 'thread', 'video', 'teaser', 'community', 'shorts', 'short', 'post', 'profile', 'bio'].includes(m);
           }
           const storedSource = window.sessionStorage.getItem('moth1_utm_source');
           if (storedSource) originSource = storedSource;
@@ -396,7 +477,13 @@ export function recordSiteEvent(eventName, payload = {}) {
           ) || ledger.storyFunnel.dispatches[0];
 
         if (matchedDispatch) {
-          const targetKey = originSource === 'facebook' ? 'facebook' : 'instagram';
+          let targetKey = 'instagram';
+          const s = (originSource || '').toLowerCase();
+          if (s.includes('facebook') || s === 'fb') targetKey = 'facebook';
+          else if (s.includes('twitter') || s.includes('x') || s === 't.co') targetKey = 'x';
+          else if (s.includes('youtube') || s.includes('youtu.be') || s === 'yt') targetKey = 'youtube';
+          else if (s.includes('threads')) targetKey = 'threads';
+
           if (!matchedDispatch[targetKey]) {
             matchedDispatch[targetKey] = { entrances: 1, clicks: 1, scroll75: 0, subscribers: 0 };
           }
@@ -423,12 +510,13 @@ export function recordSiteEvent(eventName, payload = {}) {
       saveChannelLedger(ledger);
     } else if (eventName === 'substack_subscribe') {
       // 4. Actual Substack form submissions originating from story sessions
-      let isStoryOrigin = utmMedium === 'story';
+      let isStoryOrigin = ['story', 'thread', 'video', 'teaser', 'community', 'shorts', 'short', 'post', 'profile', 'bio'].includes((utmMedium || '').toLowerCase());
       let subscriberSource = platformKey;
       if (typeof window !== 'undefined') {
         try {
           if (!isStoryOrigin) {
-            isStoryOrigin = window.sessionStorage.getItem('moth1_utm_medium') === 'story';
+            const m = (window.sessionStorage.getItem('moth1_utm_medium') || '').toLowerCase();
+            isStoryOrigin = ['story', 'thread', 'video', 'teaser', 'community', 'shorts', 'short', 'post', 'profile', 'bio'].includes(m);
           }
           const storedSource = window.sessionStorage.getItem('moth1_utm_source');
           if (storedSource) subscriberSource = storedSource;
@@ -452,7 +540,13 @@ export function recordSiteEvent(eventName, payload = {}) {
           ) || ledger.storyFunnel.dispatches[0];
 
         if (matchedDispatch) {
-          const targetKey = subscriberSource === 'facebook' ? 'facebook' : 'instagram';
+          let targetKey = 'instagram';
+          const s = (subscriberSource || '').toLowerCase();
+          if (s.includes('facebook') || s === 'fb') targetKey = 'facebook';
+          else if (s.includes('twitter') || s.includes('x') || s === 't.co') targetKey = 'x';
+          else if (s.includes('youtube') || s.includes('youtu.be') || s === 'yt') targetKey = 'youtube';
+          else if (s.includes('threads')) targetKey = 'threads';
+
           if (!matchedDispatch[targetKey]) {
             matchedDispatch[targetKey] = { entrances: 1, clicks: 1, scroll75: 0, subscribers: 0 };
           }
@@ -463,7 +557,7 @@ export function recordSiteEvent(eventName, payload = {}) {
           track('story_subscriber_conversion', {
             path: payload.path,
             issueId: payload.issueId,
-            utm_medium: 'story',
+            utm_medium: utmMedium || 'campaign',
             utm_source: subscriberSource,
           });
 
@@ -474,7 +568,7 @@ export function recordSiteEvent(eventName, payload = {}) {
             body: JSON.stringify({
               issue: matchedDispatch?.slug || 'the-meat-grinder',
               source: subscriberSource,
-              medium: 'story',
+              medium: utmMedium || 'campaign',
               eventType: 'subscriber',
               timestamp: new Date().toISOString(),
             }),

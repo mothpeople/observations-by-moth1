@@ -35,6 +35,7 @@ import {
   TrendingUp,
   User,
   X,
+  Youtube,
   Zap,
 } from 'lucide-react';
 import CyberPanel from '../components/issue02/CyberPanel';
@@ -1224,6 +1225,45 @@ const PRECONFIGURED_UTM_LINKS = [
     color: '#c084fc',
     description: 'Threads carousel or launch post link for Issue #02 dispatch',
   },
+  {
+    id: '02-youtube-profile',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'youtube',
+    platformLabel: 'YouTube Profile / Bio',
+    medium: 'profile',
+    campaign: 'issue-02',
+    badge: 'YT Profile',
+    color: '#f87171',
+    description: 'YouTube channel bio / link in profile pointing to Issue #02',
+  },
+  {
+    id: '02-youtube-shorts',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'youtube',
+    platformLabel: 'YouTube Shorts / Video',
+    medium: 'shorts',
+    campaign: 'issue-02',
+    badge: 'YT Shorts',
+    color: '#ef4444',
+    description: 'Pinned comment or description tracking link for YouTube Short Issue #02',
+  },
+  {
+    id: '02-youtube-community',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'youtube',
+    platformLabel: 'YouTube Community Post',
+    medium: 'community',
+    campaign: 'issue-02',
+    badge: 'YT Community',
+    color: '#f87171',
+    description: 'YouTube Community Tab update link pointing to Issue #02',
+  },
 
   // Issue #01: Watering Grass in a Thunderstorm
   {
@@ -1291,6 +1331,45 @@ const PRECONFIGURED_UTM_LINKS = [
     color: '#c084fc',
     description: 'Threads carousel or launch post link for Issue #01 dispatch',
   },
+  {
+    id: '01-youtube-community',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'youtube',
+    platformLabel: 'YouTube Community Post',
+    medium: 'community',
+    campaign: 'issue-01',
+    badge: 'YT Community',
+    color: '#f87171',
+    description: 'YouTube Community Tab dispatch link to Issue #01',
+  },
+  {
+    id: '01-youtube-shorts',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'youtube',
+    platformLabel: 'YouTube Shorts / Video',
+    medium: 'shorts',
+    campaign: 'issue-01',
+    badge: 'YT Shorts',
+    color: '#ef4444',
+    description: 'Pinned comment or description tracking link for YouTube Short Issue #01',
+  },
+  {
+    id: '01-youtube-profile',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'youtube',
+    platformLabel: 'YouTube Profile / Bio',
+    medium: 'profile',
+    campaign: 'issue-01',
+    badge: 'YT Profile',
+    color: '#f87171',
+    description: 'YouTube channel bio / link in profile pointing to Issue #01',
+  },
 
   // Main Publication Landing Page
   {
@@ -1305,6 +1384,19 @@ const PRECONFIGURED_UTM_LINKS = [
     badge: 'IG Bio',
     color: '#fda4af',
     description: 'Primary link in @moth1.siv Instagram bio pointing to publication root',
+  },
+  {
+    id: 'home-youtube-bio',
+    issueId: 'home',
+    issueTitle: 'Main Publication Landing Page',
+    slug: '',
+    platform: 'youtube',
+    platformLabel: 'YouTube Channel Bio Link',
+    medium: 'bio',
+    campaign: 'profile',
+    badge: 'YT Bio',
+    color: '#ef4444',
+    description: 'Primary link in YouTube channel about/bio pointing to publication root',
   },
   {
     id: 'home-x-bio',
@@ -1342,15 +1434,15 @@ export default function Dashboard() {
   const [showApifyConfig, setShowApifyConfig] = useState(false);
   const [filterOnlyObservations, setFilterOnlyObservations] = useState(true);
   const [copiedLink, setCopiedLink] = useState('');
-  const [editingPlatform, setEditingPlatform] = useState(null); // 'substack' | 'instagram' | 'threads' | 'facebook' | null
+  const [editingPlatform, setEditingPlatform] = useState(null); // 'substack' | 'instagram' | 'threads' | 'facebook' | 'youtube' | null
   const [tempEditVal, setTempEditVal] = useState('');
 
   // Layout View Tabs & Filter States for Compact, Less-Scroll Experience
   const [activeMacroSection, setActiveMacroSection] = useState('analytics'); // 'analytics' | 'funnel'
   const [analyticsTab, setAnalyticsTab] = useState('website'); // 'website' | 'reels' | 'substack' | 'social' | 'all'
-  const [socialPlatformTab, setSocialPlatformTab] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'threads' | 'x'
+  const [socialPlatformTab, setSocialPlatformTab] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'threads' | 'x' | 'youtube'
   const [utmLinksFilterIssue, setUtmLinksFilterIssue] = useState('all'); // 'all' | '02' | '01' | 'home'
-  const [utmLinksFilterPlatform, setUtmLinksFilterPlatform] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'x' | 'threads'
+  const [utmLinksFilterPlatform, setUtmLinksFilterPlatform] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'x' | 'threads' | 'youtube'
 
   // Custom UTM Generator Form State
   const [customUtmIssue, setCustomUtmIssue] = useState('the-meat-grinder');
@@ -2499,6 +2591,18 @@ export default function Dashboard() {
       setThreadsState((prev) => ({ ...prev, followers: num }));
       return;
     }
+    if (platform === 'youtube') {
+      const updated = {
+        ...ledger,
+        youtube: {
+          ...ledger.youtube,
+          subscribers: num,
+        },
+      };
+      setLedger(updated);
+      saveChannelLedger(updated);
+      return;
+    }
     const updated = {
       ...ledger,
       [platform]: {
@@ -2666,6 +2770,12 @@ export default function Dashboard() {
       return h.includes('twitter') || h.includes('t.co') || h.includes('x.com');
     })
     .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
+  const vercelYtReferrals = vercelReferrersList
+    .filter((r) => {
+      const h = (r.referrerHostname || '').toLowerCase();
+      return h.includes('youtube') || h.includes('youtu.be');
+    })
+    .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
 
   // Instagram Story Aggregates (Bypassing Vercel Plus Paywall)
   const igStoryEntrances = Math.max(
@@ -2766,10 +2876,43 @@ export default function Dashboard() {
       ? ((xStorySubscribers / xStoryEntrances) * 100).toFixed(1)
       : '0.0';
 
+  // YouTube Campaign Aggregates
+  const ytStoryEntrances = Math.max(
+    storyDispatches.reduce((sum, d) => {
+      const serverClicks = Number(storyClickStats?.issues?.[d.slug]?.youtube?.clicks || 0);
+      const ledgerClicks = Number(d.youtube?.entrances ?? d.youtube?.clicks ?? 0);
+      return sum + Math.max(serverClicks, ledgerClicks);
+    }, 0) || Number(serverStoryTotal.youtube?.clicks || 0),
+    vercelYtReferrals
+  );
+
+  const ytStoryScroll75 =
+    storyDispatches.reduce((sum, d) => {
+      const serverScroll = Number(storyClickStats?.issues?.[d.slug]?.youtube?.scroll75 || 0);
+      const ledgerScroll = Number(d.youtube?.scroll75 || 0);
+      return sum + Math.max(serverScroll, ledgerScroll);
+    }, 0) || Number(serverStoryTotal.youtube?.scroll75 || 0);
+
+  const ytStorySubscribers =
+    storyDispatches.reduce((sum, d) => {
+      const serverSubs = Number(storyClickStats?.issues?.[d.slug]?.youtube?.subscribers || 0);
+      const ledgerSubs = Number(d.youtube?.subscribers || 0);
+      return sum + Math.max(serverSubs, ledgerSubs);
+    }, 0) || Number(serverStoryTotal.youtube?.subscribers || 0);
+
+  const ytStoryRetentionPct =
+    ytStoryEntrances > 0
+      ? Math.min(100, (ytStoryScroll75 / ytStoryEntrances) * 100).toFixed(1)
+      : (ytStoryScroll75 > 0 ? '100.0' : '0.0');
+  const ytStorySubConvPct =
+    ytStoryEntrances > 0
+      ? ((ytStorySubscribers / ytStoryEntrances) * 100).toFixed(1)
+      : '0.0';
+
   // Combined Totals
-  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances + xStoryEntrances;
-  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75 + xStoryScroll75;
-  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers + xStorySubscribers;
+  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances + xStoryEntrances + ytStoryEntrances;
+  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75 + xStoryScroll75 + ytStoryScroll75;
+  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers + xStorySubscribers + ytStorySubscribers;
   const totalStoryRetentionPct =
     totalStoryEntrances > 0
       ? Math.min(100, (totalStoryScroll75 / totalStoryEntrances) * 100).toFixed(1)
@@ -3454,8 +3597,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* 7-Channel Executive Summary KPI Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7 gap-4">
+          {/* 8-Channel Executive Summary KPI Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* KPI 1: Website (Vercel Analytics) */}
             <CyberPanel
               theme={theme}
@@ -3939,7 +4082,94 @@ export default function Dashboard() {
             </div>
           </CyberPanel>
 
-          {/* KPI 7: UTM Funnel Tracker (100% Automated Telemetry) */}
+          {/* KPI 7: YouTube (Channel & Shorts) */}
+          <CyberPanel
+            theme={theme}
+            label="YouTube • Shorts"
+            accent="#ef4444"
+            className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
+              analyticsTab === 'social' && socialPlatformTab === 'youtube' ? 'ring-1 ring-[#ef4444]' : ''
+            }`}
+            onClick={() => {
+              setAnalyticsTab('social');
+              setSocialPlatformTab('youtube');
+            }}
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[11px] text-slate-400 truncate">
+                  {ledger.youtube?.handle || '@ObservationsByMoth1'}
+                </span>
+                <Youtube className="w-4 h-4 text-[#ef4444] shrink-0" />
+              </div>
+              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
+                {ytStoryEntrances.toLocaleString()}
+              </div>
+              <div className="text-xs text-slate-400 mt-0.5">
+                Inbound Visits • {ytStoryRetentionPct}% Retention ({ledger.youtube?.videos?.length || 2} Shorts)
+              </div>
+            </div>
+
+            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
+              <span className="text-slate-400">Subscribers:</span>
+              {editingPlatform === 'youtube' ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="0"
+                    autoFocus
+                    value={tempEditVal}
+                    onChange={(e) => setTempEditVal(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveEditFollower('youtube');
+                      if (e.key === 'Escape') setEditingPlatform(null);
+                    }}
+                    className="w-16 bg-[#0b0d10] border border-[#ef4444] px-1.5 py-0.5 text-[11px] font-mono text-[#ef4444] font-bold text-right outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSaveEditFollower('youtube')}
+                    className="p-1 hover:bg-[#ef4444]/20 text-[#ef4444] rounded-none cursor-pointer"
+                    title="Save"
+                  >
+                    <Check className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPlatform(null)}
+                    className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-none cursor-pointer"
+                    title="Cancel"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[12px] font-bold text-[#f87171] tabular-nums">
+                    {(ledger.youtube?.subscribers || 0).toLocaleString()}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#ef4444]/40 bg-[#ef4444]/10 text-[#f87171] rounded-none">
+                    Live
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleStartEditFollower(
+                        'youtube',
+                        ledger.youtube?.subscribers || 0
+                      )
+                    }
+                    className="p-0.5 text-slate-500 hover:text-[#ef4444] transition-colors cursor-pointer"
+                    title="Edit Baseline Subscribers"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </CyberPanel>
+
+          {/* KPI 8: UTM Funnel Tracker (100% Automated Telemetry) */}
           <CyberPanel
             theme={theme}
             label="UTM Funnel Tracker • Automated"
@@ -3994,6 +4224,15 @@ export default function Dashboard() {
                 </span>
                 <span className="text-slate-300">
                   <strong className="text-[#e2e8f0]">{xStoryEntrances}</strong> visits • <strong className="text-[#fbbf24]">{xStoryRetentionPct}%</strong> read
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[#f87171] font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444]" />
+                  YouTube:
+                </span>
+                <span className="text-slate-300">
+                  <strong className="text-[#f87171]">{ytStoryEntrances}</strong> visits • <strong className="text-[#fbbf24]">{ytStoryRetentionPct}%</strong> read
                 </span>
               </div>
             </div>
@@ -4406,6 +4645,12 @@ export default function Dashboard() {
                       tag: 'utm_source=facebook',
                       clicks: fbStoryEntrances,
                       color: '#60a5fa',
+                    },
+                    {
+                      name: 'YouTube',
+                      tag: 'utm_source=youtube',
+                      clicks: ytStoryEntrances,
+                      color: '#ef4444',
                     },
                   ];
                   const maxClicks = Math.max(1, ...campaignChannels.map((c) => c.clicks));
@@ -4922,7 +5167,7 @@ export default function Dashboard() {
                       : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
                   }`}
                 >
-                  All Channels ({visibleInstagramItems.length + visibleFacebookItems.length + visibleThreadsItems.length + visibleXItems.length})
+                  All Channels ({visibleInstagramItems.length + visibleFacebookItems.length + visibleThreadsItems.length + visibleXItems.length + (ledger.youtube?.videos?.length || 2)})
                 </button>
                 <button
                   type="button"
@@ -4967,6 +5212,17 @@ export default function Dashboard() {
                   }`}
                 >
                   𝕏 (Twitter) ({visibleXItems.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSocialPlatformTab('youtube')}
+                  className={`whitespace-nowrap shrink-0 px-2.5 py-1 transition-all cursor-pointer ${
+                    socialPlatformTab === 'youtube'
+                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#ef4444] text-white font-bold shadow')
+                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#f87171] hover:bg-[#ef4444]/10')
+                  }`}
+                >
+                  YouTube ({ledger.youtube?.videos?.length || 2})
                 </button>
               </div>
             )}
@@ -5523,6 +5779,100 @@ export default function Dashboard() {
               )}
             </CyberPanel>
           )}
+          {(socialPlatformTab === 'all' || socialPlatformTab === 'youtube') && (
+            <CyberPanel
+              theme={theme}
+              label={`YouTube Shorts & Dispatches • ${ledger.youtube?.handle || '@ObservationsByMoth1'}`}
+              accent="#ef4444"
+              className="p-4 sm:p-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
+                    YouTube Channel &amp; Shorts ({ledger.youtube?.handle || '@ObservationsByMoth1'})
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Verified dispatches, YouTube Shorts, and inbound tracking telemetry.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <a
+                    href="https://www.youtube.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 border border-[#ef4444]/60 bg-[#ef4444]/10 hover:bg-[#ef4444]/20 px-3.5 py-1.5 font-mono text-xs text-[#f87171] font-bold transition-colors cursor-pointer w-full sm:w-auto shrink-0"
+                  >
+                    <Youtube className="w-3.5 h-3.5" />
+                    <span>Open YouTube Studio ↗</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto mb-4 max-h-[260px] -mx-1 sm:mx-0">
+                <table className="w-full text-left border-collapse min-w-[500px]">
+                  <thead>
+                    <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
+                      <th className="py-2 pr-3">Dispatch / Short</th>
+                      <th className="py-2 px-2">Medium</th>
+                      <th className="py-2 px-2">Campaign</th>
+                      <th className="py-2 px-2">Inbound Clicks</th>
+                      <th className="py-2 pl-2 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/70 text-xs">
+                    <tr className="hover:bg-slate-900/40">
+                      <td className="py-2.5 pr-3 text-[#e2e8f0]">
+                        <div className="flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.5 border border-[#ef4444]/40 bg-[#ef4444]/10 text-[9px] font-mono text-[#f87171] font-bold shrink-0">
+                            Short #02
+                          </span>
+                          <span className="font-bold truncate">The Meat Grinder Needs More Meat</span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-2 font-mono text-[#fda4af]">profile</td>
+                      <td className="py-2.5 px-2 font-mono text-white">issue-02</td>
+                      <td className="py-2.5 px-2 font-mono font-bold text-[#f87171]">
+                        {Number(storyClickStats?.issues?.['the-meat-grinder']?.youtube?.clicks || 0)}
+                      </td>
+                      <td className="py-2.5 pl-2 text-right">
+                        <button
+                          type="button"
+                          onClick={() => copyDirectUrl('https://observations.moth1.xyz/the-meat-grinder?utm_source=youtube&utm_medium=profile&utm_campaign=issue-02', 'yt-copy-02')}
+                          className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
+                        >
+                          {copiedLink === 'yt-copy-02' ? 'Copied!' : 'Copy Link'}
+                        </button>
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-900/40">
+                      <td className="py-2.5 pr-3 text-[#e2e8f0]">
+                        <div className="flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.5 border border-[#ef4444]/40 bg-[#ef4444]/10 text-[9px] font-mono text-[#f87171] font-bold shrink-0">
+                            Short #01
+                          </span>
+                          <span className="font-bold truncate">Watering Grass in a Thunderstorm</span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-2 font-mono text-[#fda4af]">community</td>
+                      <td className="py-2.5 px-2 font-mono text-white">issue-01</td>
+                      <td className="py-2.5 px-2 font-mono font-bold text-[#f87171]">
+                        {Number(storyClickStats?.issues?.['watering-grass-in-a-thunderstorm']?.youtube?.clicks || 0)}
+                      </td>
+                      <td className="py-2.5 pl-2 text-right">
+                        <button
+                          type="button"
+                          onClick={() => copyDirectUrl('https://observations.moth1.xyz/watering-grass-in-a-thunderstorm?utm_source=youtube&utm_medium=community&utm_campaign=issue-01', 'yt-copy-01')}
+                          className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
+                        >
+                          {copiedLink === 'yt-copy-01' ? 'Copied!' : 'Copy Link'}
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CyberPanel>
+          )}
             </div>
     </div>
   )}
@@ -5577,6 +5927,9 @@ export default function Dashboard() {
         </span>
         <span className="px-2 py-1 bg-white/10 border border-neutral-600 text-white">
           𝕏: <strong>{xStoryEntrances}</strong> clicks • <strong>{xStoryRetentionPct}%</strong> 75% read • <strong>{xStorySubscribers}</strong> subs
+        </span>
+        <span className="px-2 py-1 bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#f87171]">
+          YT: <strong>{ytStoryEntrances}</strong> clicks • <strong>{ytStoryRetentionPct}%</strong> 75% read • <strong>{ytStorySubscribers}</strong> subs
         </span>
       </div>
     </div>
@@ -5712,6 +6065,17 @@ export default function Dashboard() {
             >
               Threads
             </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterPlatform('youtube')}
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterPlatform === 'youtube'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#ef4444] text-white font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#f87171] hover:bg-[#ef4444]/10')
+              }`}
+            >
+              YouTube
+            </button>
           </div>
         </div>
       </div>
@@ -5836,7 +6200,7 @@ export default function Dashboard() {
             type="text"
             value={customUtmSource}
             onChange={(e) => setCustomUtmSource(e.target.value)}
-            placeholder="instagram, facebook, x, threads..."
+            placeholder="instagram, facebook, x, youtube, threads..."
             className="w-full bg-[#121316] border border-slate-700 px-2.5 py-1.5 text-xs font-mono text-[#e2e8f0] outline-none"
           />
         </div>
@@ -5847,7 +6211,7 @@ export default function Dashboard() {
             type="text"
             value={customUtmMedium}
             onChange={(e) => setCustomUtmMedium(e.target.value)}
-            placeholder="story, thread, video, post..."
+            placeholder="story, thread, video, shorts, community, profile..."
             className="w-full bg-[#121316] border border-slate-700 px-2.5 py-1.5 text-xs font-mono text-[#e2e8f0] outline-none"
           />
         </div>
@@ -5981,6 +6345,28 @@ export default function Dashboard() {
                   ? ((xSubs / xEntrances) * 100).toFixed(1)
                   : '0.0';
 
+              // Metric calculations for YouTube Channel & Shorts
+              const ytEntrances = Math.max(
+                Number(issueStats.youtube?.clicks || 0),
+                Number(dispatch.youtube?.entrances ?? dispatch.youtube?.clicks ?? 0)
+              );
+              const ytScroll75 = Math.max(
+                Number(issueStats.youtube?.scroll75 || 0),
+                Number(dispatch.youtube?.scroll75 ?? 0)
+              );
+              const ytSubs = Math.max(
+                Number(issueStats.youtube?.subscribers || 0),
+                Number(dispatch.youtube?.subscribers ?? 0)
+              );
+              const ytRetentionPct =
+                ytEntrances > 0
+                  ? Math.min(100, (ytScroll75 / ytEntrances) * 100).toFixed(1)
+                  : (ytScroll75 > 0 ? '100.0' : '0.0');
+              const ytConvPct =
+                ytEntrances > 0
+                  ? ((ytSubs / ytEntrances) * 100).toFixed(1)
+                  : '0.0';
+
               return (
                 <div
                   key={dispatch.id}
@@ -5997,8 +6383,8 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* 3-Platform Cross-Channel Columns: Instagram (Pink) vs Facebook (Blue) vs X (White/Amber) */}
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 sm:gap-4">
+                  {/* 4-Platform Cross-Channel Columns: Instagram vs Facebook vs X vs YouTube */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
                     {/* Platform Card 1: Instagram Story */}
                     <div className="p-3 sm:p-4 bg-[#121316] border border-[#fda4af]/30 rounded-none space-y-3">
                       <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
@@ -6330,6 +6716,139 @@ export default function Dashboard() {
                             className="h-full bg-[#86efac] transition-all duration-500"
                             style={{
                               width: `${Math.min(100, Math.max(0, Number(xConvPct) || 0))}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Platform Card 4: YouTube Channel & Shorts */}
+                    <div className="p-3 sm:p-4 bg-[#121316] border border-[#ef4444]/30 rounded-none space-y-3">
+                      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-[#ef4444] shrink-0" />
+                          <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#f87171]">
+                            YouTube Shorts
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'youtube', 'community')}
+                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-[#ef4444]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#ef4444] hover:text-[#f87171] transition-colors cursor-pointer"
+                            title="Copy Community Link with utm_source=youtube&utm_medium=community"
+                          >
+                            {copiedLink === `${issueTag}-youtube-community` ? (
+                              <span className="text-[#86efac]">Copied!</span>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-[#f87171]" />
+                                <span>Community</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'youtube', 'profile')}
+                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-[#ef4444]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#ef4444] hover:text-[#f87171] transition-colors cursor-pointer"
+                            title="Copy Profile Link with utm_source=youtube&utm_medium=profile"
+                          >
+                            {copiedLink === `${issueTag}-youtube-profile` ? (
+                              <span className="text-[#86efac]">Copied!</span>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-[#f87171]" />
+                                <span>Profile</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'youtube', 'shorts')}
+                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-[#ef4444]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#ef4444] hover:text-[#f87171] transition-colors cursor-pointer"
+                            title="Copy Shorts Link with utm_source=youtube&utm_medium=shorts"
+                          >
+                            {copiedLink === `${issueTag}-youtube-shorts` ? (
+                              <span className="text-[#86efac]">Copied!</span>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-[#f87171]" />
+                                <span>Shorts</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 3 Automated Telemetry Metrics for YouTube */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="flex items-center justify-between text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            <span>Channel Clicks</span>
+                            <span className="text-[8px] font-bold text-[#f87171] bg-[#ef4444]/10 px-1 py-0.5 border border-[#ef4444]/30">
+                              {ytEntrances} Clicks
+                            </span>
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#f87171] tabular-nums mt-1">
+                            {ytEntrances.toLocaleString()}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            utm_source=youtube • Verified Clicks
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Scroll Retention
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#fbbf24] tabular-nums mt-1">
+                            {ytRetentionPct}%
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            {ytScroll75} read past 75% depth
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Subscriber Conv.
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#86efac] tabular-nums mt-1">
+                            {ytSubs}{' '}
+                            <span className="text-xs font-normal text-slate-400">
+                              ({ytConvPct}%)
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            Substack subscriptions
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Visual Funnel Bar */}
+                      <div className="space-y-1 pt-1">
+                        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono">
+                          <span className="text-slate-400">
+                            75% Retention: <strong className="text-[#fbbf24]">{ytRetentionPct}%</strong>
+                          </span>
+                          <span className="text-slate-400">
+                            Substack Conv: <strong className="text-[#86efac]">{ytConvPct}%</strong>
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
+                          <div
+                            className="h-full bg-[#fbbf24] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, Number(ytRetentionPct) || 0))}%`,
+                            }}
+                          />
+                          <div
+                            className="h-full bg-[#86efac] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, Number(ytConvPct) || 0))}%`,
                             }}
                           />
                         </div>
