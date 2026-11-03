@@ -1167,7 +1167,7 @@ const PRECONFIGURED_UTM_LINKS = [
     platform: 'instagram',
     platformLabel: 'Instagram Story',
     medium: 'story',
-    campaign: 'the-meat-grinder',
+    campaign: 'issue-02',
     badge: 'IG Story',
     color: '#fda4af',
     description: 'Instagram 9:16 Reel/Story swipe-up or sticker link to Issue #02',
@@ -1180,7 +1180,7 @@ const PRECONFIGURED_UTM_LINKS = [
     platform: 'facebook',
     platformLabel: 'Facebook Reel / Story',
     medium: 'story',
-    campaign: 'the-meat-grinder',
+    campaign: 'issue-02',
     badge: 'FB Story',
     color: '#60a5fa',
     description: 'Facebook 9:16 Reel pinned comment or story sticker link to Issue #02',
@@ -1193,7 +1193,7 @@ const PRECONFIGURED_UTM_LINKS = [
     platform: 'x',
     platformLabel: 'X (Twitter) Thread',
     medium: 'thread',
-    campaign: 'the-meat-grinder',
+    campaign: 'issue-02',
     badge: '𝕏 Thread',
     color: '#e2e8f0',
     description: 'Final call-to-action link in the 10-tweet summary thread on @Moth1NFTs for Issue #02',
@@ -1206,7 +1206,7 @@ const PRECONFIGURED_UTM_LINKS = [
     platform: 'x',
     platformLabel: 'X Video / Reel',
     medium: 'video',
-    campaign: 'the-meat-grinder',
+    campaign: 'issue-02',
     badge: '𝕏 Video',
     color: '#67e8f9',
     description: 'Direct tweet accompanying 9:16 vertical video reel pointing to Issue #02',
@@ -1219,7 +1219,7 @@ const PRECONFIGURED_UTM_LINKS = [
     platform: 'threads',
     platformLabel: 'Threads Post',
     medium: 'post',
-    campaign: 'the-meat-grinder',
+    campaign: 'issue-02',
     badge: 'Threads Post',
     color: '#c084fc',
     description: 'Threads carousel or launch post link for Issue #02 dispatch',
@@ -1234,7 +1234,7 @@ const PRECONFIGURED_UTM_LINKS = [
     platform: 'instagram',
     platformLabel: 'Instagram Story',
     medium: 'story',
-    campaign: 'watering-grass-in-a-thunderstorm',
+    campaign: 'issue-01',
     badge: 'IG Story',
     color: '#fda4af',
     description: 'Instagram 9:16 Reel/Story swipe-up or sticker link to Issue #01',
@@ -1247,7 +1247,7 @@ const PRECONFIGURED_UTM_LINKS = [
     platform: 'facebook',
     platformLabel: 'Facebook Reel / Story',
     medium: 'story',
-    campaign: 'watering-grass-in-a-thunderstorm',
+    campaign: 'issue-01',
     badge: 'FB Story',
     color: '#60a5fa',
     description: 'Facebook 9:16 Reel pinned comment or story sticker link to Issue #01',
@@ -1260,7 +1260,7 @@ const PRECONFIGURED_UTM_LINKS = [
     platform: 'x',
     platformLabel: 'X (Twitter) Thread',
     medium: 'thread',
-    campaign: 'watering-grass-in-a-thunderstorm',
+    campaign: 'issue-01',
     badge: '𝕏 Thread',
     color: '#e2e8f0',
     description: 'Final call-to-action link in the summary thread on @Moth1NFTs to Issue #01',
@@ -1273,7 +1273,7 @@ const PRECONFIGURED_UTM_LINKS = [
     platform: 'x',
     platformLabel: 'X Video / Reel',
     medium: 'video',
-    campaign: 'watering-grass-in-a-thunderstorm',
+    campaign: 'issue-01',
     badge: '𝕏 Video',
     color: '#67e8f9',
     description: 'Direct tweet accompanying 9:16 vertical video reel pointing to Issue #01',
@@ -1286,7 +1286,7 @@ const PRECONFIGURED_UTM_LINKS = [
     platform: 'threads',
     platformLabel: 'Threads Post',
     medium: 'post',
-    campaign: 'watering-grass-in-a-thunderstorm',
+    campaign: 'issue-01',
     badge: 'Threads Post',
     color: '#c084fc',
     description: 'Threads carousel or launch post link for Issue #01 dispatch',
@@ -1356,7 +1356,7 @@ export default function Dashboard() {
   const [customUtmIssue, setCustomUtmIssue] = useState('the-meat-grinder');
   const [customUtmSource, setCustomUtmSource] = useState('instagram');
   const [customUtmMedium, setCustomUtmMedium] = useState('story');
-  const [customUtmCampaign, setCustomUtmCampaign] = useState('the-meat-grinder');
+  const [customUtmCampaign, setCustomUtmCampaign] = useState('issue-02');
 
   // Dark / Light Theme State with LocalStorage Persistence
   const [theme, setTheme] = useState(() => {
@@ -5811,7 +5811,17 @@ export default function Dashboard() {
           <label className="text-[10px] text-slate-400 uppercase font-bold">Target Route / Issue:</label>
           <select
             value={customUtmIssue}
-            onChange={(e) => setCustomUtmIssue(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setCustomUtmIssue(val);
+              if (val === 'the-meat-grinder') {
+                setCustomUtmCampaign('issue-02');
+              } else if (val === 'watering-grass-in-a-thunderstorm') {
+                setCustomUtmCampaign('issue-01');
+              } else {
+                setCustomUtmCampaign('profile');
+              }
+            }}
             className="w-full bg-[#121316] border border-slate-700 px-2.5 py-1.5 text-xs font-mono text-[#e2e8f0] outline-none"
           >
             <option value="the-meat-grinder">Issue #02: The Meat Grinder Needs More Meat</option>
