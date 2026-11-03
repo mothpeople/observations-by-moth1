@@ -219,7 +219,7 @@ const ACTORS = {
 };
 
 function matchesObservationsFilter(item, filterTag = '#observations') {
-  const rawText = `${item.caption || ''} ${item.text || ''} ${item.title || ''} ${item.subtitle || ''}`;
+  const rawText = `${item.combinedText || ''} ${item.caption || ''} ${item.text || ''} ${item.title || ''} ${item.subtitle || ''}`;
   const rawHashtags = Array.isArray(item.hashtags)
     ? item.hashtags.join(' ')
     : '';
@@ -239,13 +239,15 @@ function matchesObservationsFilter(item, filterTag = '#observations') {
   }
 
   return (
+    haystack.includes('#observationsbymoth1') ||
+    haystack.includes('observationsbymoth1') ||
     haystack.includes('#observations') ||
     haystack.includes('observations.moth1.xyz') ||
-    haystack.includes('observationsbymoth1') ||
     haystack.includes('observations by moth1') ||
     haystack.includes('the-meat-grinder') ||
     haystack.includes('meat grinder') ||
     haystack.includes('watering-grass-in-a-thunderstorm') ||
+    haystack.includes('watering grass') ||
     haystack.includes('bread and circus')
   );
 }
@@ -631,6 +633,30 @@ function normalizeXItem(item, idx = 0) {
     item.tweetUrl ||
     (item.id_str ? `https://x.com/Moth1NFTs/status/${item.id_str}` : 'https://x.com/Moth1NFTs');
 
+  const conversationId = String(
+    item.conversation_id_str ||
+    item.conversation_id ||
+    item.conversationId ||
+    item.in_reply_to_status_id_str ||
+    item.inReplyToStatusId ||
+    item.reply_to_tweet_id ||
+    id
+  );
+
+  const inReplyToId = item.in_reply_to_status_id_str
+    ? String(item.in_reply_to_status_id_str)
+    : item.inReplyToStatusId
+      ? String(item.inReplyToStatusId)
+      : item.reply_to_tweet_id
+        ? String(item.reply_to_tweet_id)
+        : null;
+
+  const hashtags = Array.isArray(item.entities?.hashtags)
+    ? item.entities.hashtags.map((h) => String(typeof h === 'string' ? h : h.text || h.tag || '').toLowerCase())
+    : (Array.isArray(item.hashtags)
+        ? item.hashtags.map((h) => String(h).toLowerCase())
+        : (text.match(/#[\w\d_]+/g) || []).map((h) => h.toLowerCase()));
+
   const views = Number(
     item.view_count ??
     item.viewsCount ??
@@ -665,7 +691,10 @@ function normalizeXItem(item, idx = 0) {
 
   return {
     id,
+    conversationId,
+    inReplyToId,
     text,
+    hashtags,
     url,
     views,
     likes,
@@ -673,6 +702,96 @@ function normalizeXItem(item, idx = 0) {
     replies,
     publishedAt,
   };
+}
+
+function aggregateXThreads(rawItems) {
+  if (!Array.isArray(rawItems) || rawItems.length === 0) return [];
+
+  const threadMap = new Map();
+  for (const item of rawItems) {
+    const convId = String(item.conversationId || item.id || '');
+    if (!threadMap.has(convId)) {
+      threadMap.set(convId, []);
+    }
+    threadMap.get(convId).push(item);
+  }
+
+  const mergedGroups = new Map();
+  for (const [convId, groupTweets] of threadMap.entries()) {
+    let targetKey = convId;
+    for (const [otherKey, otherTweets] of threadMap.entries()) {
+      if (otherKey !== convId) {
+        const hasConnection = groupTweets.some(
+          (t) => t.inReplyToId === otherKey || otherTweets.some((ot) => ot.id === t.inReplyToId)
+        );
+        if (hasConnection) {
+          targetKey = otherKey;
+          break;
+        }
+      }
+    }
+    if (!mergedGroups.has(targetKey)) {
+      mergedGroups.set(targetKey, []);
+    }
+    mergedGroups.get(targetKey).push(...groupTweets);
+  }
+
+  const threads = [];
+  for (const [convId, groupTweets] of mergedGroups.entries()) {
+    const uniqueMap = new Map();
+    for (const t of groupTweets) {
+      uniqueMap.set(String(t.id), t);
+    }
+    const uniqueTweets = Array.from(uniqueMap.values());
+
+    uniqueTweets.sort((a, b) => {
+      const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+      const timeB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+      return timeA - timeB;
+    });
+
+    const rootTweet = uniqueTweets[0];
+    const finalTweet = uniqueTweets[uniqueTweets.length - 1];
+
+    const combinedText = uniqueTweets.map((t) => t.text).join(' \n\n ');
+    const allHashtags = Array.from(
+      new Set(uniqueTweets.flatMap((t) => t.hashtags || []))
+    );
+
+    const totalViews = uniqueTweets.reduce((sum, t) => sum + (Number(t.views) || 0), 0);
+    const totalLikes = uniqueTweets.reduce((sum, t) => sum + (Number(t.likes) || 0), 0);
+    const totalRetweets = uniqueTweets.reduce((sum, t) => sum + (Number(t.retweets) || 0), 0);
+    const totalReplies = uniqueTweets.reduce((sum, t) => sum + (Number(t.replies) || 0), 0);
+
+    const isThread = uniqueTweets.length > 1;
+
+    threads.push({
+      id: rootTweet.id || convId,
+      conversationId: convId,
+      text: rootTweet.text || finalTweet.text || 'X Thread',
+      openingText: rootTweet.text,
+      closingText: finalTweet.text,
+      combinedText,
+      hashtags: allHashtags,
+      tweetCount: uniqueTweets.length,
+      isThread,
+      url: rootTweet.url || (rootTweet.id ? `https://x.com/Moth1NFTs/status/${rootTweet.id}` : 'https://x.com/Moth1NFTs'),
+      views: totalViews,
+      likes: totalLikes,
+      retweets: totalRetweets,
+      replies: totalReplies,
+      publishedAt: rootTweet.publishedAt || finalTweet.publishedAt,
+      tweets: uniqueTweets,
+    });
+  }
+
+  threads.sort((a, b) => {
+    const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+    const timeB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+    return timeB - timeA;
+  });
+
+  return threads;
 }
 
 function isFacebookVideoReel(rawItem, item) {
@@ -2384,8 +2503,14 @@ export default function Dashboard() {
   const totalFbViews = Math.max(fbScrapedViews, fbManualViews);
   const totalFbEngagement = Math.max(fbScrapedInteractions, fbManualEngagement);
 
-  // X (Twitter) (apify/twitter-scraper + campaign telemetry)
-  const visibleXItems = xState.items || [];
+  // X (Twitter) (apidojo/tweet-scraper + thread aggregator + campaign telemetry)
+  const allXThreads = aggregateXThreads(xState.items || []);
+  const visibleXItems = filterOnlyObservations
+    ? allXThreads.filter((thread) =>
+        matchesObservationsFilter(thread, activeFilterTag)
+      )
+    : allXThreads;
+
   const xScrapedViews = visibleXItems.reduce((sum, i) => sum + (i.views || 0), 0);
   const xScrapedEngagement = visibleXItems.reduce(
     (sum, i) => sum + (i.likes || 0) + (i.retweets || 0) + (i.replies || 0),
@@ -4418,21 +4543,39 @@ export default function Dashboard() {
 
               {visibleXItems.length === 0 ? (
                 <div className="py-5 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 mb-4 space-y-2">
-                  <div>
-                    No Apify dataset items loaded yet for{' '}
-                    <code className="text-white">@{targets.xHandle || 'Moth1NFTs'}</code>.
-                    Click &ldquo;Run X Scraper&rdquo; above.
-                  </div>
-                  <div className="text-[11px] text-slate-500">
-                    Campaign clicks from X are automatically tracked via UTM parameters in the Campaign Funnel below.
-                  </div>
+                  {allXThreads.length > 0 && filterOnlyObservations ? (
+                    <>
+                      <div>
+                        Scraped <strong className="text-white">{allXThreads.length}</strong> X tweets/threads from @{targets.xHandle || 'Moth1NFTs'}, but none contain{' '}
+                        <code className="text-[#86efac]">#ObservationsByMoth1</code>.
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFilterOnlyObservations(false)}
+                        className="border border-slate-700 bg-[#121316] px-3 py-1 text-[11px] text-white hover:border-white cursor-pointer"
+                      >
+                        Show all {allXThreads.length} scraped X dispatches
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        No Apify dataset items loaded yet for{' '}
+                        <code className="text-white">@{targets.xHandle || 'Moth1NFTs'}</code>.
+                        Click &ldquo;Run X Scraper&rdquo; above.
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        Campaign clicks from X are automatically tracked via UTM parameters in the Campaign Funnel below.
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="overflow-x-auto mb-4 max-h-[240px] -mx-1 sm:mx-0">
                   <table className="w-full text-left border-collapse min-w-[480px]">
                     <thead>
                       <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
-                        <th className="py-2 pr-3">Post / Tweet</th>
+                        <th className="py-2 pr-3">Post / Thread</th>
                         <th className="py-2 px-2">Impressions</th>
                         <th className="py-2 px-2">Likes</th>
                         <th className="py-2 px-2">Reposts</th>
@@ -4443,8 +4586,20 @@ export default function Dashboard() {
                     <tbody className="divide-y divide-slate-800/70 text-xs">
                       {visibleXItems.slice(0, 15).map((item) => (
                         <tr key={item.id} className="hover:bg-slate-900/40">
-                          <td className="py-2.5 pr-3 max-w-[200px] truncate text-[#e2e8f0]">
-                            {item.text}
+                          <td className="py-2.5 pr-3 max-w-[240px] truncate text-[#e2e8f0]">
+                            <div className="flex items-center gap-1.5">
+                              {item.isThread && (
+                                <span
+                                  className="px-1.5 py-0.5 border border-white/40 bg-white/10 text-[9px] font-mono text-white font-bold shrink-0"
+                                  title={`${item.tweetCount} tweets in this thread`}
+                                >
+                                  Thread ({item.tweetCount})
+                                </span>
+                              )}
+                              <span className="truncate" title={item.openingText || item.text}>
+                                {item.openingText || item.text}
+                              </span>
+                            </div>
                           </td>
                           <td className="py-2.5 px-2 font-mono font-bold text-white">
                             {item.views.toLocaleString()}
@@ -4464,6 +4619,7 @@ export default function Dashboard() {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-mono text-[11px] text-[#67e8f9] hover:underline"
+                              title="Open Thread on X"
                             >
                               ↗
                             </a>

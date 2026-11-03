@@ -31,12 +31,16 @@ export function isObservationsContent(text = '', hashtags = [], filterTag = '#ob
   }
 
   return (
+    haystack.includes('#observationsbymoth1') ||
+    haystack.includes('observationsbymoth1') ||
     haystack.includes('#observations') ||
     haystack.includes('observations.moth1.xyz') ||
-    haystack.includes('observationsbymoth1') ||
     haystack.includes('observations by moth1') ||
     haystack.includes('the-meat-grinder') ||
-    haystack.includes('watering-grass-in-a-thunderstorm')
+    haystack.includes('meat grinder') ||
+    haystack.includes('watering-grass-in-a-thunderstorm') ||
+    haystack.includes('watering grass') ||
+    haystack.includes('bread and circus')
   );
 }
 
@@ -397,6 +401,30 @@ export function normalizeXItem(item, idx = 0) {
     item.tweetUrl ||
     (item.id_str ? `https://x.com/Moth1NFTs/status/${item.id_str}` : 'https://x.com/Moth1NFTs');
 
+  const conversationId = String(
+    item.conversation_id_str ||
+    item.conversation_id ||
+    item.conversationId ||
+    item.in_reply_to_status_id_str ||
+    item.inReplyToStatusId ||
+    item.reply_to_tweet_id ||
+    id
+  );
+
+  const inReplyToId = item.in_reply_to_status_id_str
+    ? String(item.in_reply_to_status_id_str)
+    : item.inReplyToStatusId
+      ? String(item.inReplyToStatusId)
+      : item.reply_to_tweet_id
+        ? String(item.reply_to_tweet_id)
+        : null;
+
+  const hashtags = Array.isArray(item.entities?.hashtags)
+    ? item.entities.hashtags.map((h) => String(typeof h === 'string' ? h : h.text || h.tag || '').toLowerCase())
+    : (Array.isArray(item.hashtags)
+        ? item.hashtags.map((h) => String(h).toLowerCase())
+        : (text.match(/#[\w\d_]+/g) || []).map((h) => h.toLowerCase()));
+
   const views = Number(
     item.view_count ??
     item.viewsCount ??
@@ -431,7 +459,10 @@ export function normalizeXItem(item, idx = 0) {
 
   return {
     id,
+    conversationId,
+    inReplyToId,
     text,
+    hashtags,
     url,
     views,
     likes,
@@ -439,6 +470,96 @@ export function normalizeXItem(item, idx = 0) {
     replies,
     publishedAt,
   };
+}
+
+export function aggregateXThreads(rawItems) {
+  if (!Array.isArray(rawItems) || rawItems.length === 0) return [];
+
+  const threadMap = new Map();
+  for (const item of rawItems) {
+    const convId = String(item.conversationId || item.id || '');
+    if (!threadMap.has(convId)) {
+      threadMap.set(convId, []);
+    }
+    threadMap.get(convId).push(item);
+  }
+
+  const mergedGroups = new Map();
+  for (const [convId, groupTweets] of threadMap.entries()) {
+    let targetKey = convId;
+    for (const [otherKey, otherTweets] of threadMap.entries()) {
+      if (otherKey !== convId) {
+        const hasConnection = groupTweets.some(
+          (t) => t.inReplyToId === otherKey || otherTweets.some((ot) => ot.id === t.inReplyToId)
+        );
+        if (hasConnection) {
+          targetKey = otherKey;
+          break;
+        }
+      }
+    }
+    if (!mergedGroups.has(targetKey)) {
+      mergedGroups.set(targetKey, []);
+    }
+    mergedGroups.get(targetKey).push(...groupTweets);
+  }
+
+  const threads = [];
+  for (const [convId, groupTweets] of mergedGroups.entries()) {
+    const uniqueMap = new Map();
+    for (const t of groupTweets) {
+      uniqueMap.set(String(t.id), t);
+    }
+    const uniqueTweets = Array.from(uniqueMap.values());
+
+    uniqueTweets.sort((a, b) => {
+      const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+      const timeB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+      return timeA - timeB;
+    });
+
+    const rootTweet = uniqueTweets[0];
+    const finalTweet = uniqueTweets[uniqueTweets.length - 1];
+
+    const combinedText = uniqueTweets.map((t) => t.text).join(' \n\n ');
+    const allHashtags = Array.from(
+      new Set(uniqueTweets.flatMap((t) => t.hashtags || []))
+    );
+
+    const totalViews = uniqueTweets.reduce((sum, t) => sum + (Number(t.views) || 0), 0);
+    const totalLikes = uniqueTweets.reduce((sum, t) => sum + (Number(t.likes) || 0), 0);
+    const totalRetweets = uniqueTweets.reduce((sum, t) => sum + (Number(t.retweets) || 0), 0);
+    const totalReplies = uniqueTweets.reduce((sum, t) => sum + (Number(t.replies) || 0), 0);
+
+    const isThread = uniqueTweets.length > 1;
+
+    threads.push({
+      id: rootTweet.id || convId,
+      conversationId: convId,
+      text: rootTweet.text || finalTweet.text || 'X Thread',
+      openingText: rootTweet.text,
+      closingText: finalTweet.text,
+      combinedText,
+      hashtags: allHashtags,
+      tweetCount: uniqueTweets.length,
+      isThread,
+      url: rootTweet.url || (rootTweet.id ? `https://x.com/Moth1NFTs/status/${rootTweet.id}` : 'https://x.com/Moth1NFTs'),
+      views: totalViews,
+      likes: totalLikes,
+      retweets: totalRetweets,
+      replies: totalReplies,
+      publishedAt: rootTweet.publishedAt || finalTweet.publishedAt,
+      tweets: uniqueTweets,
+    });
+  }
+
+  threads.sort((a, b) => {
+    const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+    const timeB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+    return timeB - timeA;
+  });
+
+  return threads;
 }
 
 export function isFacebookVideoReel(rawItem, item) {
@@ -1270,10 +1391,11 @@ export default async function handler(req, res) {
       apifySubstack.followers || 0,
       ...substackPosts.map((item) => item.subscribers || 0)
     );
-    const xItems = (apifyX.items || []).map((item, i) => normalizeXItem(item, i));
+    const rawXItems = (apifyX.items || []).map((item, i) => normalizeXItem(item, i));
+    const xThreads = aggregateXThreads(rawXItems);
     const xFollowers = Math.max(
       apifyX.followers || 0,
-      ...xItems.map((item) => item.followers || 0)
+      ...rawXItems.map((item) => item.followers || 0)
     );
 
     return res.status(200).json({
@@ -1314,7 +1436,8 @@ export default async function handler(req, res) {
         connected: apifyX.connected,
         runInfo: apifyX.runInfo,
         followers: xFollowers,
-        items: xItems,
+        items: xThreads,
+        rawItemsCount: rawXItems.length,
       },
       vercel: vercelAnalytics,
     });
