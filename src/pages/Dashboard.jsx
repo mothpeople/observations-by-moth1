@@ -3214,6 +3214,7 @@ export default function Dashboard() {
     ? youtubeState.videos
     : (ledger.youtube?.videos || []);
   const ytTotalViews = ytVideoList.reduce((sum, v) => sum + (Number(v.views) || 0), 0);
+  const totalYtViews = Math.max(ytTotalViews, ytStoryEntrances);
   const ytTotalEngagement = ytVideoList.reduce((sum, v) => sum + (Number(v.likes) || 0) + (Number(v.comments) || 0), 0);
   const ytSubscribers = Number(youtubeState?.channel?.subscribers ?? ledger.youtube?.subscribers ?? 6);
 
@@ -4265,10 +4266,10 @@ export default function Dashboard() {
                 <Youtube className="w-4 h-4 text-[#ef4444] shrink-0" />
               </div>
               <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
-                {ytStoryEntrances.toLocaleString()}
+                {totalYtViews.toLocaleString()}
               </div>
               <div className="text-xs text-slate-400 mt-0.5">
-                Inbound Visits • {ytStoryRetentionPct}% Retention ({ytTotalViews.toLocaleString()} Shorts Views)
+                Views • {ytTotalEngagement.toLocaleString()} Engagements ({ytVideoList.length} Shorts • {ytStoryEntrances} Inbound Visits)
               </div>
             </div>
 
