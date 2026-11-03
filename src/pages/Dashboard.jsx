@@ -1686,6 +1686,47 @@ export default function Dashboard() {
     items: [],
     followers: 0,
   });
+  const [youtubeState, setYoutubeState] = useState({
+    connected: true,
+    channel: {
+      handle: 'sivaraj.pragasm',
+      title: 'Sivaraj Pragasm (moth1)',
+      subscribers: 6,
+      totalViews: 1816,
+      videoCount: 23,
+    },
+    playlist: {
+      id: 'PLXNcetLtk5xU',
+      title: 'Observations by Moth 1',
+      url: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
+    },
+    videos: [
+      {
+        id: 'yt-shorts-02',
+        videoId: 'XiAPHfIshfY',
+        issueId: '02',
+        title: 'Issue 02: The Meat Grinder Needs More Meat',
+        views: 108,
+        likes: 0,
+        comments: 1,
+        url: 'https://www.youtube.com/shorts/XiAPHfIshfY',
+        trackingUrl: 'https://observations.moth1.xyz/the-meat-grinder?utm_source=youtube&utm_medium=profile&utm_campaign=issue-02',
+      },
+      {
+        id: 'yt-shorts-01',
+        videoId: 'tp6FqVQUO9w',
+        issueId: '01',
+        title: 'Issue 01: Watering Grass in a Thunderstorm',
+        views: 19,
+        likes: 0,
+        comments: 1,
+        url: 'https://www.youtube.com/shorts/tp6FqVQUO9w',
+        trackingUrl: 'https://observations.moth1.xyz/watering-grass-in-a-thunderstorm?utm_source=youtube&utm_medium=community&utm_campaign=issue-01',
+      },
+    ],
+    lastSynced: null,
+  });
+  const [syncingYoutube, setSyncingYoutube] = useState(false);
 
   const syncAllTelemetry = useCallback(
     async (tokenOverride, vercelTokenOverride) => {
@@ -1706,10 +1747,11 @@ export default function Dashboard() {
         if (vercelProjectId.trim()) headers['X-Vercel-Project-Id'] = vercelProjectId.trim();
         if (vercelTeamId.trim()) headers['X-Vercel-Team-Id'] = vercelTeamId.trim();
 
-        // Fetch server /api/analytics, /api/track-story-click + direct browser Apify datasets for all actors in parallel
+        // Fetch server /api/analytics, /api/track-story-click, /api/youtube-telemetry + direct browser Apify datasets for all actors in parallel
         const [
           serverRes,
           storyClickRes,
+          youtubeRes,
           directSubstack,
           directInstagram,
           directThreads,
@@ -1719,6 +1761,7 @@ export default function Dashboard() {
         ] = await Promise.all([
           fetch('/api/analytics', { headers }).catch(() => null),
           fetch('/api/track-story-click').catch(() => null),
+          fetch('/api/youtube-telemetry').catch(() => null),
           activeToken
             ? fetchDirectActorDataset(ACTORS.substack.id, activeToken)
             : Promise.resolve(null),
@@ -1748,6 +1791,24 @@ export default function Dashboard() {
           try {
             const clickJson = await storyClickRes.json();
             setStoryClickStats(clickJson);
+          } catch {
+            // ignore
+          }
+        }
+
+        let ytApiData = null;
+        if (youtubeRes && youtubeRes.ok) {
+          try {
+            ytApiData = await youtubeRes.json();
+            if (ytApiData?.videos) {
+              setYoutubeState((prev) => ({
+                connected: true,
+                channel: ytApiData.channel || prev.channel,
+                playlist: ytApiData.playlist || prev.playlist,
+                videos: ytApiData.videos,
+                lastSynced: new Date().toLocaleTimeString(),
+              }));
+            }
           } catch {
             // ignore
           }
@@ -2289,6 +2350,35 @@ export default function Dashboard() {
             next.storyFunnel = { ...next.storyFunnel, dispatches: updatedDispatches };
           }
 
+          // 4. Auto-populate YouTube Shorts and channel metrics from YouTube Data API v3
+          if (ytApiData) {
+            const ytSubs = Number(ytApiData.channel?.subscribers) || 0;
+            const ytTotViews = Number(ytApiData.channel?.totalViews) || 0;
+            if (ytSubs > 0 && ytSubs !== next.youtube?.subscribers) {
+              next.youtube = { ...next.youtube, subscribers: ytSubs };
+              changed = true;
+            }
+            if (ytTotViews > 0 && ytTotViews !== next.youtube?.totalViews) {
+              next.youtube = { ...next.youtube, totalViews: ytTotViews };
+              changed = true;
+            }
+            if (Array.isArray(ytApiData.videos) && Array.isArray(next.youtube?.videos)) {
+              const updatedYtVideos = next.youtube.videos.map((vid) => {
+                const live = ytApiData.videos.find((v) => v.videoId === vid.videoId || v.issueId === vid.issueId);
+                if (!live) return vid;
+                const maxV = Math.max(Number(vid.views) || 0, Number(live.views) || 0);
+                const maxL = Math.max(Number(vid.likes) || 0, Number(live.likes) || 0);
+                const maxC = Math.max(Number(vid.comments) || 0, Number(live.comments) || 0);
+                if (maxV !== vid.views || maxL !== vid.likes || maxC !== vid.comments) {
+                  changed = true;
+                  return { ...vid, views: maxV, likes: maxL, comments: maxC, title: live.title || vid.title };
+                }
+                return vid;
+              });
+              next.youtube = { ...next.youtube, videos: updatedYtVideos };
+            }
+          }
+
           if (changed) {
             saveChannelLedger(next);
             return next;
@@ -2301,6 +2391,67 @@ export default function Dashboard() {
     },
     [apifyToken, vercelToken, vercelProjectId, vercelTeamId]
   );
+
+  const syncYoutubeTelemetry = useCallback(async () => {
+    setSyncingYoutube(true);
+    try {
+      const res = await fetch('/api/youtube-telemetry');
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.videos) {
+          setYoutubeState((prev) => ({
+            connected: true,
+            channel: data.channel || prev.channel,
+            playlist: data.playlist || prev.playlist,
+            videos: data.videos,
+            lastSynced: new Date().toLocaleTimeString(),
+          }));
+          setLedger((prev) => {
+            const next = { ...prev };
+            let changed = false;
+            const ytSubs = Number(data.channel?.subscribers) || 0;
+            const ytTotViews = Number(data.channel?.totalViews) || 0;
+            if (ytSubs > 0 && ytSubs !== next.youtube?.subscribers) {
+              next.youtube = { ...next.youtube, subscribers: ytSubs };
+              changed = true;
+            }
+            if (ytTotViews > 0 && ytTotViews !== next.youtube?.totalViews) {
+              next.youtube = { ...next.youtube, totalViews: ytTotViews };
+              changed = true;
+            }
+            if (Array.isArray(data.videos) && Array.isArray(next.youtube?.videos)) {
+              const updatedYtVideos = next.youtube.videos.map((vid) => {
+                const live = data.videos.find((v) => v.videoId === vid.videoId || v.issueId === vid.issueId);
+                if (!live) return vid;
+                const maxV = Math.max(Number(vid.views) || 0, Number(live.views) || 0);
+                const maxL = Math.max(Number(vid.likes) || 0, Number(live.likes) || 0);
+                const maxC = Math.max(Number(vid.comments) || 0, Number(live.comments) || 0);
+                if (maxV !== vid.views || maxL !== vid.likes || maxC !== vid.comments) {
+                  changed = true;
+                  return { ...vid, views: maxV, likes: maxL, comments: maxC, title: live.title || vid.title };
+                }
+                return vid;
+              });
+              next.youtube = { ...next.youtube, videos: updatedYtVideos };
+            }
+            if (changed) {
+              saveChannelLedger(next);
+              return next;
+            }
+            return prev;
+          });
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSyncingYoutube(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    syncYoutubeTelemetry();
+  }, [syncYoutubeTelemetry]);
 
   useEffect(() => {
     if (isOwnerUnlocked) {
@@ -3057,6 +3208,14 @@ export default function Dashboard() {
   );
   const totalXViews = Math.max(xScrapedViews, xStoryEntrances);
   const totalXEngagement = xScrapedEngagement;
+
+  // YouTube (verified YouTube Shorts + playlist telemetry + YouTube Data API v3)
+  const ytVideoList = (youtubeState?.videos && youtubeState.videos.length > 0)
+    ? youtubeState.videos
+    : (ledger.youtube?.videos || []);
+  const ytTotalViews = ytVideoList.reduce((sum, v) => sum + (Number(v.views) || 0), 0);
+  const ytTotalEngagement = ytVideoList.reduce((sum, v) => sum + (Number(v.likes) || 0) + (Number(v.comments) || 0), 0);
+  const ytSubscribers = Number(youtubeState?.channel?.subscribers ?? ledger.youtube?.subscribers ?? 6);
 
   const handleOwnerUnlock = (e) => {
     e.preventDefault();
@@ -4109,7 +4268,7 @@ export default function Dashboard() {
                 {ytStoryEntrances.toLocaleString()}
               </div>
               <div className="text-xs text-slate-400 mt-0.5">
-                Inbound Visits • {ytStoryRetentionPct}% Retention ({ledger.youtube?.videos?.length || 2} Shorts)
+                Inbound Visits • {ytStoryRetentionPct}% Retention ({ytTotalViews.toLocaleString()} Shorts Views)
               </div>
             </div>
 
@@ -4149,7 +4308,7 @@ export default function Dashboard() {
               ) : (
                 <div className="flex items-center gap-1.5">
                   <span className="font-mono text-[12px] font-bold text-[#f87171] tabular-nums">
-                    {(ledger.youtube?.subscribers || 0).toLocaleString()}
+                    {ytSubscribers.toLocaleString()}
                   </span>
                   <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#ef4444]/40 bg-[#ef4444]/10 text-[#f87171] rounded-none">
                     Live
@@ -4159,7 +4318,7 @@ export default function Dashboard() {
                     onClick={() =>
                       handleStartEditFollower(
                         'youtube',
-                        ledger.youtube?.subscribers || 0
+                        ytSubscribers
                       )
                     }
                     className="p-0.5 text-slate-500 hover:text-[#ef4444] transition-colors cursor-pointer"
@@ -4267,7 +4426,7 @@ export default function Dashboard() {
                   : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800/60')
               }`}
             >
-              🎬 Comparative Reels (FB vs IG)
+              🎬 Comparative 9:16 Video (FB vs IG vs YT)
             </button>
             <button
               type="button"
@@ -4839,11 +4998,11 @@ export default function Dashboard() {
       </div>
     )}
 
-    {/* Sub-Section 2: Dedicated Comparative Reels Visualizer (Facebook vs Instagram) */}
+    {/* Sub-Section 2: Dedicated Comparative Reels Visualizer (Facebook vs Instagram vs YouTube) */}
     {(analyticsTab === 'reels' || analyticsTab === 'all') && (
       <CyberPanel
         theme={theme}
-        label="Comparative Reel Visualizer • Facebook vs Instagram Performance"
+        label="Comparative 9:16 Video Visualizer • Facebook vs Instagram vs YouTube Shorts"
         accent="#67e8f9"
         className="p-4 sm:p-6"
       >
@@ -4852,11 +5011,11 @@ export default function Dashboard() {
             <div className="flex items-center gap-2 mb-1">
               <Film className="w-4 h-4 text-[#67e8f9]" />
               <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
-                Reel Performance &amp; Cross-Platform Comparison
+                9:16 Vertical Video Performance &amp; Cross-Platform Comparison
               </h2>
             </div>
             <p className="text-xs text-slate-400">
-              Direct comparison of 9:16 video reel metrics across Facebook (observationsbymoth1) and Instagram (@moth1.siv).
+              Direct comparison of 9:16 video metrics across Facebook (observationsbymoth1), Instagram (@moth1.siv), and YouTube Shorts (@sivaraj.pragasm).
             </p>
           </div>
           <div className="flex items-center gap-2 font-mono text-xs">
@@ -4865,6 +5024,9 @@ export default function Dashboard() {
             </span>
             <span className="px-2.5 py-1 bg-[#fda4af]/10 border border-[#fda4af]/30 text-[#fda4af] font-bold">
               IG: {igScrapedViews.toLocaleString()} views
+            </span>
+            <span className="px-2.5 py-1 bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#f87171] font-bold">
+              YT: {ytTotalViews.toLocaleString()} views
             </span>
           </div>
         </div>
@@ -4883,16 +5045,24 @@ export default function Dashboard() {
                 </div>
               </div>
               <span className="text-[10px] font-mono text-slate-400">
-                9:16 Video Reel
+                9:16 Video Comparison
               </span>
             </div>
 
             {(() => {
               const fbItem = visibleFacebookItems.find((i) => matchItemToIssueId(i) === '02') || visibleFacebookItems[0];
               const igItem = visibleInstagramItems.find((i) => matchItemToIssueId(i) === '02') || visibleInstagramItems[0];
+              const ytItem = ytVideoList.find((i) => i.issueId === '02') || {
+                videoId: 'XiAPHfIshfY',
+                views: 108,
+                likes: 0,
+                comments: 1,
+                url: 'https://www.youtube.com/shorts/XiAPHfIshfY',
+              };
               const fbViews = fbItem?.views || 0;
               const igViews = igItem?.views || 0;
-              const maxV = Math.max(1, fbViews, igViews);
+              const ytViews = Number(ytItem?.views) || 0;
+              const maxV = Math.max(1, fbViews, igViews, ytViews);
               return (
                 <div className="space-y-3">
                   <div className="space-y-1">
@@ -4938,6 +5108,30 @@ export default function Dashboard() {
                       {igItem?.url && (
                         <a href={igItem.url} target="_blank" rel="noopener noreferrer" className="text-[#fda4af] hover:underline">
                           Watch on IG ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-2 border-t border-slate-800/60">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#ef4444] font-bold flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#ef4444]" />
+                        YouTube Short
+                      </span>
+                      <span className="text-white font-bold">{ytViews.toLocaleString()} views</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-900 overflow-hidden">
+                      <div
+                        className="h-full bg-[#ef4444] transition-all duration-500"
+                        style={{ width: `${Math.min(100, Math.max(2, (ytViews / maxV) * 100))}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                      <span>Likes: {ytItem?.likes || 0} • Comments: {ytItem?.comments || 0}</span>
+                      {ytItem?.url && (
+                        <a href={ytItem.url} target="_blank" rel="noopener noreferrer" className="text-[#ef4444] hover:underline">
+                          Watch Short ↗
                         </a>
                       )}
                     </div>
@@ -4959,16 +5153,24 @@ export default function Dashboard() {
                 </div>
               </div>
               <span className="text-[10px] font-mono text-slate-400">
-                9:16 Video Reel
+                9:16 Video Comparison
               </span>
             </div>
 
             {(() => {
               const fbItem = visibleFacebookItems.find((i) => matchItemToIssueId(i) === '01') || visibleFacebookItems[1];
               const igItem = visibleInstagramItems.find((i) => matchItemToIssueId(i) === '01') || visibleInstagramItems[1];
+              const ytItem = ytVideoList.find((i) => i.issueId === '01') || {
+                videoId: 'tp6FqVQUO9w',
+                views: 19,
+                likes: 0,
+                comments: 1,
+                url: 'https://www.youtube.com/shorts/tp6FqVQUO9w',
+              };
               const fbViews = fbItem?.views || 0;
               const igViews = igItem?.views || 0;
-              const maxV = Math.max(1, fbViews, igViews);
+              const ytViews = Number(ytItem?.views) || 0;
+              const maxV = Math.max(1, fbViews, igViews, ytViews);
               return (
                 <div className="space-y-3">
                   <div className="space-y-1">
@@ -5014,6 +5216,30 @@ export default function Dashboard() {
                       {igItem?.url && (
                         <a href={igItem.url} target="_blank" rel="noopener noreferrer" className="text-[#fda4af] hover:underline">
                           Watch on IG ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-2 border-t border-slate-800/60">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#ef4444] font-bold flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#ef4444]" />
+                        YouTube Short
+                      </span>
+                      <span className="text-white font-bold">{ytViews.toLocaleString()} views</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-900 overflow-hidden">
+                      <div
+                        className="h-full bg-[#ef4444] transition-all duration-500"
+                        style={{ width: `${Math.min(100, Math.max(2, (ytViews / maxV) * 100))}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                      <span>Likes: {ytItem?.likes || 0} • Comments: {ytItem?.comments || 0}</span>
+                      {ytItem?.url && (
+                        <a href={ytItem.url} target="_blank" rel="noopener noreferrer" className="text-[#ef4444] hover:underline">
+                          Watch Short ↗
                         </a>
                       )}
                     </div>
@@ -5797,8 +6023,34 @@ export default function Dashboard() {
                   <p className="text-xs text-slate-400 mt-0.5">
                     Playlist: <strong className="text-[#f87171]">Observations by Moth 1</strong> • Verified YouTube Shorts &amp; Inbound Telemetry.
                   </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-2 font-mono text-[11px]">
+                    <span className="px-2 py-0.5 bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#f87171] font-bold">
+                      Subscribers: {ytSubscribers}
+                    </span>
+                    <span className="px-2 py-0.5 bg-slate-900 border border-slate-800 text-slate-300 font-bold">
+                      Shorts Views: {ytTotalViews.toLocaleString()}
+                    </span>
+                    <span className="px-2 py-0.5 bg-slate-900 border border-slate-800 text-slate-300 font-bold">
+                      Shorts Comments: {ytTotalEngagement.toLocaleString()}
+                    </span>
+                    {youtubeState.lastSynced && (
+                      <span className="text-[10px] text-emerald-400 hidden sm:inline">
+                        ● Synced {youtubeState.lastSynced}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={syncYoutubeTelemetry}
+                    disabled={syncingYoutube}
+                    className="inline-flex items-center justify-center gap-1.5 border border-[#ef4444] bg-[#ef4444] text-[#0c0d10] font-black hover:bg-[#ef4444]/90 px-3 py-1.5 font-mono text-xs transition-colors cursor-pointer w-full sm:w-auto shrink-0 disabled:opacity-50"
+                    title="Fetch live metrics from YouTube Data API v3"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${syncingYoutube ? 'animate-spin' : ''}`} />
+                    <span>{syncingYoutube ? 'Syncing...' : 'Sync YouTube API'}</span>
+                  </button>
                   <a
                     href="https://www.youtube.com/playlist?list=PLXNcetLtk5xU"
                     target="_blank"
@@ -5831,88 +6083,149 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto mb-4 max-h-[260px] -mx-1 sm:mx-0">
-                <table className="w-full text-left border-collapse min-w-[500px]">
+              <div className="overflow-x-auto mb-4 max-h-[300px] -mx-1 sm:mx-0">
+                <table className="w-full text-left border-collapse min-w-[700px]">
                   <thead>
                     <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
                       <th className="py-2 pr-3">Dispatch / Short</th>
+                      <th className="py-2 px-2 text-right">Views</th>
+                      <th className="py-2 px-2 text-right">Likes</th>
+                      <th className="py-2 px-2 text-right">Comments</th>
                       <th className="py-2 px-2">Medium</th>
                       <th className="py-2 px-2">Campaign</th>
-                      <th className="py-2 px-2">Inbound Clicks</th>
+                      <th className="py-2 px-2 text-right">Inbound Clicks</th>
                       <th className="py-2 pl-2 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/70 text-xs">
-                    <tr className="hover:bg-slate-900/40">
-                      <td className="py-2.5 pr-3 text-[#e2e8f0]">
-                        <div className="flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.5 border border-[#ef4444]/40 bg-[#ef4444]/10 text-[9px] font-mono text-[#f87171] font-bold shrink-0">
-                            Short #02
-                          </span>
-                          <span className="font-bold truncate">The Meat Grinder Needs More Meat</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-2 font-mono text-[#fda4af]">profile</td>
-                      <td className="py-2.5 px-2 font-mono text-white">issue-02</td>
-                      <td className="py-2.5 px-2 font-mono font-bold text-[#f87171]">
-                        {Number(storyClickStats?.issues?.['the-meat-grinder']?.youtube?.clicks || 0)}
-                      </td>
-                      <td className="py-2.5 pl-2 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <a
-                            href="https://www.youtube.com/playlist?list=PLXNcetLtk5xU"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-mono text-[11px] text-[#f87171] hover:underline"
-                            title="Open in Playlist Observations by Moth 1"
-                          >
-                            Playlist ↗
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => copyDirectUrl('https://observations.moth1.xyz/the-meat-grinder?utm_source=youtube&utm_medium=profile&utm_campaign=issue-02', 'yt-copy-02')}
-                            className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
-                          >
-                            {copiedLink === 'yt-copy-02' ? 'Copied!' : 'Copy Link'}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-900/40">
-                      <td className="py-2.5 pr-3 text-[#e2e8f0]">
-                        <div className="flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.5 border border-[#ef4444]/40 bg-[#ef4444]/10 text-[9px] font-mono text-[#f87171] font-bold shrink-0">
-                            Short #01
-                          </span>
-                          <span className="font-bold truncate">Watering Grass in a Thunderstorm</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-2 font-mono text-[#fda4af]">community</td>
-                      <td className="py-2.5 px-2 font-mono text-white">issue-01</td>
-                      <td className="py-2.5 px-2 font-mono font-bold text-[#f87171]">
-                        {Number(storyClickStats?.issues?.['watering-grass-in-a-thunderstorm']?.youtube?.clicks || 0)}
-                      </td>
-                      <td className="py-2.5 pl-2 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <a
-                            href="https://www.youtube.com/playlist?list=PLXNcetLtk5xU"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-mono text-[11px] text-[#f87171] hover:underline"
-                            title="Open in Playlist Observations by Moth 1"
-                          >
-                            Playlist ↗
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => copyDirectUrl('https://observations.moth1.xyz/watering-grass-in-a-thunderstorm?utm_source=youtube&utm_medium=community&utm_campaign=issue-01', 'yt-copy-01')}
-                            className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
-                          >
-                            {copiedLink === 'yt-copy-01' ? 'Copied!' : 'Copy Link'}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                    {/* Short #02 */}
+                    {(() => {
+                      const yt02 = ytVideoList.find((v) => v.issueId === '02') || {
+                        videoId: 'XiAPHfIshfY',
+                        views: 108,
+                        likes: 0,
+                        comments: 1,
+                      };
+                      return (
+                        <tr className="hover:bg-slate-900/40">
+                          <td className="py-2.5 pr-3 text-[#e2e8f0]">
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-1.5 py-0.5 border border-[#ef4444]/40 bg-[#ef4444]/10 text-[9px] font-mono text-[#f87171] font-bold shrink-0">
+                                Short #02
+                              </span>
+                              <span className="font-bold truncate">The Meat Grinder Needs More Meat</span>
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-2 font-mono font-bold text-white text-right">
+                            {(Number(yt02.views) || 0).toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-slate-400 text-right">
+                            {Number(yt02.likes) || 0}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-slate-400 text-right">
+                            {Number(yt02.comments) || 0}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[#fda4af]">profile</td>
+                          <td className="py-2.5 px-2 font-mono text-white">issue-02</td>
+                          <td className="py-2.5 px-2 font-mono font-bold text-[#f87171] text-right">
+                            {Number(storyClickStats?.issues?.['the-meat-grinder']?.youtube?.clicks || 0)}
+                          </td>
+                          <td className="py-2.5 pl-2 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <a
+                                href="https://www.youtube.com/shorts/XiAPHfIshfY"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-[11px] text-[#ef4444] hover:underline"
+                                title="Watch Short on YouTube"
+                              >
+                                Watch Short ↗
+                              </a>
+                              <a
+                                href="https://www.youtube.com/playlist?list=PLXNcetLtk5xU"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-[11px] text-[#f87171] hover:underline"
+                                title="Open in Playlist Observations by Moth 1"
+                              >
+                                Playlist ↗
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => copyDirectUrl('https://observations.moth1.xyz/the-meat-grinder?utm_source=youtube&utm_medium=profile&utm_campaign=issue-02', 'yt-copy-02')}
+                                className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
+                              >
+                                {copiedLink === 'yt-copy-02' ? 'Copied!' : 'Copy Link'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })()}
+                    {/* Short #01 */}
+                    {(() => {
+                      const yt01 = ytVideoList.find((v) => v.issueId === '01') || {
+                        videoId: 'tp6FqVQUO9w',
+                        views: 19,
+                        likes: 0,
+                        comments: 1,
+                      };
+                      return (
+                        <tr className="hover:bg-slate-900/40">
+                          <td className="py-2.5 pr-3 text-[#e2e8f0]">
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-1.5 py-0.5 border border-[#ef4444]/40 bg-[#ef4444]/10 text-[9px] font-mono text-[#f87171] font-bold shrink-0">
+                                Short #01
+                              </span>
+                              <span className="font-bold truncate">Watering Grass in a Thunderstorm</span>
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-2 font-mono font-bold text-white text-right">
+                            {(Number(yt01.views) || 0).toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-slate-400 text-right">
+                            {Number(yt01.likes) || 0}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-slate-400 text-right">
+                            {Number(yt01.comments) || 0}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[#fda4af]">community</td>
+                          <td className="py-2.5 px-2 font-mono text-white">issue-01</td>
+                          <td className="py-2.5 px-2 font-mono font-bold text-[#f87171] text-right">
+                            {Number(storyClickStats?.issues?.['watering-grass-in-a-thunderstorm']?.youtube?.clicks || 0)}
+                          </td>
+                          <td className="py-2.5 pl-2 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <a
+                                href="https://www.youtube.com/shorts/tp6FqVQUO9w"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-[11px] text-[#ef4444] hover:underline"
+                                title="Watch Short on YouTube"
+                              >
+                                Watch Short ↗
+                              </a>
+                              <a
+                                href="https://www.youtube.com/playlist?list=PLXNcetLtk5xU"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-[11px] text-[#f87171] hover:underline"
+                                title="Open in Playlist Observations by Moth 1"
+                              >
+                                Playlist ↗
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => copyDirectUrl('https://observations.moth1.xyz/watering-grass-in-a-thunderstorm?utm_source=youtube&utm_medium=community&utm_campaign=issue-01', 'yt-copy-01')}
+                                className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
+                              >
+                                {copiedLink === 'yt-copy-01' ? 'Copied!' : 'Copy Link'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })()}
                   </tbody>
                 </table>
               </div>

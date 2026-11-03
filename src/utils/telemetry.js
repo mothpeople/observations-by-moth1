@@ -109,25 +109,30 @@ const DEFAULT_CHANNEL_LEDGER = {
     playlistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
     playlistTitle: 'Observations by Moth 1',
     platform: 'YouTube Shorts',
-    subscribers: 0,
+    subscribers: 6,
+    totalViews: 1816,
     videos: [
       {
         id: 'yt-shorts-02',
+        videoId: 'XiAPHfIshfY',
         issueId: '02',
-        title: 'The Meat Grinder Needs More Meat (Short)',
-        views: 0,
+        title: 'Issue 02: The Meat Grinder Needs More Meat',
+        views: 108,
         likes: 0,
-        comments: 0,
+        comments: 1,
+        url: 'https://www.youtube.com/shorts/XiAPHfIshfY',
         trackingUrl: 'https://observations.moth1.xyz/the-meat-grinder?utm_source=youtube&utm_medium=profile&utm_campaign=issue-02',
         playlistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
       },
       {
         id: 'yt-shorts-01',
+        videoId: 'tp6FqVQUO9w',
         issueId: '01',
-        title: 'Watering Grass in a Thunderstorm (Short)',
-        views: 0,
+        title: 'Issue 01: Watering Grass in a Thunderstorm',
+        views: 19,
         likes: 0,
-        comments: 0,
+        comments: 1,
+        url: 'https://www.youtube.com/shorts/tp6FqVQUO9w',
         trackingUrl: 'https://observations.moth1.xyz/watering-grass-in-a-thunderstorm?utm_source=youtube&utm_medium=community&utm_campaign=issue-01',
         playlistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
       },
@@ -336,7 +341,22 @@ export function loadChannelLedger() {
       youtube: {
         ...DEFAULT_CHANNEL_LEDGER.youtube,
         ...(parsed.youtube || {}),
-        videos: parsed.youtube?.videos || DEFAULT_CHANNEL_LEDGER.youtube.videos,
+        handle: 'sivaraj.pragasm',
+        channelUrl: 'https://www.youtube.com/@sivaraj.pragasm',
+        playlistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
+        subscribers: Math.max(Number(DEFAULT_CHANNEL_LEDGER.youtube.subscribers) || 0, Number(parsed.youtube?.subscribers) || 0),
+        totalViews: Math.max(Number(DEFAULT_CHANNEL_LEDGER.youtube.totalViews) || 0, Number(parsed.youtube?.totalViews) || 0),
+        videos: DEFAULT_CHANNEL_LEDGER.youtube.videos.map((defV) => {
+          const found = (parsed.youtube?.videos || []).find((v) => v.videoId === defV.videoId || v.issueId === defV.issueId);
+          if (!found) return defV;
+          return {
+            ...defV,
+            ...found,
+            views: Math.max(Number(defV.views) || 0, Number(found.views) || 0),
+            likes: Math.max(Number(defV.likes) || 0, Number(found.likes) || 0),
+            comments: Math.max(Number(defV.comments) || 0, Number(found.comments) || 0),
+          };
+        }),
       },
       storyFunnel: {
         ...DEFAULT_CHANNEL_LEDGER.storyFunnel,
