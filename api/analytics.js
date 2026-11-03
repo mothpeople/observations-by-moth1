@@ -14,7 +14,7 @@ const ACTORS = {
   instagram: 'apify~instagram-scraper',
   threads: 'automation-lab~threads-scraper',
   facebook: 'apify~facebook-posts-scraper',
-  x: 'apify~twitter-scraper',
+  x: 'apidojo~tweet-scraper',
 };
 
 export function isObservationsContent(text = '', hashtags = [], filterTag = '#observations') {
@@ -1144,7 +1144,7 @@ export default async function handler(req, res) {
       fetchPlatformTelemetry('instagram', ACTORS.instagram, ['apify~instagram-profile-scraper'], apifyToken),
       fetchPlatformTelemetry('threads', ACTORS.threads, [], apifyToken),
       fetchPlatformTelemetry('facebook', ACTORS.facebook, ['apify~facebook-pages-scraper'], apifyToken),
-      fetchPlatformTelemetry('x', ACTORS.x, ['apify~tweet-scraper', 'apidojo~tweet-scraper', 'apify~twitter-post-scraper'], apifyToken),
+      fetchPlatformTelemetry('x', ACTORS.x, ['apidojo~twitter-user-scraper', 'apify~tweet-scraper', 'quacker~twitter-scraper'], apifyToken),
       fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId),
     ]);
 
@@ -1310,7 +1310,7 @@ export default async function handler(req, res) {
         reels: facebookReels,
       },
       x: {
-        actorId: 'apify/twitter-scraper',
+        actorId: 'apidojo/tweet-scraper',
         connected: apifyX.connected,
         runInfo: apifyX.runInfo,
         followers: xFollowers,

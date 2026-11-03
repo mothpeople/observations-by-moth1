@@ -207,8 +207,13 @@ const ACTORS = {
     accent: '#86efac',
   },
   x: {
-    id: 'apify~twitter-scraper',
-    label: 'apify/twitter-scraper',
+    id: 'apidojo~tweet-scraper',
+    label: 'apidojo/tweet-scraper',
+    accent: '#e2e8f0',
+  },
+  xProfile: {
+    id: 'apidojo~twitter-user-scraper',
+    label: 'apidojo/twitter-user-scraper',
     accent: '#e2e8f0',
   },
 };
@@ -752,41 +757,25 @@ function isFacebookVideoReel(rawItem, item) {
   return Boolean(hasVideoUrl || playCount > 0);
 }
 
-function sortFacebookReelsForDisplay(items) {
+function getReelDisplayTitle(item, fallbackIdx = 0) {
+  if (!item) return `Reel #${fallbackIdx + 1}`;
+  const issueId = matchItemToIssueId(item);
+  if (issueId === '02') return 'Issue #02: The Meat Grinder';
+  if (issueId === '01') return 'Issue #01: Watering Grass';
+  return item.title || item.text || item.caption || `Reel #${fallbackIdx + 1}`;
+}
+
+function sortReelsForDisplay(items) {
+  if (!Array.isArray(items)) return [];
   return [...items].sort((a, b) => {
-    const textA = `${a.text || ''} ${a.caption || ''} ${a.url || ''}`.toLowerCase();
-    const textB = `${b.text || ''} ${b.caption || ''} ${b.url || ''}`.toLowerCase();
+    const issueA = matchItemToIssueId(a);
+    const issueB = matchItemToIssueId(b);
 
-    // Row 1: Issue 02 ("The Meat Grinder Needs More Meat...") -> Score 2
-    // Row 2: Issue 01 ("Observations by Moth1 is a new story...") -> Score 1
-    const getScore = (text) => {
-      if (
-        text.includes('meat grinder') ||
-        text.includes('issue-02') ||
-        text.includes('issue 02') ||
-        text.includes('issue #02') ||
-        text.includes('billionaires panic')
-      ) {
-        return 2;
-      }
-      if (
-        text.includes('observations by moth1 is a new story') ||
-        text.includes('watering grass') ||
-        text.includes('thunderstorm') ||
-        text.includes('issue-01') ||
-        text.includes('issue 01') ||
-        text.includes('issue #01')
-      ) {
-        return 1;
-      }
-      return 0;
-    };
-
-    const scoreA = getScore(textA);
-    const scoreB = getScore(textB);
+    const scoreA = issueA === '02' ? 2 : issueA === '01' ? 1 : 0;
+    const scoreB = issueB === '02' ? 2 : issueB === '01' ? 1 : 0;
 
     if (scoreA !== scoreB) {
-      return scoreB - scoreA; // Issue 02 (score 2) appears in Row 1, Issue 01 (score 1) in Row 2
+      return scoreB - scoreA; // Row 1 = Issue 02 (The Meat Grinder), Row 2 = Issue 01 (Watering Grass)
     }
 
     const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
@@ -794,6 +783,8 @@ function sortFacebookReelsForDisplay(items) {
     return timeB - timeA;
   });
 }
+
+const sortFacebookReelsForDisplay = sortReelsForDisplay;
 
 async function fetchDirectActorDataset(actorId, token) {
   if (!token) return { connected: false, runInfo: null, items: [] };
@@ -1873,11 +1864,23 @@ export default function Dashboard() {
     if (actorKey === 'x') {
       const cleanXHandle = (targets.xHandle || 'Moth1NFTs').replace(/^@/, '').trim();
       return {
+        startUrls: [
+          `https://x.com/${cleanXHandle}`,
+          `https://twitter.com/${cleanXHandle}`,
+        ],
         twitterHandles: [cleanXHandle],
+        searchTerms: [`from:${cleanXHandle}`],
         maxItems: 30,
-        proxyConfiguration: {
-          useApifyProxy: true,
-        },
+        sort: 'Latest',
+      };
+    }
+
+    if (actorKey === 'xProfile') {
+      const cleanXHandle = (targets.xHandle || 'Moth1NFTs').replace(/^@/, '').trim();
+      return {
+        twitterHandles: [cleanXHandle],
+        startUrls: [`https://x.com/${cleanXHandle}`],
+        maxItems: 1,
       };
     }
 
@@ -2095,11 +2098,13 @@ export default function Dashboard() {
   // Filtered Social Items (#observations filter)
   const activeFilterTag = targets.filterTag || '#observations';
 
-  const visibleInstagramItems = filterOnlyObservations
-    ? instagramState.items.filter((item) =>
-        matchesObservationsFilter(item, activeFilterTag)
-      )
-    : instagramState.items;
+  const visibleInstagramItems = sortReelsForDisplay(
+    filterOnlyObservations
+      ? instagramState.items.filter((item) =>
+          matchesObservationsFilter(item, activeFilterTag)
+        )
+      : instagramState.items
+  );
 
   const visibleThreadsItems = filterOnlyObservations
     ? threadsState.items.filter((item) =>
@@ -4071,7 +4076,7 @@ export default function Dashboard() {
                             <div key={item.id} className="space-y-1">
                               <div className="flex items-center justify-between text-[11px]">
                                 <span className="truncate max-w-[220px] text-slate-300">
-                                  {idx === 0 ? 'Issue #02: The Meat Grinder' : 'Issue #01: Watering Grass'}
+                                  {getReelDisplayTitle(item, idx)}
                                 </span>
                                 <span className="font-bold text-[#fda4af]">
                                   {item.views.toLocaleString()} views
@@ -4320,7 +4325,7 @@ export default function Dashboard() {
                         <div key={item.id} className="space-y-1">
                           <div className="flex items-center justify-between text-[11px]">
                             <span className="truncate max-w-[220px] text-slate-300">
-                              {idx === 0 ? 'Issue #02: The Meat Grinder' : 'Issue #01: Watering Grass'}
+                              {getReelDisplayTitle(item, idx)}
                             </span>
                             <span className="font-bold text-[#86efac]">
                               {item.views.toLocaleString()} views
@@ -4369,6 +4374,20 @@ export default function Dashboard() {
                         : 'Run X Scraper'}
                     </span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => triggerActorRun('xProfile')}
+                    disabled={runningActor !== null}
+                    className="inline-flex items-center justify-center gap-1.5 border border-slate-700 bg-slate-900/80 hover:border-white/60 hover:text-white px-3.5 py-1.5 font-mono text-xs text-slate-300 font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
+                    title="Scrapes X user profile to capture followers count"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>
+                      {runningActor === 'xProfile'
+                        ? 'Scraping Profile...'
+                        : 'Scrape Followers'}
+                    </span>
+                  </button>
                   <a
                     href={`https://x.com/${targets.xHandle || 'Moth1NFTs'}`}
                     target="_blank"
@@ -4380,6 +4399,22 @@ export default function Dashboard() {
                   </a>
                 </div>
               </div>
+
+              {/* Inline Run Status & Feedback */}
+              {(runningActor === 'x' || runningActor === 'xProfile' || (statusMessage && (statusMessage.toLowerCase().includes('x') || statusMessage.toLowerCase().includes('apidojo') || statusMessage.toLowerCase().includes('apify')))) && (
+                <div className="mb-3 px-3 py-2 bg-[#0b0d10] border border-white/30 flex items-center justify-between font-mono text-xs text-white">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                    <span>
+                      {runningActor === 'x'
+                        ? `Scraping tweets from @${targets.xHandle || 'Moth1NFTs'} on Apify...`
+                        : runningActor === 'xProfile'
+                          ? `Scraping @${targets.xHandle || 'Moth1NFTs'} profile on Apify...`
+                          : statusMessage}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {visibleXItems.length === 0 ? (
                 <div className="py-5 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 mb-4 space-y-2">
