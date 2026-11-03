@@ -171,6 +171,7 @@ const DEFAULT_TARGETS = {
   instagramHandle: 'moth1.siv',
   threadsHandle: 'moth1.siv',
   facebookUrl: 'https://www.facebook.com/observationsbymoth1',
+  xHandle: 'Moth1NFTs',
   filterTag: '#observations',
 };
 
@@ -204,6 +205,11 @@ const ACTORS = {
     id: 'apify~facebook-pages-scraper',
     label: 'apify/facebook-pages-scraper',
     accent: '#86efac',
+  },
+  x: {
+    id: 'apify~twitter-scraper',
+    label: 'apify/twitter-scraper',
+    accent: '#e2e8f0',
   },
 };
 
@@ -604,6 +610,66 @@ function normalizeFacebookItem(item, idx = 0) {
   };
 }
 
+function normalizeXItem(item, idx = 0) {
+  const text = String(
+    item.full_text ||
+    item.text ||
+    item.tweetText ||
+    item.content ||
+    item.note ||
+    ''
+  ).trim();
+
+  const id = String(item.id_str || item.id || `x-${idx}`);
+  const url =
+    item.url ||
+    item.tweetUrl ||
+    (item.id_str ? `https://x.com/Moth1NFTs/status/${item.id_str}` : 'https://x.com/Moth1NFTs');
+
+  const views = Number(
+    item.view_count ??
+    item.viewsCount ??
+    item.views ??
+    item.impressions ??
+    0
+  ) || 0;
+
+  const likes = Number(
+    item.favorite_count ??
+    item.like_count ??
+    item.likes ??
+    item.likesCount ??
+    0
+  ) || 0;
+
+  const retweets = Number(
+    item.retweet_count ??
+    item.retweets ??
+    item.reposts ??
+    0
+  ) || 0;
+
+  const replies = Number(
+    item.reply_count ??
+    item.replies ??
+    item.comments ??
+    0
+  ) || 0;
+
+  const publishedAt = item.created_at || item.publishedAt || item.date || new Date().toISOString();
+
+  return {
+    id,
+    text,
+    url,
+    views,
+    likes,
+    retweets,
+    replies,
+    publishedAt,
+  };
+}
+
 function isFacebookVideoReel(rawItem, item) {
   if (!rawItem && !item) return false;
   const target = item || rawItem;
@@ -794,6 +860,7 @@ async function fetchDirectActorDataset(actorId, token) {
 
     // 3. Fallback: If no items found via actor endpoint, query account-wide actor-runs & actor-tasks (captures task runs or alternative actor runs configured on Apify)
     const isFb = actorId.includes('facebook');
+    const isX = actorId.includes('twitter') || actorId.includes('tweet') || actorId.includes('x');
     try {
       const allRunsRes = await fetch(
         `https://api.apify.com/v2/actor-runs?desc=true&limit=40&token=${encodeURIComponent(token)}`
@@ -805,7 +872,14 @@ async function fetchDirectActorDataset(actorId, token) {
           if (r.status !== 'SUCCEEDED' || !r.defaultDatasetId) return false;
           const runAct = String(r.actId || r.options?.actId || '').toLowerCase();
           if (isFb) {
-            return runAct.includes('facebook') || runAct.includes('posts-scraper') || runAct.includes('reels');
+            if (actorId.includes('page')) {
+              return runAct.includes('pages-scraper') || runAct.includes('page');
+            }
+            return (runAct.includes('posts-scraper') || runAct.includes('reels')) ||
+              (runAct.includes('facebook') && !runAct.includes('pages-scraper'));
+          }
+          if (isX) {
+            return runAct.includes('twitter') || runAct.includes('tweet') || runAct.includes('x.com');
           }
           return runAct.includes(actorId.replace('~', '/').toLowerCase()) || runAct.includes(actorId.toLowerCase());
         });
@@ -844,6 +918,9 @@ async function fetchDirectActorDataset(actorId, token) {
           const tAct = String(t.actId || '').toLowerCase();
           if (isFb) {
             return tName.includes('facebook') || tName.includes('reels') || tAct.includes('facebook');
+          }
+          if (isX) {
+            return tName.includes('twitter') || tName.includes('tweet') || tAct.includes('twitter');
           }
           return tName.includes(actorId.toLowerCase()) || tAct.includes(actorId.toLowerCase());
         });
@@ -1068,7 +1145,14 @@ export default function Dashboard() {
     if (typeof window === 'undefined') return DEFAULT_TARGETS;
     try {
       const raw = window.localStorage.getItem(APIFY_TARGETS_STORAGE_KEY);
-      return raw ? { ...DEFAULT_TARGETS, ...JSON.parse(raw) } : DEFAULT_TARGETS;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (!parsed.xHandle || parsed.xHandle === 'moth1_siv') {
+          parsed.xHandle = 'Moth1NFTs';
+        }
+        return { ...DEFAULT_TARGETS, ...parsed };
+      }
+      return DEFAULT_TARGETS;
     } catch {
       return DEFAULT_TARGETS;
     }
@@ -1099,6 +1183,12 @@ export default function Dashboard() {
     items: [],
     followers: 0,
   });
+  const [xState, setXState] = useState({
+    connected: false,
+    runInfo: null,
+    items: [],
+    followers: 0,
+  });
 
   const syncAllTelemetry = useCallback(
     async (tokenOverride, vercelTokenOverride) => {
@@ -1119,7 +1209,7 @@ export default function Dashboard() {
         if (vercelProjectId.trim()) headers['X-Vercel-Project-Id'] = vercelProjectId.trim();
         if (vercelTeamId.trim()) headers['X-Vercel-Team-Id'] = vercelTeamId.trim();
 
-        // Fetch server /api/analytics, /api/track-story-click + direct browser Apify datasets for all 4 actors in parallel
+        // Fetch server /api/analytics, /api/track-story-click + direct browser Apify datasets for all actors in parallel
         const [
           serverRes,
           storyClickRes,
@@ -1127,6 +1217,7 @@ export default function Dashboard() {
           directInstagram,
           directThreads,
           directFacebook,
+          directX,
         ] = await Promise.all([
           fetch('/api/analytics', { headers }).catch(() => null),
           fetch('/api/track-story-click').catch(() => null),
@@ -1141,6 +1232,9 @@ export default function Dashboard() {
             : Promise.resolve(null),
           activeToken
             ? fetchDirectActorDataset(ACTORS.facebook.id, activeToken)
+            : Promise.resolve(null),
+          activeToken
+            ? fetchDirectActorDataset(ACTORS.x.id, activeToken)
             : Promise.resolve(null),
         ]);
 
@@ -1266,24 +1360,58 @@ export default function Dashboard() {
         });
 
         // 4. Facebook Items (apify/facebook-posts-scraper + apify/facebook-pages-scraper)
-        const rawFbItems =
-          directFacebook?.items?.length > 0
-            ? directFacebook.items.map((item, i) =>
-                normalizeFacebookItem(item, i)
-              )
-            : serverJson?.facebook?.items || [];
-
-        // Apply strict video-only filter: exclude photos, status updates, cover/profile uploads, zero-metric artifacts
-        const filteredFbItems = rawFbItems.filter((item, i) =>
+        const directFbItems = (directFacebook?.items || []).map((item, i) =>
+          normalizeFacebookItem(item, i)
+        );
+        const directValidReels = directFbItems.filter((item, i) =>
           isFacebookVideoReel(directFacebook?.items?.[i] || item, item)
         );
 
-        // Sort: Row 1 = Issue 02 ("The Meat Grinder..."), Row 2 = Issue 01 ("Observations by Moth1 is a new story...")
-        const fbItems = sortFacebookReelsForDisplay(filteredFbItems);
+        const serverFbItems = (serverJson?.facebook?.items || []).filter((item) =>
+          isFacebookVideoReel(item, item)
+        );
+
+        const serverFbReels = (serverJson?.facebook?.reels || []).map((r, i) => ({
+          id: r.id || `fb-reel-${r.issueId || i}`,
+          text: r.text || r.title || (r.issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+          caption: r.caption || r.title || '',
+          url: r.url || 'https://www.facebook.com/observationsbymoth1',
+          views: Number(r.views) || 0,
+          likes: Number(r.likes) || 0,
+          comments: Number(r.comments) || 0,
+          shares: Number(r.shares) || 0,
+          isReel: true,
+          publishedAt: r.publishedAt || new Date().toISOString(),
+        })).filter((r) => r.views > 0 || r.isReel);
+
+        let candidateFbItems = [];
+        if (directValidReels.length > 0) {
+          candidateFbItems = directValidReels;
+        } else if (serverFbItems.length > 0) {
+          candidateFbItems = serverFbItems;
+        } else if (serverFbReels.length > 0) {
+          candidateFbItems = serverFbReels;
+        }
+
+        const fbItems = sortFacebookReelsForDisplay(candidateFbItems);
 
         const fbScrapedFollowers = Math.max(
           serverJson?.facebook?.followers || 0,
-          ...rawFbItems.map((i) => i.followers || 0)
+          ...directFbItems.map((i) => i.followers || 0),
+          ...(directFacebook?.items || []).map((i) =>
+            Number(
+              i.pageFollowersCount ??
+              i.pageFollowers ??
+              i.followersCount ??
+              i.pageLikesCount ??
+              i.pageLikes ??
+              i.likesCount ??
+              i.likes ??
+              i.pageInfo?.followersCount ??
+              i.pageInfo?.likesCount ??
+              0
+            ) || 0
+          )
         );
 
         setFacebookState((prev) => {
@@ -1292,7 +1420,7 @@ export default function Dashboard() {
               ? fbItems
               : prev.items?.length > 0
                 ? prev.items
-                : [];
+                : serverFbReels;
           const effectiveFollowers =
             fbScrapedFollowers > 0
               ? fbScrapedFollowers
@@ -1311,7 +1439,53 @@ export default function Dashboard() {
           };
         });
 
-        // 5. Vercel Web Analytics Cloud Metrics
+        // 5. X (Twitter) Items (apify/twitter-scraper + apify/tweet-scraper)
+        const rawXItems =
+          directX?.items?.length > 0
+            ? directX.items.map((item, i) => normalizeXItem(item, i))
+            : serverJson?.x?.items || [];
+
+        const xScrapedFollowers = Math.max(
+          serverJson?.x?.followers || 0,
+          ...rawXItems.map((i) => i.followers || 0),
+          ...(directX?.items || []).map((i) =>
+            Number(
+              i.followers_count ??
+              i.followersCount ??
+              i.followers ??
+              i.user?.followers_count ??
+              i.user?.followersCount ??
+              0
+            ) || 0
+          )
+        );
+
+        setXState((prev) => {
+          const effectiveItems =
+            rawXItems.length > 0
+              ? rawXItems
+              : prev.items?.length > 0
+                ? prev.items
+                : [];
+          const effectiveFollowers =
+            xScrapedFollowers > 0
+              ? xScrapedFollowers
+              : prev.followers > 0
+                ? prev.followers
+                : ledger.x?.followers || 0;
+          return {
+            connected:
+              Boolean(directX?.connected) ||
+              Boolean(serverJson?.x?.connected) ||
+              prev.connected,
+            runInfo:
+              directX?.runInfo || serverJson?.x?.runInfo || prev.runInfo,
+            items: effectiveItems,
+            followers: effectiveFollowers,
+          };
+        });
+
+        // 6. Vercel Web Analytics Cloud Metrics
         if (serverJson?.vercel) {
           setVercelAnalytics(serverJson.vercel);
         }
@@ -1328,6 +1502,10 @@ export default function Dashboard() {
           }
           if (fbScrapedFollowers > 0 && prev.facebook?.followers !== fbScrapedFollowers) {
             next.facebook = { ...next.facebook, followers: fbScrapedFollowers };
+            changed = true;
+          }
+          if (xScrapedFollowers > 0 && prev.x?.followers !== xScrapedFollowers) {
+            next.x = { ...next.x, followers: xScrapedFollowers };
             changed = true;
           }
           if (subScraped > 0 && prev.substackSubscribers !== subScraped) {
@@ -1692,6 +1870,17 @@ export default function Dashboard() {
       };
     }
 
+    if (actorKey === 'x') {
+      const cleanXHandle = (targets.xHandle || 'Moth1NFTs').replace(/^@/, '').trim();
+      return {
+        twitterHandles: [cleanXHandle],
+        maxItems: 30,
+        proxyConfiguration: {
+          useApifyProxy: true,
+        },
+      };
+    }
+
     // threads: automation-lab/threads-scraper
     return {
       mode: 'profile',
@@ -1871,6 +2060,8 @@ export default function Dashboard() {
       setInstagramState((prev) => ({ ...prev, followers: num }));
     } else if (platform === 'facebook') {
       setFacebookState((prev) => ({ ...prev, followers: num }));
+    } else if (platform === 'x') {
+      setXState((prev) => ({ ...prev, followers: num }));
     }
   };
 
@@ -1884,7 +2075,7 @@ export default function Dashboard() {
     setEditingPlatform(null);
   };
 
-  const copyUtmLink = (slug, issueId, platform = 'instagram') => {
+  const copyUtmLink = (slug, issueId, platform = 'instagram', medium = 'story') => {
     const origin =
       typeof window !== 'undefined' &&
       window.location.hostname !== 'localhost' &&
@@ -1892,11 +2083,11 @@ export default function Dashboard() {
         ? window.location.origin
         : 'https://observations.moth1.xyz';
     const cleanIssue = String(issueId).padStart(2, '0');
-    const link = `${origin}/${slug}?utm_source=${platform}&utm_medium=story&utm_campaign=issue-${cleanIssue}`;
+    const link = `${origin}/${slug}?utm_source=${platform}&utm_medium=${medium}&utm_campaign=issue-${cleanIssue}`;
 
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(link);
-      setCopiedLink(`${issueId}-${platform}`);
+      setCopiedLink(`${issueId}-${platform}-${medium}`);
       setTimeout(() => setCopiedLink(''), 2200);
     }
   };
@@ -1988,6 +2179,12 @@ export default function Dashboard() {
       return h.includes('facebook') || h.includes('fb.me');
     })
     .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
+  const vercelXReferrals = vercelReferrersList
+    .filter((r) => {
+      const h = (r.referrerHostname || '').toLowerCase();
+      return h.includes('twitter') || h.includes('t.co') || h.includes('x.com');
+    })
+    .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
 
   // Instagram Story Aggregates (Bypassing Vercel Plus Paywall)
   const igStoryEntrances = Math.max(
@@ -2055,10 +2252,43 @@ export default function Dashboard() {
       ? ((fbStorySubscribers / fbStoryEntrances) * 100).toFixed(1)
       : '0.0';
 
+  // X (Twitter) Campaign Aggregates (Bypassing Vercel Plus Paywall)
+  const xStoryEntrances = Math.max(
+    storyDispatches.reduce((sum, d) => {
+      const serverClicks = Number(storyClickStats?.issues?.[d.slug]?.x?.clicks || 0);
+      const ledgerClicks = Number(d.x?.entrances ?? d.x?.clicks ?? 0);
+      return sum + Math.max(serverClicks, ledgerClicks);
+    }, 0) || Number(serverStoryTotal.x?.clicks || 0),
+    vercelXReferrals
+  );
+
+  const xStoryScroll75 =
+    storyDispatches.reduce((sum, d) => {
+      const serverScroll = Number(storyClickStats?.issues?.[d.slug]?.x?.scroll75 || 0);
+      const ledgerScroll = Number(d.x?.scroll75 || 0);
+      return sum + Math.max(serverScroll, ledgerScroll);
+    }, 0) || Number(serverStoryTotal.x?.scroll75 || 0);
+
+  const xStorySubscribers =
+    storyDispatches.reduce((sum, d) => {
+      const serverSubs = Number(storyClickStats?.issues?.[d.slug]?.x?.subscribers || 0);
+      const ledgerSubs = Number(d.x?.subscribers || 0);
+      return sum + Math.max(serverSubs, ledgerSubs);
+    }, 0) || Number(serverStoryTotal.x?.subscribers || 0);
+
+  const xStoryRetentionPct =
+    xStoryEntrances > 0
+      ? Math.min(100, (xStoryScroll75 / xStoryEntrances) * 100).toFixed(1)
+      : (xStoryScroll75 > 0 ? '100.0' : '0.0');
+  const xStorySubConvPct =
+    xStoryEntrances > 0
+      ? ((xStorySubscribers / xStoryEntrances) * 100).toFixed(1)
+      : '0.0';
+
   // Combined Totals
-  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances;
-  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75;
-  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers;
+  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances + xStoryEntrances;
+  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75 + xStoryScroll75;
+  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers + xStorySubscribers;
   const totalStoryRetentionPct =
     totalStoryEntrances > 0
       ? Math.min(100, (totalStoryScroll75 / totalStoryEntrances) * 100).toFixed(1)
@@ -2148,6 +2378,16 @@ export default function Dashboard() {
   );
   const totalFbViews = Math.max(fbScrapedViews, fbManualViews);
   const totalFbEngagement = Math.max(fbScrapedInteractions, fbManualEngagement);
+
+  // X (Twitter) (apify/twitter-scraper + campaign telemetry)
+  const visibleXItems = xState.items || [];
+  const xScrapedViews = visibleXItems.reduce((sum, i) => sum + (i.views || 0), 0);
+  const xScrapedEngagement = visibleXItems.reduce(
+    (sum, i) => sum + (i.likes || 0) + (i.retweets || 0) + (i.replies || 0),
+    0
+  );
+  const totalXViews = Math.max(xScrapedViews, xStoryEntrances);
+  const totalXEngagement = xScrapedEngagement;
 
   const handleOwnerUnlock = (e) => {
     e.preventDefault();
@@ -2505,6 +2745,24 @@ export default function Dashboard() {
                     className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-[#86efac]"
                   />
                 </div>
+
+                <div className="space-y-1">
+                  <label className="block font-mono text-[11px] text-[#e2e8f0] font-bold uppercase">
+                    X (Twitter) Handle
+                  </label>
+                  <input
+                    type="text"
+                    value={targets.xHandle || ''}
+                    onChange={(e) =>
+                      setTargets((prev) => ({
+                        ...prev,
+                        xHandle: e.target.value,
+                      }))
+                    }
+                    placeholder="Moth1NFTs"
+                    className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-white"
+                  />
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
@@ -2533,6 +2791,12 @@ export default function Dashboard() {
                       {facebookState.runInfo?.status || 'IDLE'}
                     </strong>
                   </span>
+                  <span>
+                    X:{' '}
+                    <strong className="text-white">
+                      {xState.runInfo?.status || 'IDLE'}
+                    </strong>
+                  </span>
                 </div>
 
                 <button
@@ -2546,8 +2810,8 @@ export default function Dashboard() {
           </CyberPanel>
         )}
 
-        {/* 6-Channel Executive Summary KPI Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {/* 7-Channel Executive Summary KPI Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7 gap-4">
           {/* KPI 1: Website (Vercel Analytics) */}
           <CyberPanel
             label="Website • Vercel"
@@ -2914,7 +3178,88 @@ export default function Dashboard() {
             </div>
           </CyberPanel>
 
-          {/* KPI 6: Story Conversion Funnel (100% Automated Telemetry) */}
+          {/* KPI 6: X (Twitter) */}
+          <CyberPanel
+            label={`X • @${targets.xHandle || 'Moth1NFTs'}`}
+            accent="#e2e8f0"
+            className="p-4 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[11px] text-slate-400 truncate">
+                  @{targets.xHandle || 'Moth1NFTs'}
+                </span>
+                <span className="font-mono font-black text-sm text-white shrink-0">𝕏</span>
+              </div>
+              <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
+                {totalXViews.toLocaleString()}
+              </div>
+              <div className="text-xs text-slate-400 mt-0.5">
+                Views • {totalXEngagement.toLocaleString()} Engagements (
+                {visibleXItems.length} Posts)
+              </div>
+            </div>
+
+            <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
+              <span className="text-slate-400">Followers:</span>
+              {editingPlatform === 'x' ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="0"
+                    autoFocus
+                    value={tempEditVal}
+                    onChange={(e) => setTempEditVal(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveEditFollower('x');
+                      if (e.key === 'Escape') setEditingPlatform(null);
+                    }}
+                    className="w-16 bg-[#0b0d10] border border-[#e2e8f0] px-1.5 py-0.5 text-[11px] font-mono text-[#e2e8f0] font-bold text-right outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSaveEditFollower('x')}
+                    className="p-1 hover:bg-white/20 text-[#e2e8f0] rounded-none cursor-pointer"
+                    title="Save"
+                  >
+                    <Check className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPlatform(null)}
+                    className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-none cursor-pointer"
+                    title="Cancel"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[12px] font-bold text-[#e2e8f0] tabular-nums">
+                    {(xState.followers || ledger.x?.followers || 0).toLocaleString()}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-white/40 bg-white/10 text-white rounded-none">
+                    {xState.followers > 0 ? 'Scraped' : 'Live'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleStartEditFollower(
+                        'x',
+                        xState.followers || ledger.x?.followers || 0
+                      )
+                    }
+                    className="p-0.5 text-slate-500 hover:text-[#e2e8f0] transition-colors cursor-pointer"
+                    title="Edit Baseline Followers"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </CyberPanel>
+
+          {/* KPI 7: Story Conversion Funnel (100% Automated Telemetry) */}
           <CyberPanel
             label="Story Funnel • Automated"
             accent="#f472b6"
@@ -2955,6 +3300,15 @@ export default function Dashboard() {
                 </span>
                 <span className="text-slate-300">
                   <strong className="text-[#60a5fa]">{fbStoryEntrances}</strong> visits • <strong className="text-[#fbbf24]">{fbStoryRetentionPct}%</strong> read
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[#e2e8f0] font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#e2e8f0]" />
+                  𝕏 Campaigns:
+                </span>
+                <span className="text-slate-300">
+                  <strong className="text-[#e2e8f0]">{xStoryEntrances}</strong> visits • <strong className="text-[#fbbf24]">{xStoryRetentionPct}%</strong> read
                 </span>
               </div>
             </div>
@@ -3087,9 +3441,9 @@ export default function Dashboard() {
             })}
           </div>
 
-          {/* Vercel Cloud Intelligence Grids: Referrers, Countries, Devices & OS */}
+          {/* Vercel Cloud Intelligence Grids: Referrers, Countries, Devices, OS & Inbound Campaigns */}
           {vercelAnalytics?.connected && (
-            <div className="mt-5 pt-5 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 font-mono">
+            <div className="mt-5 pt-5 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 font-mono">
               {/* 1. Referrers with Platform Logos & Progress Bars */}
               <div className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-2.5">
                 <div className="text-[11px] text-[#86efac] font-bold uppercase flex items-center justify-between pb-1.5 border-b border-slate-800/80">
@@ -3262,6 +3616,71 @@ export default function Dashboard() {
                 ) : (
                   <div className="text-xs text-slate-500 italic py-2">No OS data yet</div>
                 )}
+              </div>
+
+              {/* 5. Inbound Campaign Channels (UTM Sources & Mediums) */}
+              <div className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-2.5">
+                <div className="text-[11px] text-[#fbbf24] font-bold uppercase flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                  <span className="flex items-center gap-1.5">
+                    <Filter className="w-3.5 h-3.5" />
+                    <span>Inbound UTMs</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400">Clicks</span>
+                </div>
+                {(() => {
+                  const campaignChannels = [
+                    {
+                      name: '𝕏 (Twitter)',
+                      tag: 'utm_source=x',
+                      clicks: xStoryEntrances,
+                      color: '#ffffff',
+                    },
+                    {
+                      name: 'Instagram',
+                      tag: 'utm_source=instagram',
+                      clicks: igStoryEntrances,
+                      color: '#fda4af',
+                    },
+                    {
+                      name: 'Facebook',
+                      tag: 'utm_source=facebook',
+                      clicks: fbStoryEntrances,
+                      color: '#60a5fa',
+                    },
+                  ];
+                  const maxClicks = Math.max(1, ...campaignChannels.map((c) => c.clicks));
+                  return (
+                    <div className="space-y-2 text-xs">
+                      {campaignChannels.map((c, idx) => {
+                        const pct = Math.round((c.clicks / maxClicks) * 100);
+                        return (
+                          <div key={idx} className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="truncate text-slate-300 font-bold">
+                                {c.name}
+                              </span>
+                              <span className="font-bold shrink-0" style={{ color: c.color }}>
+                                {c.clicks.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-300"
+                                style={{
+                                  backgroundColor: c.color,
+                                  width: `${c.clicks > 0 ? Math.max(8, pct) : 0}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div className="pt-1 border-t border-slate-800/60 text-[10px] text-slate-400 truncate">
+                        Mediums: thread, video, teaser, story
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -3920,6 +4339,107 @@ export default function Dashboard() {
                 </div>
               )}
             </CyberPanel>
+
+            {/* X Dispatches & Campaign Feed Panel */}
+            <CyberPanel
+              label={`X Dispatches • @${targets.xHandle || 'Moth1NFTs'}`}
+              accent="#e2e8f0"
+              className="p-4 sm:p-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
+                    X Dispatches (@{targets.xHandle || 'Moth1NFTs'})
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Verified impressions, reposts, likes, and campaign telemetry.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => triggerActorRun('x')}
+                    disabled={runningActor !== null}
+                    className="inline-flex items-center justify-center gap-1.5 border border-white/60 bg-white/10 hover:bg-white/20 px-3.5 py-1.5 font-mono text-xs text-white font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    <span>
+                      {runningActor === 'x'
+                        ? 'Scraping X...'
+                        : 'Run X Scraper'}
+                    </span>
+                  </button>
+                  <a
+                    href={`https://x.com/${targets.xHandle || 'Moth1NFTs'}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 border border-slate-700 bg-slate-900/80 hover:border-white/60 hover:text-white px-3.5 py-1.5 font-mono text-xs text-slate-300 font-bold transition-colors cursor-pointer w-full sm:w-auto shrink-0"
+                  >
+                    <span className="font-mono font-bold text-xs">𝕏</span>
+                    <span>View Profile ↗</span>
+                  </a>
+                </div>
+              </div>
+
+              {visibleXItems.length === 0 ? (
+                <div className="py-5 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 mb-4 space-y-2">
+                  <div>
+                    No Apify dataset items loaded yet for{' '}
+                    <code className="text-white">@{targets.xHandle || 'Moth1NFTs'}</code>.
+                    Click &ldquo;Run X Scraper&rdquo; above.
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    Campaign clicks from X are automatically tracked via UTM parameters in the Campaign Funnel below.
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto mb-4 max-h-[240px] -mx-1 sm:mx-0">
+                  <table className="w-full text-left border-collapse min-w-[480px]">
+                    <thead>
+                      <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
+                        <th className="py-2 pr-3">Post / Tweet</th>
+                        <th className="py-2 px-2">Impressions</th>
+                        <th className="py-2 px-2">Likes</th>
+                        <th className="py-2 px-2">Reposts</th>
+                        <th className="py-2 px-2">Replies</th>
+                        <th className="py-2 pl-2 text-right">Link</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/70 text-xs">
+                      {visibleXItems.slice(0, 15).map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-900/40">
+                          <td className="py-2.5 pr-3 max-w-[200px] truncate text-[#e2e8f0]">
+                            {item.text}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono font-bold text-white">
+                            {item.views.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[#fda4af]">
+                            {item.likes.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[#86efac]">
+                            {item.retweets.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
+                            {item.replies.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 pl-2 text-right">
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono text-[11px] text-[#67e8f9] hover:underline"
+                            >
+                              ↗
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CyberPanel>
           </div>
         </div>
 
@@ -3951,6 +4471,9 @@ export default function Dashboard() {
               </span>
               <span className="px-2 py-1 bg-[#60a5fa]/10 border border-[#60a5fa]/30 text-[#60a5fa]">
                 FB: <strong>{fbStoryEntrances}</strong> clicks • <strong>{fbStoryRetentionPct}%</strong> 75% read • <strong>{fbStorySubscribers}</strong> subs
+              </span>
+              <span className="px-2 py-1 bg-white/10 border border-neutral-600 text-white">
+                𝕏: <strong>{xStoryEntrances}</strong> clicks • <strong>{xStoryRetentionPct}%</strong> 75% read • <strong>{xStorySubscribers}</strong> subs
               </span>
             </div>
           </div>
@@ -4005,6 +4528,28 @@ export default function Dashboard() {
                   ? ((fbSubs / fbEntrances) * 100).toFixed(1)
                   : '0.0';
 
+              // Metric calculations for X (Twitter) Campaigns
+              const xEntrances = Math.max(
+                Number(issueStats.x?.clicks || 0),
+                Number(dispatch.x?.entrances ?? dispatch.x?.clicks ?? 0)
+              );
+              const xScroll75 = Math.max(
+                Number(issueStats.x?.scroll75 || 0),
+                Number(dispatch.x?.scroll75 ?? 0)
+              );
+              const xSubs = Math.max(
+                Number(issueStats.x?.subscribers || 0),
+                Number(dispatch.x?.subscribers ?? 0)
+              );
+              const xRetentionPct =
+                xEntrances > 0
+                  ? Math.min(100, (xScroll75 / xEntrances) * 100).toFixed(1)
+                  : (xScroll75 > 0 ? '100.0' : '0.0');
+              const xConvPct =
+                xEntrances > 0
+                  ? ((xSubs / xEntrances) * 100).toFixed(1)
+                  : '0.0';
+
               return (
                 <div
                   key={dispatch.id}
@@ -4021,8 +4566,8 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* Dual Platform Columns: Instagram (Pink) vs Facebook (Blue) */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+                  {/* 3-Platform Cross-Channel Columns: Instagram (Pink) vs Facebook (Blue) vs X (White/Amber) */}
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 sm:gap-4">
                     {/* Platform Card 1: Instagram Story */}
                     <div className="p-3 sm:p-4 bg-[#121316] border border-[#fda4af]/30 rounded-none space-y-3">
                       <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
@@ -4221,6 +4766,139 @@ export default function Dashboard() {
                             className="h-full bg-[#86efac] transition-all duration-500"
                             style={{
                               width: `${Math.min(100, Math.max(0, Number(fbConvPct) || 0))}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Platform Card 3: X (Twitter) Campaigns */}
+                    <div className="p-3 sm:p-4 bg-[#121316] border border-neutral-700/60 rounded-none space-y-3">
+                      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-white shrink-0" />
+                          <span className="font-mono text-xs font-bold uppercase tracking-wider text-white">
+                            𝕏 Campaigns
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'x', 'thread')}
+                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-neutral-700 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-white hover:text-white transition-colors cursor-pointer"
+                            title="Copy Thread Link with utm_source=x&utm_medium=thread"
+                          >
+                            {copiedLink === `${issueTag}-x-thread` ? (
+                              <span className="text-[#86efac]">Copied Thread!</span>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-[#d97706]" />
+                                <span>Thread</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'x', 'video')}
+                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-neutral-700 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-white hover:text-white transition-colors cursor-pointer"
+                            title="Copy Video Link with utm_source=x&utm_medium=video"
+                          >
+                            {copiedLink === `${issueTag}-x-video` ? (
+                              <span className="text-[#86efac]">Copied Video!</span>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-[#67e8f9]" />
+                                <span>Video</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'x', 'teaser')}
+                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-neutral-700 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-white hover:text-white transition-colors cursor-pointer"
+                            title="Copy Teaser Link with utm_source=x&utm_medium=teaser"
+                          >
+                            {copiedLink === `${issueTag}-x-teaser` ? (
+                              <span className="text-[#86efac]">Copied Teaser!</span>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-slate-400" />
+                                <span>Teaser</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 3 Automated Telemetry Metrics for X */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="flex items-center justify-between text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            <span>Campaign Clicks</span>
+                            <span className="text-[8px] font-bold text-white bg-white/10 px-1 py-0.5 border border-white/30">
+                              {xEntrances} Clicks
+                            </span>
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-white tabular-nums mt-1">
+                            {xEntrances.toLocaleString()}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            utm_source=x • Verified Clicks
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Scroll Retention
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#fbbf24] tabular-nums mt-1">
+                            {xRetentionPct}%
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            {xScroll75} read past 75% depth
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Subscriber Conv.
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#86efac] tabular-nums mt-1">
+                            {xSubs}{' '}
+                            <span className="text-xs font-normal text-slate-400">
+                              ({xConvPct}%)
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            Substack subscriptions
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Visual Funnel Bar */}
+                      <div className="space-y-1 pt-1">
+                        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono">
+                          <span className="text-slate-400">
+                            75% Retention: <strong className="text-[#fbbf24]">{xRetentionPct}%</strong>
+                          </span>
+                          <span className="text-slate-400">
+                            Substack Conv: <strong className="text-[#86efac]">{xConvPct}%</strong>
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
+                          <div
+                            className="h-full bg-[#fbbf24] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, Number(xRetentionPct) || 0))}%`,
+                            }}
+                          />
+                          <div
+                            className="h-full bg-[#86efac] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, Number(xConvPct) || 0))}%`,
                             }}
                           />
                         </div>

@@ -10,15 +10,18 @@ const DEFAULT_DATA = {
     'the-meat-grinder': {
       instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
       facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
+      x: { clicks: 0, scroll75: 0, subscribers: 0 },
     },
     'watering-grass-in-a-thunderstorm': {
       instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
       facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
+      x: { clicks: 0, scroll75: 0, subscribers: 0 },
     },
   },
   total: {
     instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
     facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
+    x: { clicks: 0, scroll75: 0, subscribers: 0 },
   },
   recent: [],
 };
@@ -67,7 +70,7 @@ export function persistStoryClickStore(data) {
 const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
-async function syncWithKV(action, key = 'moth1_story_clicks', payload = null) {
+export async function syncWithKV(action, key = 'moth1_story_clicks', payload = null) {
   if (!kvUrl || !kvToken) return null;
   try {
     if (action === 'get') {
@@ -157,11 +160,18 @@ export default async function handler(req, res) {
         issueKey = 'the-meat-grinder';
       }
 
-      // Normalize platform key
-      const platformKey =
-        rawSource.includes('facebook') || rawSource === 'fb'
-          ? 'facebook'
-          : 'instagram';
+      // Normalize platform key: 'x' for twitter/x, 'facebook' for fb, else 'instagram'
+      let platformKey = 'instagram';
+      if (rawSource.includes('facebook') || rawSource === 'fb') {
+        platformKey = 'facebook';
+      } else if (
+        rawSource.includes('twitter') ||
+        rawSource.includes('x') ||
+        rawSource === 't.co' ||
+        rawSource === 'x.com'
+      ) {
+        platformKey = 'x';
+      }
 
       let store = getStoryClickStore();
       const remote = await syncWithKV('get');
@@ -171,7 +181,21 @@ export default async function handler(req, res) {
         store.issues[issueKey] = {
           instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
           facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
+          x: { clicks: 0, scroll75: 0, subscribers: 0 },
         };
+      }
+      if (!store.issues[issueKey][platformKey]) {
+        store.issues[issueKey][platformKey] = { clicks: 0, scroll75: 0, subscribers: 0 };
+      }
+      if (!store.total) {
+        store.total = {
+          instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
+          facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
+          x: { clicks: 0, scroll75: 0, subscribers: 0 },
+        };
+      }
+      if (!store.total[platformKey]) {
+        store.total[platformKey] = { clicks: 0, scroll75: 0, subscribers: 0 };
       }
 
       const metricField =

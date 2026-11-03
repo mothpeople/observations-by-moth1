@@ -97,6 +97,17 @@ const DEFAULT_CHANNEL_LEDGER = {
       },
     ],
   },
+  x: {
+    handle: 'Moth1NFTs',
+    platform: 'X (Twitter)',
+    followers: 0,
+    posts: [],
+  },
+  threads: {
+    handle: 'moth1.siv',
+    platform: 'Threads',
+    followers: 0,
+  },
   substackSubscribers: 0,
   storyFunnel: {
     defaultImpressions: 0,
@@ -118,6 +129,12 @@ const DEFAULT_CHANNEL_LEDGER = {
           scroll75: 0, // Story Scroll Retention (read past 75%)
           subscribers: 0, // Story Subscriber Conversions
         },
+        x: {
+          entrances: 0, // X Campaigns (utm_source=x & utm_medium=thread/video/teaser)
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
       },
       {
         id: '01',
@@ -131,6 +148,12 @@ const DEFAULT_CHANNEL_LEDGER = {
           subscribers: 0,
         },
         facebook: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        x: {
           entrances: 0,
           clicks: 0,
           scroll75: 0,
@@ -268,20 +291,26 @@ export function recordSiteEvent(eventName, payload = {}) {
       }
     }
 
-    // Determine platform key: 'facebook' for facebook/fb, else 'instagram'
-    const platformKey =
-      utmSource.includes('facebook') || utmSource === 'fb' ? 'facebook' : 'instagram';
+    // Determine platform key: 'x' for twitter/x, 'facebook' for fb, else 'instagram'
+    let platformKey = 'instagram';
+    if (utmSource.includes('facebook') || utmSource === 'fb') {
+      platformKey = 'facebook';
+    } else if (
+      utmSource.includes('twitter') ||
+      utmSource.includes('x') ||
+      utmSource === 't.co' ||
+      utmSource === 'x.com'
+    ) {
+      platformKey = 'x';
+    }
 
-    const isStorySession =
-      utmMedium === 'story' ||
-      utmSource.includes('instagram') ||
-      utmSource.includes('facebook') ||
-      utmSource === 'ig' ||
-      utmSource === 'fb';
+    const isCampaignSession =
+      ['story', 'thread', 'video', 'teaser'].includes(utmMedium) ||
+      ['instagram', 'facebook', 'x', 'twitter', 'ig', 'fb'].includes(utmSource);
 
-    if (isStorySession) {
+    if (isCampaignSession) {
       try {
-        window.sessionStorage.setItem('moth1_utm_medium', 'story');
+        window.sessionStorage.setItem('moth1_utm_medium', utmMedium || 'campaign');
         window.sessionStorage.setItem('moth1_utm_source', platformKey);
         if (payload.path) {
           window.sessionStorage.setItem('moth1_story_path', payload.path);
@@ -297,8 +326,8 @@ export function recordSiteEvent(eventName, payload = {}) {
         r.path === payload.path ? { ...r, views: (r.views || 0) + 1 } : r
       );
 
-      // 2. If visitor arrived via Story link (utm_medium = 'story' or utm_source is ig/fb), increment automated story entrances
-      if (isStorySession) {
+      // 2. If visitor arrived via Campaign link, increment automated entrances
+      if (isCampaignSession) {
         const matchedDispatch =
           ledger.storyFunnel.dispatches.find(
             (d) =>

@@ -27,8 +27,19 @@ function PublicationLayout({ dispatch = null, children }) {
       const source = params.get('utm_source');
       const campaign = params.get('utm_campaign');
 
-      if (medium === 'story' || source === 'instagram' || source === 'facebook') {
-        const sessionKey = `moth1_story_click_${window.location.pathname}_${source}_${medium}`;
+      const rawMedium = (medium || '').toLowerCase();
+      const rawSource = (source || '').toLowerCase();
+      const isTrackedCampaign =
+        ['story', 'thread', 'video', 'teaser'].includes(rawMedium) ||
+        ['instagram', 'facebook', 'x', 'twitter', 'ig', 'fb'].includes(rawSource) ||
+        Boolean(campaign);
+
+      if (isTrackedCampaign) {
+        window.sessionStorage.setItem('moth1_utm_medium', rawMedium || 'campaign');
+        window.sessionStorage.setItem('moth1_utm_source', rawSource || 'social');
+        if (campaign) window.sessionStorage.setItem('moth1_utm_campaign', campaign);
+
+        const sessionKey = `moth1_campaign_${window.location.pathname}_${rawSource}_${rawMedium}_${campaign || ''}`;
         if (!window.sessionStorage.getItem(sessionKey)) {
           window.sessionStorage.setItem(sessionKey, '1');
           fetch('/api/track-story-click', {
@@ -36,8 +47,8 @@ function PublicationLayout({ dispatch = null, children }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               issue: window.location.pathname.replace(/^\//, '') || 'latest',
-              source: source || 'social',
-              medium: medium || 'story',
+              source: rawSource || 'social',
+              medium: rawMedium || 'campaign',
               campaign: campaign || '',
               timestamp: new Date().toISOString(),
             }),
@@ -98,21 +109,33 @@ function PublicationLayout({ dispatch = null, children }) {
 
           // Post automated 75% scroll retention event to serverless UTM tracking endpoint
           try {
-            const isStory =
-              window.sessionStorage?.getItem('moth1_utm_medium') === 'story' ||
-              new URLSearchParams(window.location.search).get('utm_medium') === 'story';
-            if (isStory) {
-              const storySrc =
-                window.sessionStorage?.getItem('moth1_utm_source') ||
-                new URLSearchParams(window.location.search).get('utm_source') ||
-                'social';
+            const storedMedium =
+              window.sessionStorage?.getItem('moth1_utm_medium') ||
+              new URLSearchParams(window.location.search).get('utm_medium') ||
+              '';
+            const storedSource =
+              window.sessionStorage?.getItem('moth1_utm_source') ||
+              new URLSearchParams(window.location.search).get('utm_source') ||
+              '';
+            const storedCampaign =
+              window.sessionStorage?.getItem('moth1_utm_campaign') ||
+              new URLSearchParams(window.location.search).get('utm_campaign') ||
+              '';
+
+            const isCampaignSession =
+              ['story', 'thread', 'video', 'teaser'].includes(storedMedium.toLowerCase()) ||
+              ['instagram', 'facebook', 'x', 'twitter', 'ig', 'fb'].includes(storedSource.toLowerCase()) ||
+              Boolean(storedCampaign);
+
+            if (isCampaignSession) {
               fetch('/api/track-story-click', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   issue: dispatch.slug,
-                  source: storySrc,
-                  medium: 'story',
+                  source: storedSource || 'social',
+                  medium: storedMedium || 'campaign',
+                  campaign: storedCampaign || '',
                   eventType: 'scroll_75',
                   timestamp: new Date().toISOString(),
                 }),
@@ -199,9 +222,6 @@ function PublicationLayout({ dispatch = null, children }) {
 
       {/* Main Content */}
       <main className="relative z-10">{children}</main>
-
-      {/* Vercel Web Analytics */}
-      <Analytics />
     </div>
   );
 }

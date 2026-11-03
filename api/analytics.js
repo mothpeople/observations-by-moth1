@@ -14,6 +14,7 @@ const ACTORS = {
   instagram: 'apify~instagram-scraper',
   threads: 'automation-lab~threads-scraper',
   facebook: 'apify~facebook-posts-scraper',
+  x: 'apify~twitter-scraper',
 };
 
 export function isObservationsContent(text = '', hashtags = [], filterTag = '#observations') {
@@ -380,6 +381,66 @@ export function normalizeFacebookItem(item, idx = 0) {
   };
 }
 
+export function normalizeXItem(item, idx = 0) {
+  const text = String(
+    item.full_text ||
+    item.text ||
+    item.tweetText ||
+    item.content ||
+    item.note ||
+    ''
+  ).trim();
+
+  const id = String(item.id_str || item.id || `x-${idx}`);
+  const url =
+    item.url ||
+    item.tweetUrl ||
+    (item.id_str ? `https://x.com/Moth1NFTs/status/${item.id_str}` : 'https://x.com/Moth1NFTs');
+
+  const views = Number(
+    item.view_count ??
+    item.viewsCount ??
+    item.views ??
+    item.impressions ??
+    0
+  ) || 0;
+
+  const likes = Number(
+    item.favorite_count ??
+    item.like_count ??
+    item.likes ??
+    item.likesCount ??
+    0
+  ) || 0;
+
+  const retweets = Number(
+    item.retweet_count ??
+    item.retweets ??
+    item.reposts ??
+    0
+  ) || 0;
+
+  const replies = Number(
+    item.reply_count ??
+    item.replies ??
+    item.comments ??
+    0
+  ) || 0;
+
+  const publishedAt = item.created_at || item.publishedAt || item.date || new Date().toISOString();
+
+  return {
+    id,
+    text,
+    url,
+    views,
+    likes,
+    retweets,
+    replies,
+    publishedAt,
+  };
+}
+
 export function isFacebookVideoReel(rawItem, item) {
   if (!rawItem && !item) return false;
   const target = item || rawItem;
@@ -567,6 +628,13 @@ async function fetchPlatformTelemetry(platformKey, primaryActorId, alternateActo
           if (platformKey === 'substack') {
             return target.includes('substack');
           }
+          if (platformKey === 'x') {
+            return (
+              target.includes('twitter') ||
+              target.includes('tweet') ||
+              target.includes('x.com')
+            );
+          }
           return allActorIds.some((id) => target.includes(id.toLowerCase().replace('~', '/')));
         });
       }
@@ -678,6 +746,22 @@ async function fetchPlatformTelemetry(platformKey, primaryActorId, alternateActo
                       item.subscriberCount ??
                       0
                   ) || 0;
+                } else if (platformKey === 'x') {
+                  f = Number(
+                    item.followers_count ??
+                      item.followersCount ??
+                      item.followers ??
+                      item.user?.followers_count ??
+                      item.user?.followersCount ??
+                      item.user?.followers ??
+                      item.author?.followers_count ??
+                      item.author?.followersCount ??
+                      item.author?.followers ??
+                      item.profile?.followersCount ??
+                      item.profile?.followers_count ??
+                      item.profile?.followers ??
+                      0
+                  ) || 0;
                 }
 
                 if (f > maxFollowers) {
@@ -718,6 +802,18 @@ async function fetchPlatformTelemetry(platformKey, primaryActorId, alternateActo
                     item.text ||
                     item.replies ||
                     item.likes
+                  ) {
+                    postItems.push(item);
+                  }
+                } else if (platformKey === 'x') {
+                  if (
+                    item.full_text ||
+                    item.text ||
+                    item.tweetText ||
+                    item.url ||
+                    item.id_str ||
+                    item.view_count ||
+                    item.impressions
                   ) {
                     postItems.push(item);
                   }
@@ -925,7 +1021,7 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       }
     };
 
-    const [days, paths, referrers, countries, devices, osList, utmSources, utmMediums] = await Promise.all([
+    const [days, paths, referrers, countries, devices, osList, utmSources, utmMediums, utmCampaigns] = await Promise.all([
       fetchDimension('day'),
       fetchDimension('requestPath'),
       fetchDimension('referrerHostname'),
@@ -934,6 +1030,7 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       fetchDimension('osName'),
       fetchDimension('utmSource'),
       fetchDimension('utmMedium'),
+      fetchDimension('utmCampaign'),
     ]);
 
     // Compute live totals incorporating real-time in-progress daily visits
@@ -965,6 +1062,7 @@ async function fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId) 
       osList,
       utmSources,
       utmMediums,
+      utmCampaigns,
     };
   } catch (err) {
     return { connected: false, error: err.message };
@@ -1038,6 +1136,7 @@ export default async function handler(req, res) {
       apifyInstagram,
       apifyThreads,
       apifyFacebook,
+      apifyX,
       vercelAnalytics,
     ] = await Promise.all([
       fetchLiveSubstackArchive(),
@@ -1045,6 +1144,7 @@ export default async function handler(req, res) {
       fetchPlatformTelemetry('instagram', ACTORS.instagram, ['apify~instagram-profile-scraper'], apifyToken),
       fetchPlatformTelemetry('threads', ACTORS.threads, [], apifyToken),
       fetchPlatformTelemetry('facebook', ACTORS.facebook, ['apify~facebook-pages-scraper'], apifyToken),
+      fetchPlatformTelemetry('x', ACTORS.x, ['apify~tweet-scraper', 'apidojo~tweet-scraper', 'apify~twitter-post-scraper'], apifyToken),
       fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId),
     ]);
 
@@ -1170,6 +1270,11 @@ export default async function handler(req, res) {
       apifySubstack.followers || 0,
       ...substackPosts.map((item) => item.subscribers || 0)
     );
+    const xItems = (apifyX.items || []).map((item, i) => normalizeXItem(item, i));
+    const xFollowers = Math.max(
+      apifyX.followers || 0,
+      ...xItems.map((item) => item.followers || 0)
+    );
 
     return res.status(200).json({
       timestamp: new Date().toISOString(),
@@ -1203,6 +1308,13 @@ export default async function handler(req, res) {
         followers: facebookFollowers,
         items: facebookItems,
         reels: facebookReels,
+      },
+      x: {
+        actorId: 'apify/twitter-scraper',
+        connected: apifyX.connected,
+        runInfo: apifyX.runInfo,
+        followers: xFollowers,
+        items: xItems,
       },
       vercel: vercelAnalytics,
     });
