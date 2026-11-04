@@ -8,6 +8,9 @@
     { "source": "/issue-01", "destination": "/issue-01.html" },
     { "source": "/the-meat-grinder", "destination": "/the-meat-grinder.html" },
     { "source": "/issue-02", "destination": "/issue-02.html" },
+    { "source": "/war-on-drugs", "destination": "/war-on-drugs.html" },
+    { "source": "/the-war-no-one-was-supposed-to-win", "destination": "/the-war-no-one-was-supposed-to-win.html" },
+    { "source": "/issue-03", "destination": "/issue-03.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

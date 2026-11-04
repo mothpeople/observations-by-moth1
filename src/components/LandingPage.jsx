@@ -6,6 +6,13 @@ import { recordSiteEvent } from '../utils/telemetry';
 
 const BACKGROUND_SCENES = [
   {
+    id: 'scene-03-hero',
+    issueId: '03',
+    image: '/issues/issue-03/hero-dossier.webp',
+    label: 'Issue #03 • The War No One Was Supposed to Win',
+    accent: '#eab308',
+  },
+  {
     id: 'scene-02-hero',
     issueId: '02',
     image: '/issues/issue-02/hero-machine.webp',
@@ -18,6 +25,13 @@ const BACKGROUND_SCENES = [
     image: '/issues/issue-01/hero-storm.webp',
     label: 'Issue #01 • Watering Grass in a Thunderstorm',
     accent: '#d97706',
+  },
+  {
+    id: 'scene-03-mirror',
+    issueId: '03',
+    image: '/issues/issue-03/the-mirror.webp',
+    label: 'Issue #03 • The Mirror',
+    accent: '#22c55e',
   },
   {
     id: 'scene-02-earth',
@@ -149,10 +163,14 @@ export default function LandingPage({ dispatches = [] }) {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {orderedDispatches.map((issue, idx) => {
-              const isIssue02 = issue.id === '02';
-              const accent = isIssue02 ? '#86efac' : '#d97706';
+              const accent =
+                issue.id === '03'
+                  ? '#eab308'
+                  : issue.id === '02'
+                    ? '#86efac'
+                    : '#d97706';
 
               return (
                 <Link

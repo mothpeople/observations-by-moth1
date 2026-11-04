@@ -29,6 +29,19 @@ const routes = [
     url: 'https://observations.moth1.xyz/the-meat-grinder',
   },
   {
+    paths: [
+      'war-on-drugs',
+      'the-war-no-one-was-supposed-to-win',
+      'issue-03',
+      'issue/03',
+    ],
+    title: 'Issue #03: The War No One Was Supposed to Win | Observations by Moth1',
+    description:
+      'Why billionaires microdose in boardrooms while working-class kids rot in cells, and why the state’s deadliest drug sits taxed on the top shelf.',
+    image: 'https://observations.moth1.xyz/og/og-issue-03.jpg',
+    url: 'https://observations.moth1.xyz/war-on-drugs',
+  },
+  {
     paths: ['analytics'],
     title: 'Analytics & Telemetry Command | Observations by Moth1',
     description: 'Private telemetry command.',

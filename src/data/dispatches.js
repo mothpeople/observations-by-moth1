@@ -1,5 +1,6 @@
 import Issue01 from '../issues/Issue01';
 import Issue02Component from '../issues/Issue02';
+import Issue03Component from '../issues/Issue03';
 
 export const dispatches = [
   {
@@ -26,10 +27,26 @@ export const dispatches = [
     cover: '/issues/issue-02/hero-machine.webp',
     component: Issue02Component,
   },
+  {
+    id: '03',
+    slug: 'war-on-drugs',
+    aliases: [
+      'war-on-drugs',
+      'the-war-no-one-was-supposed-to-win',
+      'issue-03',
+    ],
+    title: 'The War No One Was Supposed to Win',
+    subtitle:
+      'Why billionaires microdose in boardrooms while working-class kids rot in cells, and why the state’s deadliest drug sits taxed on the top shelf.',
+    date: 'NOV 2026',
+    readTime: '8 MIN',
+    cover: '/issues/issue-03/hero-dossier.webp',
+    component: Issue03Component,
+  },
 ];
 
 export function getLatestDispatch() {
-  return dispatches[0];
+  return dispatches[dispatches.length - 1];
 }
 
 export function findDispatchByParam(param) {

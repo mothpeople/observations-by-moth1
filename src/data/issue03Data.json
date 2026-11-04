@@ -1,0 +1,601 @@
+{
+  "meta": {
+    "id": "03",
+    "issue": "Issue 03",
+    "slug": "war-on-drugs",
+    "publication": "Observations by Moth1",
+    "date": "NOV 2026",
+    "readingTime": "8 MIN",
+    "title": "The War No One Was Supposed to Win",
+    "subtitle": "Why billionaires microdose in boardrooms while working-class kids rot in cells, and why the state’s deadliest drug sits taxed on the top shelf."
+  },
+  "hero": {
+    "kicker": "The Trillion-Dollar Phantom",
+    "title": "The War No One Was Supposed to Win",
+    "subtitle": "Why billionaires microdose in boardrooms while working-class kids rot in cells, and why the state’s deadliest drug sits taxed on the top shelf.",
+    "image": "/issues/issue-03/hero-dossier.webp",
+    "burnImage": "/issues/issue-03/trillion-burn.webp",
+    "kpiImage": "/issues/issue-03/cartel-kpi.webp",
+    "tickerTarget": 1000000000000,
+    "tickerLabel": "GLOBAL PROHIBITION ENFORCEMENT BURN (1971–2026)",
+    "cards": [
+      {
+        "id": "hero-card-1",
+        "start": 0.30,
+        "end": 0.54,
+        "accent": "#eab308",
+        "stamp": "EXHIBIT 01 • FISCAL INCINERATION",
+        "image": "/issues/issue-03/hero-dossier.webp",
+        "headline": "The Half-Century Siege",
+        "body": "For more than half a century, modern governments have waged an unyielding war with tanks, border fences, canine squads, and prison blocks. Over a trillion dollars of public wealth has been incinerated in the name of total eradication.",
+        "metricLabel": "Public Wealth Incinerated (Since 1971)",
+        "metricValue": "$1,000,000,000,000+",
+        "barPercent": 96
+      },
+      {
+        "id": "hero-card-2",
+        "start": 0.54,
+        "end": 0.77,
+        "accent": "#ef4444",
+        "stamp": "EXHIBIT 02 • MARKET REALITY",
+        "image": "/issues/issue-03/trillion-burn.webp",
+        "headline": "Cheaper, Purer, Deadlier",
+        "body": "Politicians have built entire careers promising that with just a few more mandatory minimum sentences and midnight raids, society would be cleansed of illicit chemistry. Fifty years later, narcotics are cheaper, more potent, and more accessible than at any point in modern history.",
+        "metricLabel": "Street Retail Price vs. Potency (1980–2025)",
+        "metricValue": "-81% Price • +190% Potency",
+        "barPercent": 89
+      },
+      {
+        "id": "hero-card-3",
+        "start": 0.77,
+        "end": 1.0,
+        "accent": "#22c55e",
+        "stamp": "EXHIBIT 03 • THE REAL KPI",
+        "image": "/issues/issue-03/cartel-kpi.webp",
+        "headline": "When Failure Is the Objective",
+        "body": "By any measurable key performance indicator in governance, military strategy, or public finance, the War on Drugs is an absolute catastrophe.",
+        "punchline": "Unless, of course, winning was never the actual objective.",
+        "metricLabel": "Cartel Tax-Free Market Valuation",
+        "metricValue": "$650B+ Annual Turnover",
+        "barPercent": 92
+      }
+    ],
+    "citation": "Ref: UNODC World Drug Report (2024), Global Commission on Drug Policy & LSE IDEAS 'Ending the Drug Wars'."
+  },
+  "oligarchPharmacy": {
+    "kicker": "The Oligarch’s Pharmacy",
+    "title": "The Class Contradiction",
+    "subtitle": "Chemical exploration is not universally illegal. Being poor while doing it is.",
+    "image": "/issues/issue-03/class-contradiction.webp",
+    "loftImage": "/issues/issue-03/executive-loft.webp",
+    "cellImage": "/issues/issue-03/concrete-cell.webp",
+    "moleculeCode": "IDENTICAL MOLECULAR STRUCTURE • C12H17N2O4P / C13H16ClNO / C21H30O2",
+    "leftTier": {
+      "badge": "TIER A • SOVEREIGN CAPITAL CLASS",
+      "location": "Penthouse Boardroom • Private Summit • VIP Lounge",
+      "headline": "The Eccentric Visionary",
+      "color": "#eab308",
+      "substances": "Ketamine Infusion • Psilocybin Microdose • Artisanal Cannabis",
+      "framing": "Celebrated as 'executive focus' and 'lateral creative bandwidth'",
+      "consequence": "Bilateral summits with Prime Ministers & multi-billion sovereign fund allocations",
+      "sentence": "0 DAYS • Lauded on Global Podcasts"
+    },
+    "rightTier": {
+      "badge": "TIER B • WORKING-CLASS CITIZEN",
+      "location": "Street Stop • Holding Cell • Penitentiary Block",
+      "headline": "The State Enemy",
+      "color": "#ef4444",
+      "substances": "Identical Organic Plant or Synthesized Compound",
+      "framing": "Prosecuted as moral contagion & threat to public order",
+      "consequence": "Armed tactical raids, mandatory minimum prison blocks, or execution chamber",
+      "sentence": "5 TO 25 YEARS / CAPITAL PUNISHMENT"
+    },
+    "cards": [
+      {
+        "id": "class-1",
+        "start": 0.0,
+        "end": 0.34,
+        "accent": "#eab308",
+        "image": "/issues/issue-03/executive-loft.webp",
+        "headline": "The Boardroom Bio-Hacker",
+        "body": "When tech executives, venture capitalists, and hedge fund founders take ketamine for \"executive focus,\" microdose psilocybin to unlock \"lateral creative bandwidth,\" or consume cannabis on global livestreams, they are celebrated as eccentric visionaries. Prime ministers invite them to bilateral summits; sovereign funds pour billions into their enterprises.",
+        "metric": "0 ARRESTS • BILLION-DOLLAR VALUATIONS",
+        "citation": "Ref: Corporate Psychedelic Microdosing Audit & Global Drug Policy Index"
+      },
+      {
+        "id": "class-2",
+        "start": 0.34,
+        "end": 0.67,
+        "accent": "#22c55e",
+        "image": "/issues/issue-03/class-contradiction.webp",
+        "headline": "Policing Class, Not Chemistry",
+        "body": "The chemistry has not changed. The molecular structure is identical. The only variable is capital. The legal apparatus does not police the substance; it polices the economic class of the person holding it.",
+        "metric": "MOLECULAR PARITY • 100% LEGAL ASYMMETRY",
+        "citation": "Ref: Transnational Institute (TNI) Political Economy of Illicit Markets"
+      },
+      {
+        "id": "class-3",
+        "start": 0.67,
+        "end": 1.0,
+        "accent": "#ef4444",
+        "image": "/issues/issue-03/concrete-cell.webp",
+        "headline": "The Working-Class Felon",
+        "body": "Now take an ordinary working-class individual stopped on the street with a few grams of the exact same organic plant or synthesized compound. The state deploys prosecutors, armed response units, and draconian sentences that permanently destroy their future, or send them to a concrete execution chamber.",
+        "metric": "82% OF POSSESSION ARRESTS TARGET WORKING CLASS",
+        "citation": "Ref: Disproportionate Possession Enforcement Audit & Harm Reduction International"
+      }
+    ]
+  },
+  "alcoholParadox": {
+    "kicker": "The State’s Favorite Poison",
+    "title": "The Alcohol Paradox",
+    "subtitle": "If narcotics policy were genuinely anchored in pharmacology, toxicology, or empirical public health, alcohol would be classified as the most dangerous narcotic on earth.",
+    "image": "/issues/issue-03/alcohol-paradox.webp",
+    "stadiumImage": "/issues/issue-03/stadium-excise.webp",
+    "citation": "Ref: Nutt, D. J., King, L. A., & Phillips, L. D. (2010), 'Drug harms in the UK: a multicriteria decision analysis', The Lancet, 376(9752), 1558–1565.",
+    "substances": [
+      {
+        "name": "Alcohol (Ethanol)",
+        "total": 72,
+        "harmToUser": 26,
+        "harmToOthers": 46,
+        "legalStatus": "LEGAL • TAXED • STADIUM SPONSOR",
+        "statusColor": "#eab308",
+        "barColor": "#eab308"
+      },
+      {
+        "name": "Heroin",
+        "total": 55,
+        "harmToUser": 34,
+        "harmToOthers": 21,
+        "legalStatus": "SCHEDULE I CONTRABAND",
+        "statusColor": "#ef4444",
+        "barColor": "#ef4444"
+      },
+      {
+        "name": "Crack Cocaine",
+        "total": 54,
+        "harmToUser": 37,
+        "harmToOthers": 17,
+        "legalStatus": "SCHEDULE I CONTRABAND",
+        "statusColor": "#ef4444",
+        "barColor": "#ef4444"
+      },
+      {
+        "name": "Methamphetamine",
+        "total": 33,
+        "harmToUser": 32,
+        "harmToOthers": 1,
+        "legalStatus": "STRICT FELONY",
+        "statusColor": "#ef4444",
+        "barColor": "#f87171"
+      },
+      {
+        "name": "Tobacco",
+        "total": 26,
+        "harmToUser": 18,
+        "harmToOthers": 8,
+        "legalStatus": "LEGAL • EXCISE TAXED",
+        "statusColor": "#eab308",
+        "barColor": "#ca8a04"
+      },
+      {
+        "name": "Cannabis",
+        "total": 20,
+        "harmToUser": 9,
+        "harmToOthers": 11,
+        "legalStatus": "CRIMINALISED IN MOST STATES",
+        "statusColor": "#22c55e",
+        "barColor": "#22c55e"
+      },
+      {
+        "name": "MDMA (Ecstasy)",
+        "total": 9,
+        "harmToUser": 8,
+        "harmToOthers": 1,
+        "legalStatus": "SCHEDULE I FELONY",
+        "statusColor": "#22c55e",
+        "barColor": "#4ade80"
+      },
+      {
+        "name": "LSD",
+        "total": 7,
+        "harmToUser": 7,
+        "harmToOthers": 0,
+        "legalStatus": "SCHEDULE I FELONY",
+        "statusColor": "#22c55e",
+        "barColor": "#4ade80"
+      },
+      {
+        "name": "Psilocybin Mushrooms",
+        "total": 6,
+        "harmToUser": 6,
+        "harmToOthers": 0,
+        "legalStatus": "SCHEDULE I FELONY",
+        "statusColor": "#22c55e",
+        "barColor": "#4ade80"
+      }
+    ],
+    "cards": [
+      {
+        "id": "alc-1",
+        "start": 0.0,
+        "end": 0.34,
+        "mode": "total",
+        "accent": "#eab308",
+        "image": "/issues/issue-03/alcohol-paradox.webp",
+        "headline": "Combined Harm: Score 72 vs. Score 6",
+        "body": "In landmark peer-reviewed research published in The Lancet, Professor David Nutt's panel evaluated substances across sixteen criteria of physical, psychological, and societal harm. Alcohol achieved the highest overall score (72), surpassing heroin (55) and crack cocaine (54).",
+        "metric": "COMBINED HARM: ALCOHOL 72 • PSILOCYBIN 6",
+        "citation": "Ref: Independent Scientific Committee on Drugs (ISCD) & The Lancet MCDA Matrix"
+      },
+      {
+        "id": "alc-2",
+        "start": 0.34,
+        "end": 0.67,
+        "mode": "harmToOthers",
+        "accent": "#ef4444",
+        "image": "/issues/issue-03/stadium-excise.webp",
+        "headline": "Societal Collateral: Stadiums & ER Wards",
+        "body": "Isolate 'Harm to Society' and alcohol's lead becomes even more extreme (46 pts vs. heroin's 21). It fuels domestic assaults, ER admissions, and fatal collisions; yet states license it, collect excise taxes, and plaster beer logos across sports stadiums.",
+        "metric": "HARM TO OTHERS: ALCOHOL 46 PTS (#1 BY FAR)",
+        "citation": "Ref: World Health Organization (WHO) Global Status Report on Alcohol and Health"
+      },
+      {
+        "id": "alc-3",
+        "start": 0.67,
+        "end": 1.0,
+        "mode": "harmToUser",
+        "accent": "#22c55e",
+        "image": "/issues/issue-03/alcohol-paradox.webp",
+        "headline": "Individual Toxicology: Excise Tax as Morality",
+        "body": "Now isolate 'Harm to User' (direct physiological & psychological damage to the consumer): Alcohol scores 26, more than 4x higher than Psilocybin (6) or LSD (7), and nearly 3x higher than Cannabis (9). The boundary between consumer product and felony contraband is drawn by taxation, not biology.",
+        "metric": "HARM TO USER: ALCOHOL 26 • CANNABIS 9 • PSILOCYBIN 6",
+        "citation": "Ref: OECD Consumption Tax Trends & The Lancet Toxicology Sub-Scale"
+      }
+    ]
+  },
+  "ratPark": {
+    "kicker": "The Rat Park Reality",
+    "title": "Addiction as an Environmental Symptom",
+    "subtitle": "People do not ruin their lives because molecules contain black magic. They turn to chronic substance abuse to numb unbearable isolation.",
+    "image": "/issues/issue-03/rat-park.webp",
+    "cellImage": "/issues/issue-03/concrete-cell.webp",
+    "malpracticeImage": "/issues/issue-03/bureaucratic-malpractice.webp",
+    "citation": "Ref: Alexander, B. K., Coambs, R. B., & Hadaway, P. F. (1978), 'The effect of housing and gender on morphine self-administration in rats', Psychopharmacology, 58(2), 175–179.",
+    "environments": {
+      "cage": {
+        "name": "ISOLATED WIRE CAGE (STANDARD LAB)",
+        "spaceMultiplier": "1x Solitary Confinement",
+        "socialContact": "0% (Total Isolation)",
+        "morphineIntake": "19.2 mg/kg / day",
+        "survivalRate": "Compulsive Overdose & Death",
+        "color": "#ef4444",
+        "summary": "A single rat isolated inside an empty, bare wire cage with pure water and morphine-laced water drinks obsessively from the drug dispenser until it overdoses and dies."
+      },
+      "park": {
+        "name": "RAT PARK COLONY (ENRICHED HABITAT)",
+        "spaceMultiplier": "200x Connected Colony",
+        "socialContact": "100% (Play, Mating & Community)",
+        "morphineIntake": "1.8 mg/kg / day (-91%)",
+        "survivalRate": "Voluntary Abstinence & Recovery",
+        "color": "#22c55e",
+        "summary": "In a colony 200x larger with wood shavings, running wheels, nutritious food, and peers, rats overwhelmingly chose plain water, and previously dependent rats voluntarily detoxed."
+      }
+    },
+    "cards": [
+      {
+        "id": "rat-1",
+        "start": 0.0,
+        "end": 0.34,
+        "accent": "#ef4444",
+        "headline": "The Solitary Cage Fallacy",
+        "body": "In standard 1970s laboratory tests, a single rat was isolated inside a bare wire cage with two dispensers: plain water and morphine water. Deprived of connection, the rat drank the drug obsessively until it died. Moralists cited this as proof that molecules possess demonic addictive power.",
+        "metric": "SOLITARY CONFINEMENT = 19.2 MG/KG/DAY OVERDOSE",
+        "citation": "Ref: Simon Fraser University Rat Park Laboratory Trials (1978–1981)"
+      },
+      {
+        "id": "rat-2",
+        "start": 0.34,
+        "end": 0.67,
+        "accent": "#22c55e",
+        "headline": "200x Space & Connected Community",
+        "body": "Psychologist Bruce Alexander built 'Rat Park', a lush colony 200x larger where rats could socialise, play, and mate. Given the exact same dispensers, the animals overwhelmingly chose plain water, and previously dependent rats voluntarily cut their morphine consumption by 91%.",
+        "metric": "-91% NARCOTIC INTAKE IN CONNECTED HABITAT",
+        "citation": "Ref: Alexander et al., Psychopharmacology (1978) & 'The Globalization of Addiction'"
+      },
+      {
+        "id": "rat-3",
+        "start": 0.67,
+        "end": 1.0,
+        "accent": "#eab308",
+        "headline": "Bureaucratic Malpractice",
+        "body": "Human beings turn to chronic substance abuse to numb unbearable isolation, economic precariousness, and an economy that treats them as disposable parts. Locking traumatised people inside concrete cells to cure a condition caused by alienation is bureaucratic malpractice.",
+        "metric": "ISOLATION CAUSES ADDICTION • CAGES DEEPEN IT",
+        "citation": "Ref: WHO Social Determinants of Mental Health & Substance Use"
+      }
+    ]
+  },
+  "supplyDelusion": {
+    "kicker": "The Supply-Side Delusion",
+    "title": "The Hydrant Problem",
+    "subtitle": "You cannot shoot your way out of a market fueled by baseline human demand.",
+    "image": "/issues/issue-03/supply-hydrant.webp",
+    "seizureImage": "/issues/issue-03/press-seizure.webp",
+    "postalImage": "/issues/issue-03/postal-synthetics.webp",
+    "labImage": "/issues/issue-03/synthetic-lab.webp",
+    "citation": "Ref: Beletsky & Davis (2017), 'Today’s fentanyl crisis: prohibition’s Iron Law, revisited', International Journal of Drug Policy, 46, 156–159.",
+    "mutations": [
+      {
+        "id": "mut-1",
+        "stage": "ORGANIC BOTANICAL SUPPLY",
+        "name": "Plant Cannabis / Raw Opium / Coca Leaf",
+        "potency": "1x Baseline Potency",
+        "smugglingFootprint": "Bulky Shipping Containers & Trucks",
+        "overdoseRisk": "Low / Predictable Dosing",
+        "color": "#22c55e"
+      },
+      {
+        "id": "mut-2",
+        "stage": "INTERDICTION MUTATION A",
+        "name": "Illicit Fentanyl & Carfentanil",
+        "potency": "50x to 100x Morphine Potency",
+        "smugglingFootprint": "Standard Flat Postal Envelopes",
+        "overdoseRisk": "Extreme (2mg Lethal Threshold)",
+        "color": "#eab308"
+      },
+      {
+        "id": "mut-3",
+        "stage": "INTERDICTION MUTATION B",
+        "name": "Nitazenes & Lab Cannabinoids",
+        "potency": "100x to 500x Synthetic Lethality",
+        "smugglingFootprint": "Micro-Parcel & Precursor Vials",
+        "overdoseRisk": "Catastrophic / Naloxone-Resistant",
+        "color": "#ef4444"
+      }
+    ],
+    "cards": [
+      {
+        "id": "sup-1",
+        "start": 0.0,
+        "end": 0.34,
+        "accent": "#22c55e",
+        "image": "/issues/issue-03/press-seizure.webp",
+        "caption": "Press-Conference Seizure • Botanical Bales",
+        "headline": "The Press-Conference Illusion",
+        "body": "Every time law enforcement stages a press conference behind tables stacked with seized plant-based cannabis or unrefined paste, they celebrate a phantom victory. Interdiction does not contract the illicit market; it creates a massive financial incentive for syndicates to innovate around the barrier.",
+        "metric": "SEIZING BULKY PLANTS TRIGGERS CHEMICAL EVOLUTION"
+      },
+      {
+        "id": "sup-2",
+        "start": 0.34,
+        "end": 0.67,
+        "accent": "#eab308",
+        "image": "/issues/issue-03/postal-synthetics.webp",
+        "caption": "Flat Postal Envelopes • 50x–100x Potency",
+        "headline": "The Flat-Envelope Mutation",
+        "body": "When you choke the supply of bulky organic botanicals, cartels pivot toward hyper-potent synthetics that are cheaper to manufacture and effortless to conceal. Stop a shipment of leaves, and the market responds with fentanyl and nitazenes mailed inside ordinary flat postal envelopes.",
+        "metric": "50x–500x POTENCY IN A STANDARD POSTAGE ENVELOPE"
+      },
+      {
+        "id": "sup-3",
+        "start": 0.67,
+        "end": 1.0,
+        "accent": "#ef4444",
+        "image": "/issues/issue-03/synthetic-lab.webp",
+        "caption": "Clandestine Lab Synthetics • Nitazenes",
+        "headline": "From Bathtub Moonshine to Nitazenes",
+        "body": "Prohibition did not eliminate alcohol in the 1920s; it spawned violent syndicates and poisoned communities with bathtub moonshine. Modern prohibition did not eliminate narcotics; it systematically replaced organic plants with unregulated, lethal laboratory poison.",
+        "metric": "THE IRON LAW OF PROHIBITION • HARDER ENFORCEMENT = DEADLIER SUPPLY"
+      }
+    ]
+  },
+  "remedyWeapon": {
+    "kicker": "The Remedy as a Weapon",
+    "title": "When the Sentence Causes the Harm",
+    "subtitle": "In the overwhelming majority of low-level possession cases, the chemical compound never ruins the user's life. The state’s punitive machinery does.",
+    "image": "/issues/issue-03/remedy-weapon.webp",
+    "cellImage": "/issues/issue-03/concrete-cell.webp",
+    "citation": "Ref: National Inventory of Collateral Consequences of Conviction (NICCC) & Prison Policy Initiative (2024).",
+    "records": [
+      {
+        "id": "rec-employment",
+        "domain": "FORMAL EMPLOYMENT",
+        "beforeStatus": "QUALIFIED CANDIDATE",
+        "afterStatus": "DISQUALIFIED • HR REJECT",
+        "stat": "-64% Callbacks",
+        "detail": "Automated HR background filters reject applicants with possession records, forcing workers underground."
+      },
+      {
+        "id": "rec-housing",
+        "domain": "PUBLIC & RENTAL HOUSING",
+        "beforeStatus": "ELIGIBLE TENANT",
+        "afterStatus": "BARRED • STATUTORY EXCLUSION",
+        "stat": "44,000+ Barriers",
+        "detail": "Housing authorities and landlords enforce zero-tolerance exclusions, manufacturing homelessness."
+      },
+      {
+        "id": "rec-education",
+        "domain": "HIGHER EDUCATION GRANTS",
+        "beforeStatus": "ENROLLED • SCHOLARSHIP",
+        "afterStatus": "REVOKED • AID DISQUALIFIED",
+        "stat": "Ladder Severed",
+        "detail": "Convictions strip students of tuition assistance, professional licensing, and visa mobility."
+      },
+      {
+        "id": "rec-civic",
+        "domain": "CIVIC & FAMILY CUSTODY",
+        "beforeStatus": "FULL CITIZENSHIP",
+        "afterStatus": "SECOND-CLASS PARIAH",
+        "stat": "Family Fracture",
+        "detail": "Custody interventions, voting disenfranchisement, and court debt trap families for generations."
+      }
+    ],
+    "cards": [
+      {
+        "id": "rem-1",
+        "start": 0.0,
+        "end": 0.34,
+        "accent": "#22c55e",
+        "image": "/issues/issue-03/remedy-weapon.webp",
+        "headline": "The Prosecutor's Alibi",
+        "body": "Ask a prosecutor what they are accomplishing by securing a low-level possession conviction, and the rhetoric remains unyielding: \"We are intervening to stop these substances from ruining a young life.\" Now witness that intervention in action.",
+        "metric": "PRE-CONVICTION STATUS: 4 / 4 LIFE PILLARS INTACT"
+      },
+      {
+        "id": "rem-2",
+        "start": 0.34,
+        "end": 0.72,
+        "accent": "#eab308",
+        "image": "/issues/issue-03/concrete-cell.webp",
+        "headline": "The Statutory Lockout",
+        "body": "The court imposes a criminal record. Instantly, that formal stamp revokes eligibility for formal employment, locks the citizen out of public housing, disqualifies them from higher education grants, and severs professional licensing.",
+        "metric": "44,000+ STATUTORY COLLATERAL SANCTIONS TRIGGERED"
+      },
+      {
+        "id": "rem-3",
+        "start": 0.72,
+        "end": 1.0,
+        "accent": "#ef4444",
+        "image": "/issues/issue-03/remedy-weapon.webp",
+        "headline": "Manufacturing the Wasteland",
+        "body": "In the overwhelming majority of possession cases, the chemical compound never ruins the user's life. The state’s punitive machinery does. The legal system manufactures the exact cycle of poverty and repeat offending it claims to fight.",
+        "metric": "THE SENTENCE IS THE PRIMARY HARM VECTOR"
+      }
+    ]
+  },
+  "portugalBlueprint": {
+    "kicker": "The Empirical Blueprint",
+    "title": "Law 30/2000 and the Portuguese Framework",
+    "subtitle": "Ending this cycle is not an idealistic theory. It is a documented public policy reality.",
+    "image": "/issues/issue-03/lisbon-model.webp",
+    "outreachImage": "/issues/issue-03/dissuasion-panel.webp",
+    "pillarsImage": "/issues/issue-03/civic-renewal.webp",
+    "citation": "Ref: European Monitoring Centre for Drugs and Drug Addiction (EMCDDA), Transform Drug Policy Foundation & SICAD Portugal 20-Year Ledger.",
+    "leadParagraph": "By 2000, Portugal faced an existential crisis: 1% of its population was addicted to heroin, with the highest drug-related HIV rate in the EU. Instead of building more prisons, they enacted Law 30/2000, dismantling punitive prohibition.",
+    "closingParagraph": "Total drug consumption did not skyrocket; adolescent experimentation declined, and problematic intravenous use was cut in half. Public health delivered what fifty years of policing could never achieve.",
+    "steps": [
+      {
+        "code": "01",
+        "label": "01 • POLICE INTERCEPTION",
+        "title": "Decriminalisation without Legalisation",
+        "desc": "Possessing up to a 10-day personal supply remains prohibited, but was reclassified from a criminal offence into an administrative health referral. No handcuffs, no booking photos, no holding cells."
+      },
+      {
+        "code": "02",
+        "label": "02 • THE DISSUASION PANEL",
+        "title": "Psychology Over Penal Codes",
+        "desc": "Within 72 hours, the citizen meets an informal 3-person Dissuasion Commission: a social worker, a clinical psychologist, and a legal advisor. If dependent, they receive immediate, funded clinical support. Zero criminal records are generated."
+      },
+      {
+        "code": "03",
+        "label": "03 • BUDGET REALLOCATION",
+        "title": "Health Infrastructure Replaces Cages",
+        "desc": "Capital wasted on police raids, courts, and prison cells was redirected into street-level mobile needle exchanges, clinical therapy, housing support, and subsidized job reintegration."
+      }
+    ],
+    "outcomes": [
+      {
+        "metric": "New Drug-Related HIV Infections",
+        "before": "1,016 cases / yr (Peak 2001)",
+        "after": "< 50 cases / yr",
+        "drop": "-90% Drop",
+        "percentReduction": 90,
+        "detail": "Direct result of free mobile needle exchange vans and clinical outreach replacing midnight police raids."
+      },
+      {
+        "metric": "Overdose Mortality Rate",
+        "before": "Crisis Peak (1999)",
+        "after": "~6 per 1M residents",
+        "drop": "Europe's Lowest",
+        "percentReduction": 88,
+        "detail": "Among the lowest rates in Europe, compared to over 300 deaths per million in prohibition-heavy jurisdictions like the United States."
+      },
+      {
+        "metric": "Drug-Related Prison Share",
+        "before": "44% of total inmates (1999)",
+        "after": "< 15% of inmates",
+        "drop": "-65% Reduction",
+        "percentReduction": 66,
+        "detail": "Eliminated prison overcrowding, unclogged the courts, and broke multi-generational recidivism loops."
+      }
+    ],
+    "pillars": [
+      {
+        "code": "01",
+        "title": "Scientific Recategorization",
+        "accent": "#22c55e",
+        "copy": "Unbundle non-addictive entheogens (psilocybin, LSD, MDMA) from toxic adulterated synthetics. Stop treating organic botanicals and therapeutic compounds as weapons of mass destruction."
+      },
+      {
+        "code": "02",
+        "title": "Treat Trauma, Not Molecules",
+        "accent": "#eab308",
+        "copy": "Shift state budgets from paramilitary interdiction into mental healthcare, clinical community centers, housing stability, and poverty alleviation."
+      },
+      {
+        "code": "03",
+        "title": "Regulate and Demarketize",
+        "accent": "#ef4444",
+        "copy": "Remove the tax-free profit motive that finances violent street syndicates by bringing production into safe, quality-tested, age-gated public dispensaries."
+      }
+    ]
+  },
+  "conclusion": {
+    "kicker": "The Mirror",
+    "title": "Who Was Really Winning All Along?",
+    "backgroundImage": "/issues/issue-03/the-mirror.webp",
+    "secondaryImage": "/issues/issue-03/hero-dossier.webp",
+    "lead": "The next time an official claims that zero-tolerance prohibition is the only barrier keeping society from moral collapse, look at where the capital actually flows.",
+    "winners": [
+      {
+        "actor": "The Cartels Are Winning",
+        "metric": "$650B+ TAX-FREE MARGINS",
+        "color": "#eab308",
+        "detail": "They enjoy guaranteed, tax-free profit margins protected by the artificial scarcity that prohibition creates."
+      },
+      {
+        "actor": "The Security Apparatus Is Winning",
+        "metric": "PERPETUAL UN-AUDITED BUDGETS",
+        "color": "#ef4444",
+        "detail": "Defense contractors, private correctional operators, and law enforcement agencies secure expanding state budgets year after year to fight an endless enemy."
+      },
+      {
+        "actor": "The Politicians Are Winning",
+        "metric": "FEAR-DRIVEN ELECTORAL CAPITAL",
+        "color": "#22c55e",
+        "detail": "They harvest easy, fear-driven votes by positioning themselves as hardline guardians of order against an invisible plague."
+      }
+    ],
+    "body": "The only losers are the working-class citizens who fund this fifty-year theater with their taxes, the families fractured by state-sanctioned incarceration, and the victims of an unregulated, adulterated black market.",
+    "punchline": "The War on Drugs is not a broken policy waiting to be fixed. For the institutions that profit from human cages and perpetual fear, it is working exactly as intended.",
+    "substackPrompt": "Visual essays on power, generational economics, and street-level reality."
+  },
+  "sources": [
+    {
+      "id": "01",
+      "name": "Nutt, D. J., King, L. A., & Phillips, L. D., The Lancet (2010)",
+      "detail": "Multicriteria decision analysis ranking 20 drugs across 16 criteria of physical, psychological, and social harm: Alcohol scored 72 (highest overall), surpassing Heroin (55) and Crack Cocaine (54), while Psilocybin (6) and LSD (7) scored lowest."
+    },
+    {
+      "id": "02",
+      "name": "Alexander, B. K. et al., Simon Fraser University 'Rat Park' Studies (1978–1981)",
+      "detail": "Empirical demonstration in Psychopharmacology showing that severe morphine consumption in laboratory rats is driven by solitary confinement and environmental deprivation rather than irresistible chemical compulsion."
+    },
+    {
+      "id": "03",
+      "name": "SICAD Portugal & EMCDDA, Law 30/2000 Twenty-Year Empirical Ledger",
+      "detail": "Documented outcomes following Portugal's 2001 decriminalisation and Dissuasion Commission framework: >90% drop in new drug-related HIV infections, drug-induced mortality reduced to ~6 per million (vs. 300+ per million in the US), and drug-related incarceration cut from 44% to <15%."
+    },
+    {
+      "id": "04",
+      "name": "Beletsky, L. & Davis, C. S., The Iron Law of Prohibition (2017)",
+      "detail": "International Journal of Drug Policy analysis proving that supply-side interdiction of bulky organic botanicals systematically incentivizes criminal syndicates to pivot toward compact, hyper-potent laboratory synthetics (fentanyl, nitazenes)."
+    },
+    {
+      "id": "05",
+      "name": "UNODC World Drug Report (2024) & LSE IDEAS 'Ending the Drug Wars'",
+      "detail": "Global fiscal and market telemetry documenting over $1 trillion spent on prohibition enforcement since 1971 alongside falling street prices, rising purity, and $650B+ in annual cartel turnover."
+    }
+  ]
+}
