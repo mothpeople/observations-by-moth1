@@ -244,7 +244,7 @@ export default function HeroPhantomSection({ data }) {
                 opacity: stageOpacity,
                 pointerEvents: stageOpacity > 0.15 ? 'auto' : 'none',
               }}
-              className="seq-layer absolute inset-0 z-20 flex items-start lg:items-center justify-center px-2.5 sm:px-6 pt-13 pb-2 lg:py-0"
+              className="seq-layer absolute inset-0 z-20 flex items-start lg:items-center justify-center px-2.5 sm:px-6 pt-16 pb-2 lg:py-0"
             >
               <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-6 items-center">
                 {/* Left Column: 3-Way Crossfading Forensic Artwork Frame (Compact on mobile so card fits cleanly) */}

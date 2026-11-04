@@ -47,7 +47,7 @@ export default function RemedyWeaponSection({ data }) {
               }}
             />
 
-            <div className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-13 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-1.5 md:gap-6 items-start md:items-center">
+            <div className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-16 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-1.5 md:gap-6 items-start md:items-center">
               {/* LEFT COLUMN: 3 Sequenced Narrative Cards + Crossfading Artwork */}
               <div className="md:col-span-5 flex flex-col gap-3 order-2 md:order-1">
                 {/* Crossfading Transition Artwork Window */}

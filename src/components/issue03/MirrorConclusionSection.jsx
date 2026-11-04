@@ -64,7 +64,7 @@ export default function MirrorConclusionSection({ data, sources }) {
           return (
             <div
               onMouseMove={handleMouseMove}
-              className="relative w-full h-full bg-[#0a0b0e] text-[#e2e8f0] overflow-hidden flex items-center justify-center px-3 sm:px-8 pt-14 pb-4"
+              className="relative w-full h-full bg-[#0a0b0e] text-[#e2e8f0] overflow-hidden flex items-start md:items-center justify-center px-2.5 sm:px-8 pt-16 pb-4"
             >
               {/* Full-Screen Animated Surveillance Mirror Artwork */}
               <div

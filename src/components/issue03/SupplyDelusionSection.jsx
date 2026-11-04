@@ -44,7 +44,7 @@ export default function SupplyDelusionSection({ data }) {
               }}
             />
 
-            <div className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-13 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-1.5 md:gap-6 items-start md:items-center">
+            <div className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-16 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-1.5 md:gap-6 items-start md:items-center">
               {/* LEFT COLUMN: Interactive Iron Law of Prohibition / Hydrant Network Map */}
               <div className="md:col-span-7">
                 <DossierCard

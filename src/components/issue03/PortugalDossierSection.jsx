@@ -47,7 +47,7 @@ export default function PortugalDossierSection({ data }) {
               }}
             />
 
-            <div className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-13 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-1.5 md:gap-6 items-start md:items-center">
+            <div className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-16 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-1.5 md:gap-6 items-start md:items-center">
               {/* LEFT COLUMN: 3-Way Crossfading Architectural & Civic Renewal Artwork Frame */}
               <div className="md:col-span-5">
                 <div className="relative w-full aspect-[16/9] md:aspect-[4/3] max-h-[125px] sm:max-h-[340px] border border-slate-800 bg-[#08090c] shadow-[0_24px_60px_rgba(0,0,0,0.92)] overflow-hidden">

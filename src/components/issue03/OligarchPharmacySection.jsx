@@ -27,7 +27,7 @@ export default function OligarchPharmacySection({ data }) {
               }}
             />
 
-            <div className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-13 pb-2 md:py-6 flex flex-col gap-1.5 sm:gap-4">
+            <div className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-16 pb-2 md:py-6 flex flex-col gap-1.5 sm:gap-4">
               {/* TOP WIDE GRAPHIC-NOVEL SPLIT COMPARATOR: Executive Loft vs. Concrete Interrogation Cell */}
               <div className="relative w-full aspect-[16/9] max-h-[145px] sm:max-h-[295px] border border-slate-800 bg-[#08090c] shadow-[0_24px_60px_rgba(0,0,0,0.92)] overflow-hidden">
                 {/* Base Layer (Right Side): Working-Class Concrete Interrogation Cell */}
