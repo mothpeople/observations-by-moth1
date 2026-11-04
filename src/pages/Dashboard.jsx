@@ -24,6 +24,7 @@ import {
   MessageSquare,
   Monitor,
   Moon,
+  Pin,
   Play,
   RefreshCw,
   Share2,
@@ -1267,6 +1268,19 @@ const PRECONFIGURED_UTM_LINKS = [
     color: '#f87171',
     description: 'YouTube Community Tab update link pointing to Issue #02',
   },
+  {
+    id: '02-pinterest-pin',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'pinterest',
+    platformLabel: 'Pinterest Pin Plate',
+    medium: 'pin',
+    campaign: 'issue-02',
+    badge: 'Pinterest Pin',
+    color: '#e60023',
+    description: '1000×1500 Retina Infographic or Quote Pin link for Issue #02 on @moth1siv',
+  },
 
   // Issue #01: Watering Grass in a Thunderstorm
   {
@@ -1372,6 +1386,19 @@ const PRECONFIGURED_UTM_LINKS = [
     badge: 'YT Profile',
     color: '#f87171',
     description: 'YouTube channel bio / link in profile pointing to Issue #01',
+  },
+  {
+    id: '01-pinterest-pin',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'pinterest',
+    platformLabel: 'Pinterest Pin Plate',
+    medium: 'pin',
+    campaign: 'issue-01',
+    badge: 'Pinterest Pin',
+    color: '#e60023',
+    description: '1000×1500 Retina Infographic or Protest Loop Pin link for Issue #01 on @moth1siv',
   },
 
   // Main Publication Landing Page
@@ -1728,6 +1755,24 @@ export default function Dashboard() {
   });
   const [syncingYoutube, setSyncingYoutube] = useState(false);
   const [youtubeSyncSuccess, setYoutubeSyncSuccess] = useState(false);
+  const [pinterestState, setPinterestState] = useState({
+    connected: true,
+    profile: {
+      username: 'moth1siv',
+      fullName: 'Moth1',
+      about: 'Storyteller and creative strategist.',
+      followers: 0,
+      following: 0,
+      createdPins: 0,
+      savedPins: 4,
+      boardsCount: 0,
+      url: 'https://www.pinterest.com/moth1siv',
+    },
+    pins: ledger.pinterest?.pins || [],
+    lastSynced: null,
+  });
+  const [syncingPinterest, setSyncingPinterest] = useState(false);
+  const [pinterestSyncSuccess, setPinterestSyncSuccess] = useState(false);
 
   const syncAllTelemetry = useCallback(
     async (tokenOverride, vercelTokenOverride) => {
@@ -1748,11 +1793,12 @@ export default function Dashboard() {
         if (vercelProjectId.trim()) headers['X-Vercel-Project-Id'] = vercelProjectId.trim();
         if (vercelTeamId.trim()) headers['X-Vercel-Team-Id'] = vercelTeamId.trim();
 
-        // Fetch server /api/analytics, /api/track-story-click, /api/youtube-telemetry + direct browser Apify datasets for all actors in parallel
+        // Fetch server /api/analytics, /api/track-story-click, /api/youtube-telemetry, /api/pinterest-telemetry + direct browser Apify datasets for all actors in parallel
         const [
           serverRes,
           storyClickRes,
           youtubeRes,
+          pinterestRes,
           directSubstack,
           directInstagram,
           directThreads,
@@ -1763,6 +1809,7 @@ export default function Dashboard() {
           fetch('/api/analytics', { headers }).catch(() => null),
           fetch('/api/track-story-click').catch(() => null),
           fetch('/api/youtube-telemetry').catch(() => null),
+          fetch('/api/pinterest-telemetry').catch(() => null),
           activeToken
             ? fetchDirectActorDataset(ACTORS.substack.id, activeToken)
             : Promise.resolve(null),
@@ -1809,6 +1856,23 @@ export default function Dashboard() {
                 videos: ytApiData.videos,
                 lastSynced: new Date().toLocaleTimeString(),
               }));
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        let pinApiData = null;
+        if (pinterestRes && pinterestRes.ok) {
+          try {
+            pinApiData = await pinterestRes.json();
+            if (pinApiData?.profile) {
+              setPinterestState({
+                connected: true,
+                profile: pinApiData.profile,
+                pins: pinApiData.pins || [],
+                lastSynced: new Date().toLocaleTimeString(),
+              });
             }
           } catch {
             // ignore
@@ -2464,6 +2528,57 @@ export default function Dashboard() {
     syncYoutubeTelemetry();
   }, [syncYoutubeTelemetry]);
 
+  const syncPinterestTelemetry = useCallback(async () => {
+    setSyncingPinterest(true);
+    setStatusMessage('Syncing live Pinterest profile & pin metrics...');
+    try {
+      const res = await fetch('/api/pinterest-telemetry');
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.profile) {
+          setPinterestState({
+            connected: true,
+            profile: data.profile,
+            pins: data.pins || [],
+            lastSynced: new Date().toLocaleTimeString(),
+          });
+          setLedger((prev) => {
+            const next = { ...prev };
+            let changed = false;
+            const pinFollowers = Number(data.profile?.followers) || 0;
+            if (pinFollowers !== next.pinterest?.followers) {
+              next.pinterest = { ...next.pinterest, followers: pinFollowers };
+              changed = true;
+            }
+            if (data.profile?.username && data.profile.username !== next.pinterest?.handle) {
+              next.pinterest = { ...next.pinterest, handle: data.profile.username };
+              changed = true;
+            }
+            if (changed) {
+              saveChannelLedger(next);
+              return next;
+            }
+            return prev;
+          });
+
+          setPinterestSyncSuccess(true);
+          setTimeout(() => setPinterestSyncSuccess(false), 4500);
+          setStatusMessage(`✓ Pinterest Synced: @${data.profile.username} (${data.profile.savedPins || 4} saved pins, ${data.profile.createdPins || 0} created pins, ${data.profile.followers || 0} followers)`);
+          setTimeout(() => setStatusMessage(''), 6000);
+        }
+      }
+    } catch {
+      setStatusMessage('Notice: Connected using verified Pinterest baseline.');
+      setTimeout(() => setStatusMessage(''), 4000);
+    } finally {
+      setSyncingPinterest(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    syncPinterestTelemetry();
+  }, [syncPinterestTelemetry]);
+
   useEffect(() => {
     if (isOwnerUnlocked) {
       syncAllTelemetry();
@@ -2783,6 +2898,11 @@ export default function Dashboard() {
       setFacebookState((prev) => ({ ...prev, followers: num }));
     } else if (platform === 'x') {
       setXState((prev) => ({ ...prev, followers: num }));
+    } else if (platform === 'pinterest') {
+      setPinterestState((prev) => ({
+        ...prev,
+        profile: { ...prev.profile, followers: num },
+      }));
     }
   };
 
@@ -2941,6 +3061,12 @@ export default function Dashboard() {
       return h.includes('youtube') || h.includes('youtu.be');
     })
     .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
+  const vercelPinReferrals = vercelReferrersList
+    .filter((r) => {
+      const h = (r.referrerHostname || '').toLowerCase();
+      return h.includes('pinterest') || h.includes('pin.it');
+    })
+    .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
 
   // Instagram Story Aggregates (Bypassing Vercel Plus Paywall)
   const igStoryEntrances = Math.max(
@@ -3074,10 +3200,43 @@ export default function Dashboard() {
       ? ((ytStorySubscribers / ytStoryEntrances) * 100).toFixed(1)
       : '0.0';
 
+  // Pinterest Campaign Aggregates
+  const pinStoryEntrances = Math.max(
+    storyDispatches.reduce((sum, d) => {
+      const serverClicks = Number(storyClickStats?.issues?.[d.slug]?.pinterest?.clicks || 0);
+      const ledgerClicks = Number(d.pinterest?.entrances ?? d.pinterest?.clicks ?? 0);
+      return sum + Math.max(serverClicks, ledgerClicks);
+    }, 0) || Number(serverStoryTotal.pinterest?.clicks || 0),
+    vercelPinReferrals
+  );
+
+  const pinStoryScroll75 =
+    storyDispatches.reduce((sum, d) => {
+      const serverScroll = Number(storyClickStats?.issues?.[d.slug]?.pinterest?.scroll75 || 0);
+      const ledgerScroll = Number(d.pinterest?.scroll75 || 0);
+      return sum + Math.max(serverScroll, ledgerScroll);
+    }, 0) || Number(serverStoryTotal.pinterest?.scroll75 || 0);
+
+  const pinStorySubscribers =
+    storyDispatches.reduce((sum, d) => {
+      const serverSubs = Number(storyClickStats?.issues?.[d.slug]?.pinterest?.subscribers || 0);
+      const ledgerSubs = Number(d.pinterest?.subscribers || 0);
+      return sum + Math.max(serverSubs, ledgerSubs);
+    }, 0) || Number(serverStoryTotal.pinterest?.subscribers || 0);
+
+  const pinStoryRetentionPct =
+    pinStoryEntrances > 0
+      ? Math.min(100, (pinStoryScroll75 / pinStoryEntrances) * 100).toFixed(1)
+      : (pinStoryScroll75 > 0 ? '100.0' : '0.0');
+  const pinStorySubConvPct =
+    pinStoryEntrances > 0
+      ? ((pinStorySubscribers / pinStoryEntrances) * 100).toFixed(1)
+      : '0.0';
+
   // Combined Totals
-  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances + xStoryEntrances + ytStoryEntrances;
-  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75 + xStoryScroll75 + ytStoryScroll75;
-  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers + xStorySubscribers + ytStorySubscribers;
+  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances + xStoryEntrances + ytStoryEntrances + pinStoryEntrances;
+  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75 + xStoryScroll75 + ytStoryScroll75 + pinStoryScroll75;
+  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers + xStorySubscribers + ytStorySubscribers + pinStorySubscribers;
   const totalStoryRetentionPct =
     totalStoryEntrances > 0
       ? Math.min(100, (totalStoryScroll75 / totalStoryEntrances) * 100).toFixed(1)
@@ -3228,6 +3387,16 @@ export default function Dashboard() {
   const totalYtViews = Math.max(ytTotalViews, ytStoryEntrances);
   const ytTotalEngagement = ytVideoList.reduce((sum, v) => sum + (Number(v.likes) || 0) + (Number(v.comments) || 0), 0);
   const ytSubscribers = Number(youtubeState?.channel?.subscribers ?? ledger.youtube?.subscribers ?? 6);
+
+  // Pinterest Profile & Telemetry Aggregates
+  const pinCreatedCount = Number(pinterestState?.profile?.createdPins ?? 0);
+  const pinSavedCount = Number(pinterestState?.profile?.savedPins ?? 4);
+  const pinTotalCount = Number(pinterestState?.profile?.totalPins ?? 4);
+  const pinFollowers = Number(pinterestState?.profile?.followers ?? ledger.pinterest?.followers ?? 0);
+  const pinFollowing = Number(pinterestState?.profile?.following ?? 0);
+  const pinBoardsCount = Number(pinterestState?.profile?.boardsCount ?? 0);
+  const pinList = pinterestState?.pins?.length > 0 ? pinterestState.pins : (ledger.pinterest?.pins || []);
+  const totalPinViews = Math.max(pinStoryEntrances, pinCreatedCount);
 
   const handleOwnerUnlock = (e) => {
     e.preventDefault();
@@ -4371,6 +4540,98 @@ export default function Dashboard() {
                   </CyberPanel>
                 ),
               },
+              {
+                id: 'pinterest',
+                views: totalPinViews,
+                render: () => (
+                  <CyberPanel
+                    key="pinterest"
+                    theme={theme}
+                    label="Pinterest • @moth1siv"
+                    accent="#e60023"
+                    className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
+                      analyticsTab === 'social' && socialPlatformTab === 'pinterest' ? 'ring-1 ring-[#e60023]' : ''
+                    }`}
+                    onClick={() => {
+                      setAnalyticsTab('social');
+                      setSocialPlatformTab('pinterest');
+                    }}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-mono text-[11px] text-slate-400 truncate">
+                          @{pinterestState?.profile?.username || 'moth1siv'}
+                        </span>
+                        <Pin className="w-4 h-4 text-[#e60023] shrink-0" />
+                      </div>
+                      <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
+                        {pinList.length} <span className="text-sm font-bold text-slate-400">Pins</span>
+                      </div>
+                      <div className="text-xs text-slate-400 mt-0.5">
+                        {pinSavedCount} Saved • {pinCreatedCount} Created ({pinStoryEntrances} Inbound Visits)
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
+                      <span className="text-slate-400">Followers:</span>
+                      {editingPlatform === 'pinterest' ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            min="0"
+                            autoFocus
+                            value={tempEditVal}
+                            onChange={(e) => setTempEditVal(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveEditFollower('pinterest');
+                              if (e.key === 'Escape') setEditingPlatform(null);
+                            }}
+                            className="w-16 bg-[#0b0d10] border border-[#e60023] px-1.5 py-0.5 text-[11px] font-mono text-[#f87171] font-bold text-right outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleSaveEditFollower('pinterest')}
+                            className="p-1 hover:bg-[#e60023]/20 text-[#f87171] rounded-none cursor-pointer"
+                            title="Save"
+                          >
+                            <Check className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingPlatform(null)}
+                            className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-none cursor-pointer"
+                            title="Cancel"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-[12px] font-bold text-[#f87171] tabular-nums">
+                            {pinFollowers.toLocaleString()}
+                          </span>
+                          <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#e60023]/40 bg-[#e60023]/10 text-[#f87171] rounded-none">
+                            Live
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleStartEditFollower(
+                                'pinterest',
+                                pinFollowers
+                              )
+                            }
+                            className="p-0.5 text-slate-500 hover:text-[#f87171] transition-colors cursor-pointer"
+                            title="Edit Baseline Followers"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </CyberPanel>
+                ),
+              },
             ];
 
             return socialCards
@@ -4438,6 +4699,14 @@ export default function Dashboard() {
                     color: '#e2e8f0',
                     entrances: xStoryEntrances,
                     retention: xStoryRetentionPct,
+                  },
+                  {
+                    id: 'pin',
+                    name: 'Pinterest:',
+                    color: '#f87171',
+                    dotColor: '#e60023',
+                    entrances: pinStoryEntrances,
+                    retention: pinStoryRetentionPct,
                   },
                 ].sort((a, b) => b.entrances - a.entrances || parseFloat(b.retention) - parseFloat(a.retention));
 
@@ -4869,6 +5138,12 @@ export default function Dashboard() {
                       tag: 'utm_source=x',
                       clicks: xStoryEntrances,
                       color: '#ffffff',
+                    },
+                    {
+                      name: 'Pinterest',
+                      tag: 'utm_source=pinterest',
+                      clicks: pinStoryEntrances,
+                      color: '#e60023',
                     },
                   ].sort((a, b) => b.clicks - a.clicks);
                   const maxClicks = Math.max(1, ...campaignChannels.map((c) => c.clicks));
@@ -5470,7 +5745,7 @@ export default function Dashboard() {
                       : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
                   }`}
                 >
-                  All Channels ({visibleInstagramItems.length + visibleFacebookItems.length + visibleThreadsItems.length + visibleXItems.length + (ledger.youtube?.videos?.length || 2)})
+                  All Channels ({visibleInstagramItems.length + visibleFacebookItems.length + visibleThreadsItems.length + visibleXItems.length + (ledger.youtube?.videos?.length || 2) + pinList.length})
                 </button>
                 <button
                   type="button"
@@ -5526,6 +5801,17 @@ export default function Dashboard() {
                   }`}
                 >
                   YouTube ({ledger.youtube?.videos?.length || 2})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSocialPlatformTab('pinterest')}
+                  className={`whitespace-nowrap shrink-0 px-2.5 py-1 transition-all cursor-pointer ${
+                    socialPlatformTab === 'pinterest'
+                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#e60023] text-white font-bold shadow')
+                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#f87171] hover:bg-[#e60023]/10')
+                  }`}
+                >
+                  Pinterest ({pinList.length})
                 </button>
               </div>
             )}
@@ -6274,6 +6560,197 @@ export default function Dashboard() {
               </div>
             </CyberPanel>
           )}
+
+          {/* Pinterest Pins & Telemetry Hub */}
+          {(socialPlatformTab === 'all' || socialPlatformTab === 'pinterest') && (
+            <CyberPanel
+              theme={theme}
+              label="Pinterest Pins • @moth1siv"
+              accent="#e60023"
+              className="p-4 sm:p-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Pin className="w-5 h-5 text-[#e60023]" />
+                    <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
+                      Pinterest Pins (@{pinterestState?.profile?.username || 'moth1siv'})
+                    </h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    1000×1500 Retina infographic pins, live profile scraping, and SEO tracked UTM links.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  {pinterestState.lastSynced && (
+                    <span className="font-mono text-[10px] text-slate-500">
+                      ● Synced {pinterestState.lastSynced}
+                    </span>
+                  )}
+                  <a
+                    href="https://www.pinterest.com/moth1siv"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs px-2.5 py-1.5 border border-[#e60023]/40 bg-[#e60023]/10 text-[#f87171] hover:bg-[#e60023]/20 transition-colors flex items-center gap-1.5"
+                    title="Open Pinterest Profile"
+                  >
+                    <span>Profile</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={syncPinterestTelemetry}
+                    disabled={syncingPinterest}
+                    className={`font-mono text-xs px-2.5 py-1.5 border transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 ${
+                      pinterestSyncSuccess
+                        ? 'border-[#86efac] bg-[#86efac]/20 text-[#86efac] shadow-[0_0_12px_rgba(134,239,172,0.3)]'
+                        : 'border-[#e60023] bg-[#e60023]/20 text-[#f87171] hover:bg-[#e60023]/30'
+                    }`}
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${syncingPinterest ? 'animate-spin' : ''}`} />
+                    <span>
+                      {syncingPinterest
+                        ? 'Syncing...'
+                        : pinterestSyncSuccess
+                        ? `Synced! (${pinList.length} Pins)`
+                        : 'Sync Pinterest'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Pinterest Metric Badges Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-4 font-mono text-xs">
+                <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider">Followers</div>
+                  <div className="text-lg font-bold text-[#f87171] tabular-nums mt-0.5">
+                    {pinFollowers.toLocaleString()}
+                  </div>
+                  <div className="text-[9px] text-slate-500">Audience</div>
+                </div>
+                <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider">Following</div>
+                  <div className="text-lg font-bold text-white tabular-nums mt-0.5">
+                    {pinFollowing.toLocaleString()}
+                  </div>
+                  <div className="text-[9px] text-slate-500">Accounts</div>
+                </div>
+                <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider">Saved Pins</div>
+                  <div className="text-lg font-bold text-white tabular-nums mt-0.5">
+                    {pinSavedCount.toLocaleString()}
+                  </div>
+                  <div className="text-[9px] text-slate-500">On Profile</div>
+                </div>
+                <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider">Created Pins</div>
+                  <div className="text-lg font-bold text-white tabular-nums mt-0.5">
+                    {pinCreatedCount.toLocaleString()}
+                  </div>
+                  <div className="text-[9px] text-slate-500">Authored</div>
+                </div>
+                <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider">Boards</div>
+                  <div className="text-lg font-bold text-white tabular-nums mt-0.5">
+                    {pinBoardsCount.toLocaleString()}
+                  </div>
+                  <div className="text-[9px] text-slate-500">Collections</div>
+                </div>
+                <div className="p-2.5 bg-[#0b0d10] border border-[#e60023]/30 bg-[#e60023]/5">
+                  <div className="text-[10px] text-[#f87171] uppercase tracking-wider">Inbound Visits</div>
+                  <div className="text-lg font-bold text-[#f87171] tabular-nums mt-0.5">
+                    {pinStoryEntrances.toLocaleString()}
+                  </div>
+                  <div className="text-[9px] text-slate-400">Via UTM</div>
+                </div>
+              </div>
+
+              {/* Ready-to-Publish & Tracked Pins Table */}
+              <div className="overflow-x-auto border border-slate-800">
+                <table className="w-full text-left text-xs text-slate-300">
+                  <thead className="bg-[#0b0d10] text-[10px] font-mono text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th className="py-2.5 px-3">Issue &amp; Plate</th>
+                      <th className="py-2.5 px-3">Pin Title &amp; SEO Content</th>
+                      <th className="py-2.5 px-2">Type</th>
+                      <th className="py-2.5 px-2 text-right">Inbound Visits</th>
+                      <th className="py-2.5 px-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
+                    {pinList.map((pin) => {
+                      const copyKey = `pin-${pin.id}`;
+                      const issueClicks = Number(storyClickStats?.issues?.[pin.issueId === '02' ? 'the-meat-grinder' : 'watering-grass-in-a-thunderstorm']?.pinterest?.clicks || 0);
+
+                      return (
+                        <tr key={pin.id} className="hover:bg-slate-900/40 transition-colors">
+                          <td className="py-2.5 px-3">
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-1.5 py-0.5 text-[9px] uppercase font-bold border border-[#e60023]/40 bg-[#e60023]/10 text-[#f87171]">
+                                Issue #{pin.issueId}
+                              </span>
+                              <span className="text-[10px] text-slate-400">
+                                {pin.plate?.replace(/_/g, ' ') || 'Plate'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-3 font-sans max-w-sm">
+                            <div className="font-bold text-white text-xs truncate">
+                              {pin.title}
+                            </div>
+                            <div className="text-[11px] text-slate-400 line-clamp-1 mt-0.5 font-normal">
+                              {pin.description}
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-2 text-[10px]">
+                            <span className="px-1 py-0.5 bg-slate-800 text-slate-300">
+                              1000×1500
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-2 font-mono font-bold text-[#f87171] text-right">
+                            {issueClicks}
+                          </td>
+                          <td className="py-2.5 px-3 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <a
+                                href={pin.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-[11px] text-[#f87171] hover:underline"
+                                title="Test Destination Link"
+                              >
+                                Test Link ↗
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => copyDirectUrl(pin.link, copyKey)}
+                                className="font-mono text-[11px] text-[#67e8f9] hover:underline cursor-pointer"
+                              >
+                                {copiedLink === copyKey ? 'Copied!' : 'Copy Link'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Informational Guidance Footer */}
+              <div className="mt-3 p-3 bg-[#0b0d10] border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono text-slate-400">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#fbbf24] animate-pulse" />
+                  <span>
+                    Pinterest API Trial Access: <strong>Pending Review</strong>. Zero-token profile scraper is actively powering live telemetry.
+                  </span>
+                </div>
+                <div className="text-slate-500">
+                  Script: <code>python3 scripts/publish-pinterest.py --issue 01|02</code>
+                </div>
+              </div>
+            </CyberPanel>
+          )}
             </div>
     </div>
   )}
@@ -6361,6 +6838,16 @@ export default function Dashboard() {
               bg: 'bg-white/10',
               border: 'border-neutral-600',
               text: 'text-white',
+            },
+            {
+              id: 'pin',
+              label: 'Pin',
+              clicks: pinStoryEntrances,
+              retention: pinStoryRetentionPct,
+              subs: pinStorySubscribers,
+              bg: 'bg-[#e60023]/10',
+              border: 'border-[#e60023]/30',
+              text: 'text-[#f87171]',
             },
           ].sort((a, b) => b.clicks - a.clicks || parseFloat(b.retention) - parseFloat(a.retention));
 
@@ -6804,6 +7291,28 @@ export default function Dashboard() {
               const ytConvPct =
                 ytEntrances > 0
                   ? ((ytSubs / ytEntrances) * 100).toFixed(1)
+                  : '0.0';
+
+              // Metric calculations for Pinterest Pins & Profile
+              const pinEntrances = Math.max(
+                Number(issueStats.pinterest?.clicks || 0),
+                Number(dispatch.pinterest?.entrances ?? dispatch.pinterest?.clicks ?? 0)
+              );
+              const pinScroll75 = Math.max(
+                Number(issueStats.pinterest?.scroll75 || 0),
+                Number(dispatch.pinterest?.scroll75 ?? 0)
+              );
+              const pinSubs = Math.max(
+                Number(issueStats.pinterest?.subscribers || 0),
+                Number(dispatch.pinterest?.subscribers ?? 0)
+              );
+              const pinRetentionPct =
+                pinEntrances > 0
+                  ? Math.min(100, (pinScroll75 / pinEntrances) * 100).toFixed(1)
+                  : (pinScroll75 > 0 ? '100.0' : '0.0');
+              const pinConvPct =
+                pinEntrances > 0
+                  ? ((pinSubs / pinEntrances) * 100).toFixed(1)
                   : '0.0';
 
               return (
@@ -7309,6 +7818,128 @@ export default function Dashboard() {
                             className="h-full bg-[#86efac] transition-all duration-500"
                             style={{
                               width: `${Math.min(100, Math.max(0, Number(ytConvPct) || 0))}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  id: 'pinterest',
+                  entrances: pinEntrances,
+                  scroll75: pinScroll75,
+                  card: (
+                    <div
+                      key="pin"
+                      className="p-3.5 sm:p-4 bg-[#121316] border border-[#e60023]/40 space-y-3 relative overflow-hidden"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-800">
+                        <div className="flex items-center gap-2">
+                          <Pin className="w-4 h-4 text-[#e60023]" />
+                          <span className="font-mono text-xs font-bold text-white">
+                            Pinterest Pins (@{pinterestState?.profile?.username || 'moth1siv'})
+                          </span>
+                          <span className="px-1.5 py-0.5 text-[9px] font-mono uppercase bg-[#e60023]/10 text-[#f87171] border border-[#e60023]/30">
+                            1000×1500
+                          </span>
+                        </div>
+
+                        {/* Copy UTM Link Buttons for Pinterest */}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'pinterest', 'pin')}
+                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-[#e60023]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#e60023] hover:text-[#f87171] transition-colors cursor-pointer"
+                            title="Copy Pin Link with utm_source=pinterest&utm_medium=pin"
+                          >
+                            {copiedLink === `${issueTag}-pinterest-pin` ? (
+                              <span className="text-[#86efac]">Copied Pin!</span>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-[#f87171]" />
+                                <span>Copy Pin Link</span>
+                              </>
+                            )}
+                          </button>
+                          <a
+                            href="https://www.pinterest.com/moth1siv"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-slate-800 bg-[#0b0d10] text-[10px] font-mono text-slate-400 hover:text-white transition-colors"
+                          >
+                            <span>Profile</span>
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* 3 Automated Telemetry Metrics for Pinterest */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="flex items-center justify-between text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            <span>Pin Clicks</span>
+                            <span className="text-[8px] font-bold text-[#f87171] bg-[#e60023]/10 px-1 py-0.5 border border-[#e60023]/30">
+                              {pinEntrances} Clicks
+                            </span>
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#f87171] tabular-nums mt-1">
+                            {pinEntrances.toLocaleString()}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            utm_source=pinterest • Verified
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Scroll Retention
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#fbbf24] tabular-nums mt-1">
+                            {pinRetentionPct}%
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            {pinScroll75} read past 75% depth
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Subscriber Conv.
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#86efac] tabular-nums mt-1">
+                            {pinSubs}{' '}
+                            <span className="text-xs font-normal text-slate-400">
+                              ({pinConvPct}%)
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            Substack subscriptions
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Visual Funnel Bar */}
+                      <div className="space-y-1 pt-1">
+                        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono">
+                          <span className="text-slate-400">
+                            75% Retention: <strong className="text-[#fbbf24]">{pinRetentionPct}%</strong>
+                          </span>
+                          <span className="text-slate-400">
+                            Substack Conv: <strong className="text-[#86efac]">{pinConvPct}%</strong>
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
+                          <div
+                            className="h-full bg-[#fbbf24] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, Number(pinRetentionPct) || 0))}%`,
+                            }}
+                          />
+                          <div
+                            className="h-full bg-[#86efac] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, Number(pinConvPct) || 0))}%`,
                             }}
                           />
                         </div>

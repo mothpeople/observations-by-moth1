@@ -128,8 +128,21 @@ def get_or_select_board(token, override_board_id=None):
     if r.status_code == 200:
         items = r.json().get("items", [])
         if not items:
-            print("❌ No boards found on your Pinterest account. Please create one on Pinterest first.")
-            sys.exit(1)
+            print("ℹ️ No boards found on your Pinterest account. Creating board 'Observations by Moth1'...")
+            create_payload = {
+                "name": "Observations by Moth1",
+                "description": "Visual essays, demographic wireframes, and civil analysis by Observations by Moth1.",
+                "privacy": "PUBLIC"
+            }
+            create_res = requests.post("https://api.pinterest.com/v5/boards", headers=headers, json=create_payload, timeout=10)
+            if create_res.status_code in (200, 201):
+                new_board = create_res.json()
+                print(f"✅ Created board: {new_board.get('name')} (ID: {new_board.get('id')})")
+                return new_board.get("id")
+            else:
+                print(f"❌ Failed to create board: {create_res.status_code} - {create_res.text}")
+                print("Please create a board manually on Pinterest at https://www.pinterest.com/moth1siv/")
+                sys.exit(1)
         print("\nAvailable Pinterest Boards:")
         for idx, b in enumerate(items):
             print(f"  [{idx + 1}] {b['name']} (ID: {b['id']})")
