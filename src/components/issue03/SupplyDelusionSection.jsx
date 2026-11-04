@@ -33,7 +33,7 @@ export default function SupplyDelusionSection({ data }) {
           progress < 0.34 ? 0 : progress < 0.67 ? 1 : 2;
 
         return (
-          <div className="relative w-full h-full bg-[#0a0b0e] text-[#e2e8f0] overflow-hidden flex items-center justify-center">
+          <div className="relative w-full h-full bg-[#0a0b0e] text-[#e2e8f0] overflow-hidden flex items-start md:items-center justify-center">
             {/* Tactical Wireframe Grid */}
             <div
               className="pointer-events-none absolute inset-0 opacity-15"
@@ -44,7 +44,7 @@ export default function SupplyDelusionSection({ data }) {
               }}
             />
 
-            <div className="relative z-10 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-12 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-6 items-center">
+            <div className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-13 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-1.5 md:gap-6 items-start md:items-center">
               {/* LEFT COLUMN: Interactive Iron Law of Prohibition / Hydrant Network Map */}
               <div className="md:col-span-7">
                 <DossierCard
@@ -54,7 +54,7 @@ export default function SupplyDelusionSection({ data }) {
                   accent="#ef4444"
                 >
                   {/* Interactive SVG Network Flow Map over Supply Hydrant Blueprint */}
-                  <div className="relative w-full aspect-[16/9] max-h-[145px] sm:max-h-[225px] mb-2.5 sm:mb-3 bg-[#08090c] border border-slate-800 overflow-hidden">
+                  <div className="relative w-full aspect-[16/9] max-h-[125px] sm:max-h-[225px] mb-1.5 sm:mb-3 bg-[#08090c] border border-slate-800 overflow-hidden">
                     <img
                       src={data.image}
                       alt={data.title}

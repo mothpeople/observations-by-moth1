@@ -43,7 +43,7 @@ export default function AlcoholParadoxSection({ data }) {
         const showStadium = progress >= 0.32 && progress < 0.68;
 
         return (
-          <div className="relative w-full h-full bg-[#0a0b0e] text-[#e2e8f0] overflow-hidden flex items-center justify-center">
+          <div className="relative w-full h-full bg-[#0a0b0e] text-[#e2e8f0] overflow-hidden flex items-start md:items-center justify-center">
             {/* Subtle Forensic Grid */}
             <div
               className="pointer-events-none absolute inset-0 opacity-15"
@@ -54,7 +54,7 @@ export default function AlcoholParadoxSection({ data }) {
               }}
             />
 
-            <div className="relative z-10 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-12 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-6 items-center">
+            <div className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-13 pb-2 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-1.5 md:gap-6 items-start md:items-center">
               {/* LEFT COLUMN: Sequenced Artwork Window + 3 Dossier Cards */}
               <div className="md:col-span-5 flex flex-col gap-3 order-2 md:order-1">
                 {/* Crossfading Transition Artwork Window */}
@@ -105,13 +105,13 @@ export default function AlcoholParadoxSection({ data }) {
                           stamp={card.metric}
                           accent={card.accent}
                         >
-                          <h3 className="text-base sm:text-xl font-extrabold text-[#e2e8f0] mb-2">
+                          <h3 className="text-sm sm:text-xl font-extrabold text-[#e2e8f0] mb-1 sm:mb-2 leading-snug">
                             {card.headline}
                           </h3>
-                          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-3">
+                          <p className="text-[11px] sm:text-sm text-slate-300 leading-snug sm:leading-relaxed mb-1.5 sm:mb-3">
                             {card.body}
                           </p>
-                          <div className="pt-2 border-t border-slate-800/80 font-mono text-[9px] text-slate-400">
+                          <div className="pt-1 sm:pt-2 border-t border-slate-800/80 font-mono text-[8.5px] sm:text-[9px] text-slate-400 leading-tight">
                             {card.citation}
                           </div>
                         </DossierCard>
@@ -142,8 +142,8 @@ export default function AlcoholParadoxSection({ data }) {
                   }
                 >
                   {/* Mode Selector Tabs */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-slate-800">
-                    <span className="font-mono text-[10px] sm:text-xs text-[#eab308] font-bold uppercase tracking-wider">
+                  <div className="flex flex-wrap items-center justify-between gap-1 sm:gap-2 pb-1.5 mb-1.5 sm:pb-2.5 sm:mb-2.5 border-b border-slate-800">
+                    <span className="font-mono text-[9px] sm:text-xs text-[#eab308] font-bold uppercase tracking-wider">
                       THE LANCET 16-CRITERIA HARM MATRIX
                     </span>
                     <div className="flex items-center gap-1">
@@ -179,7 +179,7 @@ export default function AlcoholParadoxSection({ data }) {
                                   }
                                 : undefined
                             }
-                            className={`px-2 py-1 font-mono text-[9px] sm:text-[10px] uppercase transition-colors cursor-pointer border ${
+                            className={`px-1.5 py-0.5 sm:px-2 sm:py-1 font-mono text-[8px] sm:text-[10px] uppercase transition-colors cursor-pointer border ${
                               isSelected
                                 ? 'font-extrabold'
                                 : 'border-slate-800 bg-[#0a0b0e] text-slate-400 hover:border-slate-700'
@@ -193,7 +193,7 @@ export default function AlcoholParadoxSection({ data }) {
                         <button
                           type="button"
                           onClick={() => setManualMode(null)}
-                          className="ml-1 font-mono text-[9px] text-[#22c55e] underline cursor-pointer"
+                          className="ml-1 font-mono text-[8px] sm:text-[9px] text-[#22c55e] underline cursor-pointer"
                         >
                           Auto
                         </button>
@@ -202,7 +202,7 @@ export default function AlcoholParadoxSection({ data }) {
                   </div>
 
                   {/* Multi-Bar Harm Comparison Chart (Sorted Descending by Active Harm Score) */}
-                  <div className="space-y-1 sm:space-y-2">
+                  <div className="space-y-0.5 sm:space-y-2">
                     {sortedSubstances.map((s, rankIdx) => {
                       const maxScale =
                         activeMode === 'harmToOthers'
@@ -223,10 +223,10 @@ export default function AlcoholParadoxSection({ data }) {
                       );
 
                       return (
-                        <div key={s.name} className="space-y-0.5">
-                          <div className="flex items-center justify-between text-[10px] sm:text-xs font-mono">
-                            <div className="flex items-center gap-2 truncate pr-2">
-                              <span className="text-slate-500 text-[9.5px] font-bold w-4 shrink-0">
+                        <div key={s.name} className="space-y-0 sm:space-y-0.5">
+                          <div className="flex items-center justify-between text-[9px] sm:text-xs font-mono leading-tight">
+                            <div className="flex items-center gap-1.5 sm:gap-2 truncate pr-2">
+                              <span className="text-slate-500 text-[8.5px] sm:text-[9.5px] font-bold w-3.5 sm:w-4 shrink-0">
                                 #{rankIdx + 1}
                               </span>
                               <span className="text-[#e2e8f0] font-semibold truncate">
@@ -244,7 +244,7 @@ export default function AlcoholParadoxSection({ data }) {
                             </div>
 
                             {/* Dynamic Score Breakdown Label */}
-                            <div className="font-mono text-[10px] sm:text-xs tabular-nums shrink-0 flex items-center gap-1.5">
+                            <div className="font-mono text-[9px] sm:text-xs tabular-nums shrink-0 flex items-center gap-1.5">
                               {activeMode === 'total' && (
                                 <>
                                   <span className="hidden sm:inline text-[9.5px] text-[#ef4444]">
@@ -275,7 +275,7 @@ export default function AlcoholParadoxSection({ data }) {
                           </div>
 
                           {/* Distinctly Colored Stacked / Isolated Bar Track */}
-                          <div className="w-full h-2 sm:h-3 bg-[#08090c] border border-slate-800/90 overflow-hidden flex">
+                          <div className="w-full h-1.5 sm:h-3 bg-[#08090c] border border-slate-800/90 overflow-hidden flex">
                             {activeMode === 'total' && (
                               <>
                                 {/* Harm to User segment in Vermilion (#ef4444) */}
@@ -323,22 +323,24 @@ export default function AlcoholParadoxSection({ data }) {
                   </div>
 
                   {/* Color Legend & Empirical Citation */}
-                  <div className="mt-3 pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 font-mono text-[9px] sm:text-[10px]">
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1.5 text-[#ef4444] font-bold">
-                        <span className="w-2.5 h-2.5 bg-[#ef4444] inline-block" />
-                        Harm to User (Direct Toxicology)
+                  <div className="mt-1.5 pt-1 sm:mt-3 sm:pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-1 sm:gap-2 font-mono text-[8px] sm:text-[10px]">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <span className="inline-flex items-center gap-1 sm:gap-1.5 text-[#ef4444] font-bold">
+                        <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[#ef4444] inline-block" />
+                        Harm to User
+                        <span className="hidden sm:inline">(Direct Toxicology)</span>
                       </span>
-                      <span className="inline-flex items-center gap-1.5 text-[#eab308] font-bold">
-                        <span className="w-2.5 h-2.5 bg-[#eab308] inline-block" />
-                        Harm to Society (Collateral)
+                      <span className="inline-flex items-center gap-1 sm:gap-1.5 text-[#eab308] font-bold">
+                        <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[#eab308] inline-block" />
+                        Harm to Society
+                        <span className="hidden sm:inline">(Collateral)</span>
                       </span>
                     </div>
                     <span className="text-slate-400">
-                      Ranked Most Harmful → Least Harmful
+                      Most → Least Harmful
                     </span>
                   </div>
-                  <div className="mt-1 font-mono text-[8.5px] sm:text-[9.5px] text-slate-400">
+                  <div className="hidden sm:block mt-1 font-mono text-[9.5px] text-slate-400">
                     {data.citation}
                   </div>
                 </DossierCard>

@@ -17,14 +17,14 @@ export default function DossierCard({
     return (
       <div
         style={{ borderLeftColor: accent }}
-        className={`relative border-l-4 bg-gradient-to-r from-[#0a0b0e]/95 via-[#0e1015]/90 to-[#0a0b0e]/75 pl-3.5 sm:pl-6 pr-2.5 sm:pr-5 py-2.5 sm:py-5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-md ${className}`}
+        className={`relative border-l-4 bg-gradient-to-r from-[#0a0b0e]/95 via-[#0e1015]/90 to-[#0a0b0e]/75 pl-3 sm:pl-6 pr-2.5 sm:pr-5 py-2 sm:py-5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-md ${className}`}
       >
         {(label || stamp) && (
-          <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+          <div className="flex flex-wrap items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
             {label && (
               <span
                 style={{ color: accent }}
-                className="font-mono text-[9.5px] sm:text-[11px] font-black uppercase tracking-[0.2em] sm:tracking-[0.24em]"
+                className="font-mono text-[9px] sm:text-[11px] font-black uppercase tracking-[0.16em] sm:tracking-[0.24em]"
               >
                 {label}
               </span>
@@ -58,13 +58,13 @@ export default function DossierCard({
             backgroundImage: `radial-gradient(${accent} 1px, transparent 1px)`,
             backgroundSize: '6px 6px',
           }}
-          className="h-1.5 sm:h-2 w-full opacity-45 border-b border-slate-800"
+          className="h-1 sm:h-2 w-full opacity-45 border-b border-slate-800"
         />
 
         {(label || stamp) && (
-          <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 px-3 sm:px-5 pt-2 sm:pt-2.5 pb-1.5 sm:pb-2 border-b border-dashed border-slate-800">
+          <div className="flex flex-wrap items-center justify-between gap-1 sm:gap-2 px-2.5 sm:px-5 pt-1.5 sm:pt-2.5 pb-1 sm:pb-2 border-b border-dashed border-slate-800">
             {label && (
-              <span className="font-mono text-[9.5px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase text-slate-300 font-bold">
+              <span className="font-mono text-[9px] sm:text-[10px] tracking-[0.14em] sm:tracking-[0.2em] uppercase text-slate-300 font-bold">
                 {label}
               </span>
             )}
@@ -74,7 +74,7 @@ export default function DossierCard({
                   borderColor: accent,
                   color: accent,
                 }}
-                className="-rotate-1 sm:-rotate-2 px-1.5 sm:px-2 py-0.5 border-2 font-mono text-[8px] sm:text-[9px] font-black uppercase tracking-wider sm:tracking-widest bg-[#0a0b0e]"
+                className="-rotate-1 sm:-rotate-2 px-1.5 sm:px-2 py-0.5 border-2 font-mono text-[7.5px] sm:text-[9px] font-black uppercase tracking-wider sm:tracking-widest bg-[#0a0b0e]"
               >
                 {stamp}
               </span>
@@ -82,7 +82,7 @@ export default function DossierCard({
           </div>
         )}
 
-        <div className="p-2.5 sm:p-5">{children}</div>
+        <div className="p-2 sm:p-5">{children}</div>
       </div>
     );
   }
@@ -103,7 +103,7 @@ export default function DossierCard({
       />
 
       {label && (
-        <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2 bg-[#08090c] border-b border-slate-800/90">
+        <div className="flex flex-wrap items-center justify-between gap-1 sm:gap-2 px-2.5 sm:px-5 py-1 sm:py-2 bg-[#08090c] border-b border-slate-800/90">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <span
               style={{ backgroundColor: accent }}
@@ -111,20 +111,20 @@ export default function DossierCard({
             />
             <span
               style={{ color: accent }}
-              className="font-mono text-[9.5px] sm:text-[10px] font-extrabold uppercase tracking-[0.16em] sm:tracking-[0.2em]"
+              className="font-mono text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.14em] sm:tracking-[0.2em]"
             >
               {label}
             </span>
           </div>
           {stamp && (
-            <span className="font-mono text-[8px] sm:text-[9px] text-slate-400 uppercase tracking-wider">
+            <span className="font-mono text-[7.5px] sm:text-[9px] text-slate-400 uppercase tracking-wider">
               {stamp}
             </span>
           )}
         </div>
       )}
 
-      <div className="p-2.5 sm:p-5">{children}</div>
+      <div className="p-2 sm:p-5">{children}</div>
     </div>
   );
 }

@@ -169,63 +169,68 @@ export default function HeroPhantomSection({ data }) {
                 transform: `translate3d(0, ${coverY}px, 0)`,
                 pointerEvents: coverOpacity > 0.15 ? 'auto' : 'none',
               }}
-              className="seq-layer absolute inset-0 z-10 flex flex-col items-center justify-center px-3 sm:px-6 text-center pt-12 pb-2"
+              className="seq-layer absolute inset-0 z-10 flex flex-col items-center justify-center px-4 sm:px-6 text-center pt-12 pb-2"
             >
               <div className="max-w-4xl mx-auto">
                 {/* High-Contrast Issue 03 Badge Pill */}
-                <div className="inline-flex flex-wrap items-center justify-center gap-2 border-2 border-[#eab308] bg-[#08090c] px-3 sm:px-4 py-1 sm:py-1.5 mb-3 sm:mb-4 shadow-[0_12px_30px_rgba(0,0,0,0.98)]">
-                  <span className="h-2 w-2 rounded-full bg-[#ef4444] animate-ping shrink-0" />
-                  <span className="font-mono text-[9.5px] sm:text-[11px] tracking-[0.2em] text-white uppercase font-extrabold">
+                <div className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 border border-[#eab308]/80 sm:border-2 sm:border-[#eab308] bg-[#08090c] px-2.5 sm:px-4 py-1 sm:py-1.5 mb-3 sm:mb-4 shadow-[0_12px_30px_rgba(0,0,0,0.98)]">
+                  <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-[#ef4444] animate-ping shrink-0" />
+                  <span className="font-mono text-[8.5px] sm:text-[11px] tracking-[0.18em] sm:tracking-[0.2em] text-white uppercase font-extrabold">
                     {meta.publication}
                   </span>
-                  <span className="px-2 py-0.5 bg-[#eab308] text-[#08090c] font-mono text-[9.5px] sm:text-[11px] font-black uppercase tracking-wider">
+                  <span className="px-1.5 sm:px-2 py-0.5 bg-[#eab308] text-[#08090c] font-mono text-[8.5px] sm:text-[11px] font-black uppercase tracking-wider">
                     {meta.issue} • {meta.date}
                   </span>
                 </div>
 
-                {/* Overhead Live Digital Ticker */}
-                <div className="mb-3 sm:mb-5">
-                  <div className="inline-block border border-[#ef4444]/80 bg-[#08090c] px-3 sm:px-4 py-1.5 sm:py-2 shadow-[0_12px_35px_rgba(0,0,0,0.95)]">
-                    <div className="font-mono text-[8.5px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.24em] text-slate-300 uppercase mb-0.5">
+                {/* Overhead Live Digital Ticker: Sleek minimal eyebrow on mobile so the Title dominates; full boxed ticker on desktop */}
+                <div className="mb-2 sm:mb-5">
+                  <div className="sm:hidden font-mono text-[10px] tracking-[0.2em] text-[#eab308] uppercase font-bold">
+                    ${tickerValue.toLocaleString()}+{' '}
+                    <span className="text-[#ef4444]">PUBLIC WEALTH BURNED</span>
+                  </div>
+                  <div className="hidden sm:inline-block border border-[#ef4444]/80 bg-[#08090c] px-4 py-2 shadow-[0_12px_35px_rgba(0,0,0,0.95)]">
+                    <div className="font-mono text-[10px] tracking-[0.24em] text-slate-300 uppercase mb-0.5">
                       {hero.tickerLabel}
                     </div>
-                    <div className="font-mono text-lg sm:text-3xl font-black text-[#eab308] tabular-nums tracking-wider">
+                    <div className="font-mono text-3xl font-black text-[#eab308] tabular-nums tracking-wider">
                       ${tickerValue.toLocaleString()}+{' '}
-                      <span className="text-[11px] sm:text-sm text-[#ef4444] font-bold">
+                      <span className="text-sm text-[#ef4444] font-bold">
                         SPENT
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <h1 className="font-editorial text-2xl sm:text-6xl md:text-7xl font-black tracking-tight text-white uppercase leading-[1.05] mb-3 sm:mb-5 drop-shadow-[0_12px_40px_rgba(0,0,0,1)]">
+                <h1 className="font-editorial text-[36px] sm:text-6xl md:text-7xl font-black tracking-tight text-white uppercase leading-[1.04] sm:leading-[1.05] my-2 sm:my-0 mb-4 sm:mb-5 drop-shadow-[0_12px_40px_rgba(0,0,0,1)]">
                   The War No One Was{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#eab308] via-[#22c55e] to-[#ef4444]">
                     Supposed to Win
                   </span>
                 </h1>
 
-                {/* High-Contrast Solid Readability Backdrop for Subtitle */}
-                <div className="max-w-2xl mx-auto mb-4 sm:mb-7 px-3.5 py-2.5 sm:px-6 sm:py-4 bg-[#08090c]/95 border border-slate-700 shadow-[0_20px_50px_rgba(0,0,0,0.98)]">
-                  <p className="text-xs sm:text-xl md:text-2xl text-white leading-snug sm:leading-relaxed font-semibold">
+                {/* Subtitle: Clean editorial lead on mobile; full boxed backdrop on desktop */}
+                <div className="max-w-2xl mx-auto mb-5 sm:mb-7 px-3 py-2 sm:px-6 sm:py-4 bg-[#08090c]/85 sm:bg-[#08090c]/95 border-l-2 border-[#eab308] sm:border sm:border-slate-700 shadow-[0_20px_50px_rgba(0,0,0,0.98)]">
+                  <p className="text-[13px] sm:text-xl md:text-2xl text-slate-200 sm:text-white leading-relaxed font-medium sm:font-semibold">
                     {hero.subtitle}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-3 text-[9px] sm:text-xs font-mono tracking-[0.14em] text-white uppercase">
-                  <span className="border border-[#eab308] bg-[#08090c] px-2.5 sm:px-3 py-1 text-[#eab308] font-bold shadow-lg">
+                {/* Desktop-Only Stat Pills (hidden on mobile to prevent stacked-box clutter) */}
+                <div className="hidden sm:flex flex-wrap items-center justify-center gap-3 text-xs font-mono tracking-[0.14em] text-white uppercase">
+                  <span className="border border-[#eab308] bg-[#08090c] px-3 py-1 text-[#eab308] font-bold shadow-lg">
                     $1T+ Public Wealth Burned
                   </span>
-                  <span className="border border-[#ef4444] bg-[#08090c] px-2.5 sm:px-3 py-1 text-[#ef4444] font-bold shadow-lg">
+                  <span className="border border-[#ef4444] bg-[#08090c] px-3 py-1 text-[#ef4444] font-bold shadow-lg">
                     Alcohol Harm Score: 72
                   </span>
-                  <span className="border border-[#22c55e] bg-[#08090c] px-2.5 sm:px-3 py-1 text-[#22c55e] font-bold shadow-lg">
+                  <span className="border border-[#22c55e] bg-[#08090c] px-3 py-1 text-[#22c55e] font-bold shadow-lg">
                     Portugal Law 30/2000
                   </span>
                 </div>
 
-                <div className="mt-4 sm:mt-8 flex flex-col items-center gap-1.5 text-slate-300">
-                  <span className="px-3 py-1 bg-[#08090c] border border-[#eab308]/60 font-mono text-[9.5px] sm:text-[10px] tracking-[0.26em] uppercase text-white font-bold">
+                <div className="mt-3 sm:mt-8 flex flex-col items-center gap-1.5 text-slate-300">
+                  <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 sm:bg-[#08090c] sm:border sm:border-[#eab308]/60 font-mono text-[9px] sm:text-[10px] tracking-[0.26em] uppercase text-[#eab308] sm:text-white font-bold">
                     Scroll to Declassify Dossier
                   </span>
                   <div className="w-[1px] h-5 sm:h-9 bg-gradient-to-b from-[#eab308] to-transparent" />
@@ -239,12 +244,12 @@ export default function HeroPhantomSection({ data }) {
                 opacity: stageOpacity,
                 pointerEvents: stageOpacity > 0.15 ? 'auto' : 'none',
               }}
-              className="seq-layer absolute inset-0 z-20 flex items-center justify-center px-2.5 sm:px-6 pt-12 pb-2"
+              className="seq-layer absolute inset-0 z-20 flex items-start lg:items-center justify-center px-2.5 sm:px-6 pt-13 pb-2 lg:py-0"
             >
-              <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-2.5 sm:gap-6 items-center">
+              <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-6 items-center">
                 {/* Left Column: 3-Way Crossfading Forensic Artwork Frame (Compact on mobile so card fits cleanly) */}
                 <div className="lg:col-span-7">
-                  <div className="relative w-full aspect-[16/9] max-h-[155px] sm:max-h-[260px] lg:max-h-none border border-slate-800 bg-[#08090c] shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden">
+                  <div className="relative w-full aspect-[16/9] max-h-[135px] sm:max-h-[260px] lg:max-h-none border border-slate-800 bg-[#08090c] shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden">
                     <img
                       src={hero.image}
                       alt="Exhibit 01: The Half-Century Siege"
