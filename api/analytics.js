@@ -18,72 +18,37 @@ const ACTORS = {
 };
 
 export function isObservationsContent(text = '', hashtags = [], filterTag = '#observations') {
-  const haystack = `${text} ${(Array.isArray(hashtags) ? hashtags.join(' ') : '')}`.toLowerCase();
+  const rawText = String(text || '').toLowerCase();
+  const rawHashtags = (Array.isArray(hashtags) ? hashtags.map((h) => String(h).toLowerCase()).join(' ') : '').toLowerCase();
+  const haystack = `${rawText} ${rawHashtags}`;
   const normalizedTag = (filterTag || '#observations').trim().toLowerCase();
   const tagWithoutHash = normalizedTag.replace(/^#/, '');
 
   if (normalizedTag && haystack.includes(normalizedTag)) return true;
+  if (haystack.includes('#observations')) return true;
+  if (haystack.includes('#observationsbymoth1')) return true;
+
   if (
     Array.isArray(hashtags) &&
     hashtags.some((h) => {
       const clean = String(h).toLowerCase().replace(/^#/, '');
-      return clean === tagWithoutHash || clean === 'observationsbymoth1' || clean === 'observations';
+      return clean === tagWithoutHash || clean === 'observations' || clean === 'observationsbymoth1';
     })
   ) {
     return true;
   }
 
   return (
-    haystack.includes('#observationsbymoth1') ||
-    haystack.includes('observationsbymoth1') ||
-    haystack.includes('#observations') ||
-    haystack.includes('observations') ||
-    haystack.includes('moth1') ||
-    haystack.includes('moth 1') ||
     haystack.includes('observations.moth1.xyz') ||
     haystack.includes('observations by moth1') ||
-    // Issue 03 keywords
-    haystack.includes('war-on-drugs') ||
-    haystack.includes('war on drugs') ||
     haystack.includes('the war no one was supposed to win') ||
     haystack.includes('the-war-no-one-was-supposed-to-win') ||
-    haystack.includes('supposed to win') ||
-    haystack.includes('prohibition') ||
-    haystack.includes('portugal') ||
-    haystack.includes('rat park') ||
-    haystack.includes('microdose') ||
-    haystack.includes('trillion-dollar') ||
-    haystack.includes('trillion dollar') ||
-    haystack.includes('phantom') ||
-    haystack.includes('law 30/2000') ||
-    haystack.includes('issue-03') ||
-    haystack.includes('issue 03') ||
-    haystack.includes('issue 3') ||
-    haystack.includes('issue #03') ||
-    haystack.includes('issue #3') ||
-    // Issue 02 keywords
+    haystack.includes('war on drugs') ||
+    haystack.includes('war-on-drugs') ||
+    haystack.includes('the meat grinder') ||
     haystack.includes('the-meat-grinder') ||
-    haystack.includes('meat grinder') ||
-    haystack.includes('billionaires panic') ||
-    haystack.includes('venn diagram') ||
-    haystack.includes('issue-02') ||
-    haystack.includes('issue 02') ||
-    haystack.includes('issue 2') ||
-    haystack.includes('issue #02') ||
-    haystack.includes('issue #2') ||
-    // Issue 01 keywords
-    haystack.includes('watering-grass-in-a-thunderstorm') ||
-    haystack.includes('watering grass') ||
-    haystack.includes('watering-grass') ||
-    haystack.includes('thunderstorm') ||
-    haystack.includes('bread and circus') ||
-    haystack.includes('sidequest') ||
-    haystack.includes('geriatric') ||
-    haystack.includes('issue-01') ||
-    haystack.includes('issue 01') ||
-    haystack.includes('issue 1') ||
-    haystack.includes('issue #01') ||
-    haystack.includes('issue #1')
+    haystack.includes('watering grass in a thunderstorm') ||
+    haystack.includes('watering-grass-in-a-thunderstorm')
   );
 }
 

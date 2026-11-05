@@ -228,81 +228,56 @@ const ACTORS = {
 };
 
 function matchesObservationsFilter(item, filterTag = '#observations') {
-  const rawText = `${item.combinedText || ''} ${item.caption || ''} ${item.text || ''} ${item.title || ''} ${item.subtitle || ''}`;
-  const rawHashtags = Array.isArray(item.hashtags)
-    ? item.hashtags.join(' ')
-    : '';
-  const haystack = `${rawText} ${rawHashtags}`.toLowerCase();
+  const rawText = `${item.caption || ''} ${item.text || ''} ${item.combinedText || ''}`.toLowerCase();
+  const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
+  const rawHashtags = (hashtags.map((h) => String(h).toLowerCase()).join(' ')).toLowerCase();
+  const haystack = `${rawText} ${rawHashtags}`;
 
   const normalizedTag = (filterTag || '#observations').trim().toLowerCase();
   const tagWithoutHash = normalizedTag.replace(/^#/, '');
 
-  if (normalizedTag && haystack.includes(normalizedTag)) return true;
+  // 1. Direct hashtag match (#observations or #observationsbymoth1)
+  if (haystack.includes(normalizedTag)) return true;
+  if (haystack.includes('#observations')) return true;
+  if (haystack.includes('#observationsbymoth1')) return true;
+
   if (
-    Array.isArray(item.hashtags) &&
-    item.hashtags.some((h) => {
+    hashtags.some((h) => {
       const clean = String(h).toLowerCase().replace(/^#/, '');
-      return clean === tagWithoutHash || clean === 'observationsbymoth1' || clean === 'observations';
+      return clean === tagWithoutHash || clean === 'observations' || clean === 'observationsbymoth1';
     })
   ) {
     return true;
   }
 
-  return (
-    haystack.includes('#observationsbymoth1') ||
-    haystack.includes('observationsbymoth1') ||
-    haystack.includes('#observations') ||
-    haystack.includes('observations') ||
-    haystack.includes('moth1') ||
-    haystack.includes('moth 1') ||
-    haystack.includes('observations.moth1.xyz') ||
-    haystack.includes('observations by moth1') ||
-    // Issue 03 keywords
-    haystack.includes('war-on-drugs') ||
-    haystack.includes('war on drugs') ||
+  // 2. Direct publication domain or brand signature
+  if (haystack.includes('observations.moth1.xyz')) return true;
+  if (haystack.includes('observations by moth1')) return true;
+
+  // 3. Exact issue title matches
+  if (
     haystack.includes('the war no one was supposed to win') ||
     haystack.includes('the-war-no-one-was-supposed-to-win') ||
-    haystack.includes('supposed to win') ||
-    haystack.includes('prohibition') ||
-    haystack.includes('portugal') ||
-    haystack.includes('rat park') ||
-    haystack.includes('microdose') ||
-    haystack.includes('trillion-dollar') ||
-    haystack.includes('trillion dollar') ||
-    haystack.includes('phantom') ||
-    haystack.includes('law 30/2000') ||
-    haystack.includes('issue-03') ||
-    haystack.includes('issue 03') ||
-    haystack.includes('issue 3') ||
-    haystack.includes('issue #03') ||
-    haystack.includes('issue #3') ||
-    // Issue 02 keywords
+    haystack.includes('war on drugs') ||
+    haystack.includes('war-on-drugs') ||
+    haystack.includes('the meat grinder') ||
     haystack.includes('the-meat-grinder') ||
-    haystack.includes('meat grinder') ||
-    haystack.includes('billionaires panic') ||
-    haystack.includes('venn diagram') ||
-    haystack.includes('issue-02') ||
-    haystack.includes('issue 02') ||
-    haystack.includes('issue 2') ||
-    haystack.includes('issue #02') ||
-    haystack.includes('issue #2') ||
-    // Issue 01 keywords
-    haystack.includes('watering-grass-in-a-thunderstorm') ||
-    haystack.includes('watering grass') ||
-    haystack.includes('watering-grass') ||
-    haystack.includes('thunderstorm') ||
-    haystack.includes('bread and circus') ||
-    haystack.includes('sidequest') ||
-    haystack.includes('geriatric') ||
-    haystack.includes('issue-01') ||
-    haystack.includes('issue 01') ||
-    haystack.includes('issue 1') ||
-    haystack.includes('issue #01') ||
-    haystack.includes('issue #1')
-  );
+    haystack.includes('watering grass in a thunderstorm') ||
+    haystack.includes('watering-grass-in-a-thunderstorm')
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 function matchItemToIssueId(item) {
+  if (!item) return null;
+  const idStr = String(item.id || item.issueId || '').toLowerCase();
+  if (idStr.includes('03') || idStr.includes('war-on-drugs')) return '03';
+  if (idStr.includes('02') || idStr.includes('meat-grinder')) return '02';
+  if (idStr.includes('01') || idStr.includes('watering-grass')) return '01';
+
   const text = `${item.caption || ''} ${item.text || ''} ${item.title || ''} ${item.url || ''}`.toLowerCase();
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags.map((h) => String(h).toLowerCase()).join(' ') : '';
   const haystack = `${text} ${hashtags}`;
@@ -310,32 +285,42 @@ function matchItemToIssueId(item) {
   if (
     haystack.includes('war on drugs') ||
     haystack.includes('war-on-drugs') ||
+    haystack.includes('warondrugs') ||
+    haystack.includes('the war no one was supposed to win') ||
     haystack.includes('the-war-no-one-was-supposed-to-win') ||
     haystack.includes('supposed to win') ||
+    haystack.includes('prohibition') ||
+    haystack.includes('portugal') ||
+    haystack.includes('rat park') ||
+    haystack.includes('ratpark') ||
+    haystack.includes('trillion-dollar') ||
+    haystack.includes('trillion dollar') ||
+    haystack.includes('law 30/2000') ||
+    haystack.includes('microdose') ||
+    haystack.includes('overdose') ||
     haystack.includes('issue-03') ||
     haystack.includes('issue 03') ||
     haystack.includes('issue 3') ||
     haystack.includes('issue #03') ||
-    haystack.includes('issue #3') ||
-    haystack.includes('trillion-dollar phantom') ||
-    haystack.includes('oligarch') ||
-    haystack.includes('portugal') ||
-    haystack.includes('rat park') ||
-    haystack.includes('microdose in boardrooms')
+    haystack.includes('issue #3')
   ) {
     return '03';
   }
 
   if (
     haystack.includes('meat grinder') ||
+    haystack.includes('the meat grinder') ||
     haystack.includes('the-meat-grinder') ||
+    haystack.includes('meatgrinder') ||
+    haystack.includes('billionaires panic') ||
+    haystack.includes('venn diagram') ||
+    haystack.includes('demographic black hole') ||
+    haystack.includes('birth rate') ||
     haystack.includes('issue-02') ||
     haystack.includes('issue 02') ||
     haystack.includes('issue 2') ||
     haystack.includes('issue #02') ||
-    haystack.includes('issue #2') ||
-    haystack.includes('billionaires panic') ||
-    haystack.includes('venn diagram')
+    haystack.includes('issue #2')
   ) {
     return '02';
   }
@@ -343,17 +328,18 @@ function matchItemToIssueId(item) {
   if (
     haystack.includes('watering grass') ||
     haystack.includes('watering-grass') ||
+    haystack.includes('watering grass in a thunderstorm') ||
+    haystack.includes('watering-grass-in-a-thunderstorm') ||
     haystack.includes('thunderstorm') ||
+    haystack.includes('bread and circus') ||
+    haystack.includes('geriatric') ||
+    haystack.includes('sidequest') ||
+    haystack.includes('combine writing') ||
     haystack.includes('issue-01') ||
     haystack.includes('issue 01') ||
     haystack.includes('issue 1') ||
     haystack.includes('issue #01') ||
-    haystack.includes('issue #1') ||
-    haystack.includes('bread and circus') ||
-    haystack.includes('sidequest') ||
-    haystack.includes('combine writing') ||
-    haystack.includes('observations.moth1.xyz') ||
-    haystack.includes('#observations')
+    haystack.includes('issue #1')
   ) {
     return '01';
   }
@@ -2311,15 +2297,50 @@ export default function Dashboard() {
           publishedAt: r.publishedAt || new Date().toISOString(),
         })).filter((r) => r.views > 0 || r.isReel);
 
-        let candidateFbItems = [];
-        if (directValidReels.length > 0) {
-          candidateFbItems = directValidReels;
-        } else if (serverFbItems.length > 0) {
-          candidateFbItems = serverFbItems;
-        } else if (serverFbReels.length > 0) {
-          candidateFbItems = serverFbReels;
+        // Ensure all 3 publication issues (03, 02, 01) are always represented in Facebook reels
+        const mergedFbMap = new Map();
+        const baseReels = serverFbReels.length > 0 ? serverFbReels : (ledger.facebook?.reels || []).map((r, i) => ({
+          id: r.id || `fb-reel-${r.issueId || i}`,
+          issueId: r.issueId,
+          text: r.text || r.title || (r.issueId === '03' ? 'Issue 03 - The War No One Was Supposed to Win' : r.issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+          caption: r.caption || r.title || '',
+          url: r.url || 'https://www.facebook.com/observationsbymoth1',
+          views: Number(r.views) || 0,
+          likes: Number(r.likes) || 0,
+          comments: Number(r.comments) || 0,
+          shares: Number(r.shares) || 0,
+          isReel: true,
+          publishedAt: r.publishedAt || new Date().toISOString(),
+        }));
+
+        for (const r of baseReels) {
+          const issueId = matchItemToIssueId(r) || r.issueId || '01';
+          mergedFbMap.set(issueId, r);
         }
 
+        // Overlay live scraped reels from directFacebook / serverFbItems
+        const scrapedReels = directValidReels.length > 0 ? directValidReels : serverFbItems;
+        for (const item of scrapedReels) {
+          const issueId = matchItemToIssueId(item);
+          if (issueId) {
+            const existing = mergedFbMap.get(issueId);
+            mergedFbMap.set(issueId, {
+              ...existing,
+              ...item,
+              id: item.id || existing?.id || `fb-reel-${issueId}`,
+              issueId,
+              text: item.text || existing?.text || item.title || (issueId === '03' ? 'Issue 03 - The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+              views: Math.max(existing?.views || 0, item.views || 0),
+              likes: Math.max(existing?.likes || 0, item.likes || 0),
+              comments: Math.max(existing?.comments || 0, item.comments || 0),
+              shares: Math.max(existing?.shares || 0, item.shares || 0),
+            });
+          } else {
+            mergedFbMap.set(item.id || `fb-item-${mergedFbMap.size}`, item);
+          }
+        }
+
+        const candidateFbItems = Array.from(mergedFbMap.values());
         const fbItems = sortFacebookReelsForDisplay(candidateFbItems);
 
         const fbScrapedFollowers = Math.max(
@@ -2998,6 +3019,8 @@ export default function Dashboard() {
       return {
         startUrls: [
           { url: cleanFbUrl },
+          { url: `${cleanFbUrl}/reels/` },
+          { url: `${cleanFbUrl}/videos/` },
         ],
         resultsLimit: 30,
         maxPosts: 30,
