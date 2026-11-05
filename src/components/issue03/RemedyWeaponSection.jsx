@@ -58,7 +58,7 @@ export default function RemedyWeaponSection({ data }) {
                     style={{
                       opacity: lockedCount > 0 && lockedCount < 4 ? 0 : 0.9,
                     }}
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                   <img
                     src={data.cellImage || data.image}
@@ -66,7 +66,7 @@ export default function RemedyWeaponSection({ data }) {
                     style={{
                       opacity: lockedCount > 0 && lockedCount < 4 ? 0.9 : 0,
                     }}
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
 
                   {isStamped && (
@@ -100,7 +100,7 @@ export default function RemedyWeaponSection({ data }) {
                           transform: `translate3d(0, ${env.y}px, 0)`,
                           pointerEvents: env.opacity > 0.2 ? 'auto' : 'none',
                         }}
-                        className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                        className="col-start-1 row-start-1 w-full"
                       >
                         <DossierCard
                           variant="stamp"

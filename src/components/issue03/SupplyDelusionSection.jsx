@@ -319,7 +319,7 @@ export default function SupplyDelusionSection({ data }) {
                       src={card.image}
                       alt={card.headline}
                       style={{ opacity: rightCardIdx === idx ? 0.94 : 0 }}
-                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                   ))}
                   <div className="absolute bottom-2 left-2 px-2.5 py-0.5 bg-[#0a0b0e]/92 border border-[#eab308]/60 font-mono text-[9px] text-[#eab308] uppercase font-bold">
@@ -346,7 +346,7 @@ export default function SupplyDelusionSection({ data }) {
                           transform: `translate3d(0, ${env.y}px, 0)`,
                           pointerEvents: env.opacity > 0.2 ? 'auto' : 'none',
                         }}
-                        className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                        className="col-start-1 row-start-1 w-full"
                       >
                         <DossierCard
                           variant="broadsheet"

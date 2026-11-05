@@ -10,7 +10,7 @@ export function remap(val, inMin, inMax, outMin = 0, outMax = 1) {
 
 /**
  * Computes opacity and vertical translateY envelope for sequenced scrollytelling cards
- * with a clean static reading plateau between fade-in and fade-out.
+ * with a continuous crossfade around adjacent card boundaries and zero dead zones.
  */
 export function getCardEnvelope(
   progress,
@@ -18,29 +18,52 @@ export function getCardEnvelope(
   end,
   isFirst = false,
   isLast = false,
-  fadeSpan = 0.06
+  fadeSpan = 0.035
 ) {
   if (typeof isFirst === 'number') {
     fadeSpan = isFirst;
     isFirst = false;
     isLast = false;
   }
-  if (progress < start) {
-    return isFirst ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 };
-  }
-  if (progress > end) {
-    return isLast ? { opacity: 1, y: 0 } : { opacity: 0, y: -24 };
-  }
-  const fadeInEnd = Math.min(end, start + fadeSpan);
-  const fadeOutStart = Math.max(start, end - fadeSpan);
 
-  if (!isFirst && progress < fadeInEnd) {
-    const t = remap(progress, start, fadeInEnd, 0, 1);
-    return { opacity: t, y: (1 - t) * 24 };
+  // Ensure fade half-span does not exceed 25% of card duration to preserve reading plateau
+  const cardDuration = Math.max(0.01, end - start);
+  const half = Math.min(fadeSpan, cardDuration * 0.25);
+
+  // Before card entrance window
+  if (progress < start - half) {
+    if (isFirst && start <= 0.04) {
+      return { opacity: 1, y: 0 };
+    }
+    return { opacity: 0, y: 12 };
   }
-  if (!isLast && progress > fadeOutStart && end < 0.98) {
-    const t = remap(progress, fadeOutStart, end, 0, 1);
-    return { opacity: 1 - t, y: -t * 20 };
+
+  // During card fade-in window centered around `start`
+  if (progress < start + half) {
+    if (isFirst && start <= 0.04) {
+      return { opacity: 1, y: 0 };
+    }
+    const t = remap(progress, start - half, start + half, 0, 1);
+    return { opacity: t, y: (1 - t) * 12 };
   }
+
+  // Past card exit window
+  if (progress > end + half) {
+    if (isLast || end >= 0.98) {
+      return { opacity: 1, y: 0 };
+    }
+    return { opacity: 0, y: -12 };
+  }
+
+  // During card fade-out window centered around `end`
+  if (progress > end - half) {
+    if (isLast || end >= 0.98) {
+      return { opacity: 1, y: 0 };
+    }
+    const t = remap(progress, end - half, end + half, 0, 1);
+    return { opacity: 1 - t, y: -t * 12 };
+  }
+
+  // Static reading plateau: full opacity, zero translation
   return { opacity: 1, y: 0 };
 }

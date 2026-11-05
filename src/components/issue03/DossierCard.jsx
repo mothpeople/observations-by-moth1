@@ -17,7 +17,7 @@ export default function DossierCard({
     return (
       <div
         style={{ borderLeftColor: accent }}
-        className={`relative border-l-4 bg-gradient-to-r from-[#0a0b0e]/95 via-[#0e1015]/90 to-[#0a0b0e]/75 pl-3 sm:pl-6 pr-2.5 sm:pr-5 py-2 sm:py-5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-md ${className}`}
+        className={`relative border-l-4 bg-[#0a0b0e] border-y border-r border-slate-800/90 pl-3 sm:pl-6 pr-2.5 sm:pr-5 py-2 sm:py-5 shadow-[0_20px_50px_rgba(0,0,0,0.95)] ${className}`}
       >
         {(label || stamp) && (
           <div className="flex flex-wrap items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
@@ -50,7 +50,7 @@ export default function DossierCard({
   if (variant === 'stamp') {
     return (
       <div
-        className={`relative bg-[#0c0e13]/95 border border-slate-800/90 shadow-[0_24px_60px_rgba(0,0,0,0.9)] backdrop-blur-md ${className}`}
+        className={`relative bg-[#0c0e13] border border-slate-800 shadow-[0_24px_60px_rgba(0,0,0,0.95)] ${className}`}
       >
         {/* Top Halftone Strip */}
         <div
@@ -94,7 +94,7 @@ export default function DossierCard({
         clipPath:
           'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)',
       }}
-      className={`relative bg-[#0c0e13]/95 border border-slate-800/90 shadow-[0_24px_60px_rgba(0,0,0,0.9)] backdrop-blur-md ${className}`}
+      className={`relative bg-[#0c0e13] border border-slate-800 shadow-[0_24px_60px_rgba(0,0,0,0.95)] ${className}`}
     >
       {/* Top Brutalist Chemical Bar */}
       <div

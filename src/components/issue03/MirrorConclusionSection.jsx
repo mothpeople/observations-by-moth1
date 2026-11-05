@@ -68,7 +68,7 @@ export default function MirrorConclusionSection({ data, sources }) {
             >
               {/* Full-Screen Animated Surveillance Mirror Artwork */}
               <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-150 will-change-transform"
+                className="absolute inset-0 bg-cover bg-center will-change-transform"
                 style={{
                   backgroundImage: `url('${data.backgroundImage}')`,
                   opacity: bgOpacity,
@@ -90,7 +90,7 @@ export default function MirrorConclusionSection({ data, sources }) {
                   left: `${cursorPos.x}%`,
                   top: `${cursorPos.y}%`,
                 }}
-                className="pointer-events-none hidden md:flex absolute -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-[#eab308]/30 rounded-full items-center justify-center transition-all duration-75"
+                className="pointer-events-none hidden md:flex absolute -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-[#eab308]/30 rounded-full items-center justify-center"
               >
                 <div className="w-2 h-2 rounded-full bg-[#ef4444]/60" />
               </div>
@@ -114,7 +114,7 @@ export default function MirrorConclusionSection({ data, sources }) {
                     transform: `translate3d(0, ${stage1Env.y}px, 0)`,
                     pointerEvents: stage1Env.opacity > 0.2 ? 'auto' : 'none',
                   }}
-                  className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                  className="col-start-1 row-start-1 w-full"
                 >
                   <DossierCard
                     variant="stamp"
@@ -158,7 +158,7 @@ export default function MirrorConclusionSection({ data, sources }) {
                     transform: `translate3d(0, ${stage2Env.y}px, 0)`,
                     pointerEvents: stage2Env.opacity > 0.2 ? 'auto' : 'none',
                   }}
-                  className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                  className="col-start-1 row-start-1 w-full"
                 >
                   <DossierCard
                     variant="clip"
@@ -176,7 +176,7 @@ export default function MirrorConclusionSection({ data, sources }) {
 
                     <div
                       style={{ opacity: punchlineOpacity }}
-                      className="space-y-4 transition-opacity duration-200"
+                      className="space-y-4"
                     >
                       <p className="text-sm sm:text-lg md:text-2xl font-extrabold text-[#eab308] border-l-4 border-[#eab308] pl-4 py-1 leading-snug">
                         {data.punchline}

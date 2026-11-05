@@ -133,7 +133,7 @@ export default function OligarchPharmacySection({ data }) {
                           transform: `translate3d(0, ${env.y}px, 0)`,
                           pointerEvents: env.opacity > 0.2 ? 'auto' : 'none',
                         }}
-                        className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                        className="col-start-1 row-start-1 w-full"
                       >
                         <DossierCard
                           variant="broadsheet"

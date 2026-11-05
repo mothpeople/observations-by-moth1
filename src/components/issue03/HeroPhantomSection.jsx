@@ -9,30 +9,30 @@ export default function HeroPhantomSection({ data }) {
   return (
     <PinnedStage id="phantom" heightMultiplier={5.2}>
       {(progress) => {
-        // PHASE 1 (0.00 -> 0.06): Pure Full-Bright Artwork Opening (no title words covering the center)
-        // PHASE 2 (0.06 -> 0.14): Background dims from 1.0 -> 0.28 while Hero Title & Subtitle fade in cleanly
-        // PHASE 3 (0.14 -> 0.25): Hero Title & Subtitle hold on a dimmed background for effortless reading
-        // PHASE 4 (0.25 -> 0.31): Hero Title fades out while the 3 Cold-Open Exhibits fade in
+        // PHASE 1 (0.00 -> 0.05): Pure Full-Bright Artwork Opening (no title words covering the center)
+        // PHASE 2 (0.05 -> 0.13): Background dims from 1.0 -> 0.28 while Hero Title & Subtitle fade in cleanly
+        // PHASE 3 (0.13 -> 0.25): Hero Title & Subtitle hold on a dimmed background for effortless reading
+        // PHASE 4 (0.25 -> 0.32): Hero Title dissolves seamlessly into Stage Exhibit 01 + Card 1
         const coverFadeIn = clamp(remap(progress, 0.05, 0.13, 0, 1), 0, 1);
         const coverFadeOut =
-          progress < 0.24 ? 1 : 1 - clamp(remap(progress, 0.24, 0.31, 0, 1), 0, 1);
+          progress < 0.25 ? 1 : 1 - clamp(remap(progress, 0.25, 0.32, 0, 1), 0, 1);
         const coverOpacity = coverFadeIn * coverFadeOut;
         const coverY =
           progress < 0.13
             ? remap(progress, 0.05, 0.13, 24, 0)
-            : progress < 0.24
+            : progress < 0.25
               ? 0
-              : remap(progress, 0.24, 0.31, 0, -28);
+              : remap(progress, 0.25, 0.32, 0, -20);
 
         // Early floating scroll prompt visible at 0.00 -> 0.08 while artwork is in full bright mode
         const earlyPromptOpacity = clamp(1 - remap(progress, 0.03, 0.09, 0, 1), 0, 1);
 
-        // Cold Open Story Stage fades in 0.27 -> 0.33 and holds
+        // Cold Open Story Stage fades in 0.25 -> 0.32 in exact unison with Title dissolve
         const stageOpacity =
-          progress < 0.27
+          progress < 0.25
             ? 0
-            : progress < 0.33
-              ? remap(progress, 0.27, 0.33)
+            : progress < 0.32
+              ? remap(progress, 0.25, 0.32)
               : 1;
 
         // 3-way artwork crossfade across the 3 sequenced Cold Open cards:
@@ -71,33 +71,12 @@ export default function HeroPhantomSection({ data }) {
 
         return (
           <div className="relative w-full h-full bg-[#0a0b0e] text-[#e2e8f0] overflow-hidden">
-            {/* Background Layer A: Hero Dossier Artwork */}
+            {/* Background Layer: Ambient Hero Dossier Artwork */}
             <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-150 will-change-transform"
+              className="absolute inset-0 bg-cover bg-center will-change-transform"
               style={{
                 backgroundImage: `url('${hero.image}')`,
-                opacity: bgMasterOpacity * img1Opacity,
-                transform: `scale(${bgScale})`,
-              }}
-            />
-
-            {/* Background Layer B: Trillion-Dollar Incineration Transition Artwork */}
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-150 will-change-transform"
-              style={{
-                backgroundImage: `url('${hero.burnImage}')`,
-                opacity: bgMasterOpacity * img2Opacity,
-                transform: `scale(${bgScale})`,
-              }}
-            />
-
-            {/* Background Layer C: Cartel KPI & Market Valuation Artwork */}
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-150 will-change-transform"
-              style={{
-                backgroundImage: `url('${hero.kpiImage || hero.burnImage}')`,
-                opacity: bgMasterOpacity * img3Opacity,
-                transform: `scale(${bgScale})`,
+                opacity: bgMasterOpacity,
               }}
             />
 
@@ -111,7 +90,7 @@ export default function HeroPhantomSection({ data }) {
               }}
             />
             <div
-              className="pointer-events-none absolute inset-0 transition-opacity duration-150"
+              className="pointer-events-none absolute inset-0"
               style={{
                 opacity: vignetteOpacity,
                 background:
@@ -254,19 +233,19 @@ export default function HeroPhantomSection({ data }) {
                       src={hero.image}
                       alt="Exhibit 01: The Half-Century Siege"
                       style={{ opacity: img1Opacity }}
-                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <img
                       src={hero.burnImage}
                       alt="Exhibit 02: Cheaper, Purer, Deadlier"
                       style={{ opacity: img2Opacity }}
-                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <img
                       src={hero.kpiImage || hero.burnImage}
                       alt="Exhibit 03: When Failure Is the Objective"
                       style={{ opacity: img3Opacity }}
-                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
 
                     {/* Top Telemetry Overlay Bar */}
@@ -297,7 +276,7 @@ export default function HeroPhantomSection({ data }) {
                       progress,
                       card.start,
                       card.end,
-                      false,
+                      idx === 0,
                       idx === hero.cards.length - 1
                     );
 
@@ -347,7 +326,7 @@ export default function HeroPhantomSection({ data }) {
                           transform: `translate3d(0, ${env.y}px, 0)`,
                           pointerEvents: env.opacity > 0.2 ? 'auto' : 'none',
                         }}
-                        className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                        className="col-start-1 row-start-1 w-full"
                       >
                         <DossierCard
                           variant="stamp"
@@ -386,7 +365,7 @@ export default function HeroPhantomSection({ data }) {
                                   width: `${animatedBarWidth}%`,
                                   backgroundColor: card.accent,
                                 }}
-                                className="h-full transition-all duration-75"
+                                className="h-full"
                               />
                             </div>
                           </div>

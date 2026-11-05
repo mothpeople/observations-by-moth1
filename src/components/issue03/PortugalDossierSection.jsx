@@ -56,21 +56,21 @@ export default function PortugalDossierSection({ data }) {
                     src={data.image}
                     alt={data.title}
                     style={{ opacity: activeArtStage === 0 ? 0.94 : 0 }}
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                   {/* Stage 1 Image: 20-Year Statistical Outcomes & Clinical Outreach */}
                   <img
                     src={data.outreachImage || data.image}
                     alt="Lisbon Mobile Health Outreach & 20-Year Statistical Drop"
                     style={{ opacity: activeArtStage === 1 ? 0.94 : 0 }}
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                   {/* Stage 2 Image: Positive Sunlit Civic Renewal & Community Health Plaza */}
                   <img
                     src={data.pillarsImage || data.image}
                     alt="Pragmatic Governance Architecture: Sunlit Community Health & Recovery Plaza"
                     style={{ opacity: activeArtStage === 2 ? 0.96 : 0 }}
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
 
                   <div className="absolute top-2.5 left-2.5 px-2.5 py-1 bg-[#0a0b0e]/92 border border-[#22c55e]/60 font-mono text-[9px] sm:text-[10px] font-bold text-[#22c55e] uppercase tracking-wider">
@@ -101,7 +101,7 @@ export default function PortugalDossierSection({ data }) {
                     transform: `translate3d(0, ${stage0Env.y}px, 0)`,
                     pointerEvents: stage0Env.opacity > 0.2 ? 'auto' : 'none',
                   }}
-                  className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                  className="col-start-1 row-start-1 w-full"
                 >
                   <DossierCard
                     variant="clip"
@@ -147,7 +147,7 @@ export default function PortugalDossierSection({ data }) {
                                     ? '#eab308'
                                     : '#22c55e',
                                 }}
-                                className="h-full transition-all duration-75"
+                                className="h-full"
                               />
                             </div>
                           </button>
@@ -192,7 +192,7 @@ export default function PortugalDossierSection({ data }) {
                     transform: `translate3d(0, ${stage1Env.y}px, 0)`,
                     pointerEvents: stage1Env.opacity > 0.2 ? 'auto' : 'none',
                   }}
-                  className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                  className="col-start-1 row-start-1 w-full"
                 >
                   <DossierCard
                     variant="stamp"
@@ -240,7 +240,7 @@ export default function PortugalDossierSection({ data }) {
                     transform: `translate3d(0, ${stage2Env.y}px, 0)`,
                     pointerEvents: stage2Env.opacity > 0.2 ? 'auto' : 'none',
                   }}
-                  className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                  className="col-start-1 row-start-1 w-full"
                 >
                   <DossierCard
                     variant="broadsheet"

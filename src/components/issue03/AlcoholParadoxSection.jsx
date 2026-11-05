@@ -63,13 +63,13 @@ export default function AlcoholParadoxSection({ data }) {
                     src={data.image}
                     alt={data.title}
                     style={{ opacity: showStadium ? 0 : 0.92 }}
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                   <img
                     src={data.stadiumImage || data.image}
                     alt="Stadium Beer Sponsorship vs Emergency Room"
                     style={{ opacity: showStadium ? 0.92 : 0 }}
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                   <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-[#0a0b0e]/90 border border-[#eab308]/50 font-mono text-[9px] text-[#eab308] uppercase">
                     {showStadium
@@ -97,7 +97,7 @@ export default function AlcoholParadoxSection({ data }) {
                           transform: `translate3d(0, ${env.y}px, 0)`,
                           pointerEvents: env.opacity > 0.2 ? 'auto' : 'none',
                         }}
-                        className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                        className="col-start-1 row-start-1 w-full"
                       >
                         <DossierCard
                           variant="clip"
@@ -284,7 +284,7 @@ export default function AlcoholParadoxSection({ data }) {
                                     width: `${userWidthPct}%`,
                                     backgroundColor: '#ef4444',
                                   }}
-                                  className="h-full transition-all duration-200"
+                                  className="h-full"
                                   title={`Harm to User: ${s.harmToUser} pts`}
                                 />
                                 {/* Harm to Others segment in Acid Amber (#eab308) */}
@@ -293,7 +293,7 @@ export default function AlcoholParadoxSection({ data }) {
                                     width: `${othersWidthPct}%`,
                                     backgroundColor: '#eab308',
                                   }}
-                                  className="h-full border-l border-[#0a0b0e] transition-all duration-200"
+                                  className="h-full border-l border-[#0a0b0e]"
                                   title={`Harm to Society: ${s.harmToOthers} pts`}
                                 />
                               </>
@@ -304,7 +304,7 @@ export default function AlcoholParadoxSection({ data }) {
                                   width: `${othersWidthPct}%`,
                                   backgroundColor: '#eab308',
                                 }}
-                                className="h-full transition-all duration-200"
+                                className="h-full"
                               />
                             )}
                             {activeMode === 'harmToUser' && (
@@ -313,7 +313,7 @@ export default function AlcoholParadoxSection({ data }) {
                                   width: `${userWidthPct}%`,
                                   backgroundColor: '#ef4444',
                                 }}
-                                className="h-full transition-all duration-200"
+                                className="h-full"
                               />
                             )}
                           </div>

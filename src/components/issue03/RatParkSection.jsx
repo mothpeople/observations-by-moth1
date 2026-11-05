@@ -121,7 +121,7 @@ export default function RatParkSection({ data }) {
                       style={{
                         opacity: (1 - autoMorph) * (1 - malpracticeFade),
                       }}
-                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <img
                       src={data.image}
@@ -129,7 +129,7 @@ export default function RatParkSection({ data }) {
                       style={{
                         opacity: autoMorph * (1 - malpracticeFade),
                       }}
-                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                     <img
                       src={data.malpracticeImage || data.cellImage}
@@ -137,7 +137,7 @@ export default function RatParkSection({ data }) {
                       style={{
                         opacity: malpracticeFade,
                       }}
-                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
 
                     <div
@@ -186,7 +186,7 @@ export default function RatParkSection({ data }) {
                             width: `${overdosePct}%`,
                             backgroundColor: isPark ? '#22c55e' : '#ef4444',
                           }}
-                          className="h-full transition-all duration-200"
+                          className="h-full"
                         />
                       </div>
                     </div>
@@ -209,7 +209,7 @@ export default function RatParkSection({ data }) {
                             width: `${Math.max(4, socialPct)}%`,
                             backgroundColor: '#eab308',
                           }}
-                          className="h-full transition-all duration-200"
+                          className="h-full"
                         />
                       </div>
                     </div>
@@ -244,7 +244,7 @@ export default function RatParkSection({ data }) {
                         transform: `translate3d(0, ${env.y}px, 0)`,
                         pointerEvents: env.opacity > 0.2 ? 'auto' : 'none',
                       }}
-                      className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                      className="col-start-1 row-start-1 w-full"
                     >
                       <DossierCard
                         variant="stamp"
