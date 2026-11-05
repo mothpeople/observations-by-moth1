@@ -1168,12 +1168,25 @@ async function fetchDirectActorDataset(actorId, token) {
     // 1. Fetch recent SUCCEEDED runs (up to 10) in reverse chronological order
     let candidateRuns = [];
     const listRes = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/runs?status=SUCCEEDED&limit=10&desc=true&token=${encodeURIComponent(token)}`
-    );
-    if (listRes.ok) {
+      `https://api.apify.com/v2/actors/${actorId}/runs?status=SUCCEEDED&limit=10&desc=true&token=${encodeURIComponent(token)}`
+    ).catch(() => null);
+    if (listRes && listRes.ok) {
       const listJson = await listRes.json();
       if (Array.isArray(listJson?.data?.items)) {
         candidateRuns = listJson.data.items;
+      }
+    }
+
+    // Fallback: If actors endpoint empty, try acts endpoint
+    if (candidateRuns.length === 0) {
+      const legacyRes = await fetch(
+        `https://api.apify.com/v2/acts/${actorId}/runs?status=SUCCEEDED&limit=10&desc=true&token=${encodeURIComponent(token)}`
+      ).catch(() => null);
+      if (legacyRes && legacyRes.ok) {
+        const legacyJson = await legacyRes.json();
+        if (Array.isArray(legacyJson?.data?.items)) {
+          candidateRuns = legacyJson.data.items;
+        }
       }
     }
 
@@ -1181,8 +1194,8 @@ async function fetchDirectActorDataset(actorId, token) {
     if (candidateRuns.length === 0) {
       const runRes = await fetch(
         `https://api.apify.com/v2/acts/${actorId}/runs/last?status=SUCCEEDED&token=${encodeURIComponent(token)}`
-      );
-      if (runRes.ok) {
+      ).catch(() => null);
+      if (runRes && runRes.ok) {
         const runJson = await runRes.json();
         if (runJson?.data) candidateRuns = [runJson.data];
       }
@@ -1250,9 +1263,11 @@ async function fetchDirectActorDataset(actorId, token) {
               return runAct.includes('user') || runAct.includes('profile');
             }
             return (
-              (runAct.includes('twitter') || runAct.includes('tweet') || runAct.includes('x.com')) &&
-              !runAct.includes('user') &&
-              !runAct.includes('profile')
+              runAct.includes('twitter') ||
+              runAct.includes('tweet') ||
+              runAct.includes('x.com') ||
+              runAct.includes('apidojo') ||
+              r.actId === '61RPP7neBeUPaP525'
             );
           }
           return runAct.includes(actorId.replace('~', '/').toLowerCase()) || runAct.includes(actorId.toLowerCase());
@@ -3186,10 +3201,7 @@ export default function Dashboard() {
     if (actorKey === 'x') {
       const cleanXHandle = (targets.xHandle || 'Moth1NFTs').replace(/^@/, '').trim();
       return {
-        searchTerms: [
-          `from:${cleanXHandle}`,
-          '#ObservationsByMoth1',
-        ],
+        twitterHandles: [cleanXHandle],
         maxItems: 40,
         sort: 'Latest',
       };
@@ -3198,9 +3210,7 @@ export default function Dashboard() {
     if (actorKey === 'xProfile') {
       const cleanXHandle = (targets.xHandle || 'Moth1NFTs').replace(/^@/, '').trim();
       return {
-        searchTerms: [cleanXHandle],
         twitterHandles: [cleanXHandle],
-        startUrls: [`https://x.com/${cleanXHandle}`],
         maxItems: 1,
       };
     }
@@ -3279,6 +3289,27 @@ export default function Dashboard() {
                   if (dsRes.ok) {
                     const parsed = await dsRes.json();
                     scrapedCount = Array.isArray(parsed) ? parsed.length : 0;
+                    if (actorKey === 'x' && Array.isArray(parsed) && parsed.length > 0) {
+                      const tweetItems = parsed.filter(isTweetItem).map((item, i) => normalizeXItem(item, i));
+                      if (tweetItems.length > 0) {
+                        setXState((prev) => ({
+                          ...prev,
+                          connected: true,
+                          items: tweetItems,
+                          runInfo: statusJson?.data,
+                        }));
+                      }
+                    } else if (actorKey === 'xProfile' && Array.isArray(parsed) && parsed.length > 0) {
+                      const f = Math.max(
+                        ...parsed.map((i) => Number(i.followersCount ?? i.followers_count ?? i.followers ?? 0) || 0)
+                      );
+                      if (f > 0) {
+                        setXState((prev) => ({
+                          ...prev,
+                          followers: f,
+                        }));
+                      }
+                    }
                   }
                 } catch {}
               }
@@ -6937,7 +6968,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="overflow-x-auto mb-4 max-h-[280px] -mx-1 sm:mx-0">
-                  <table className="w-full text-left border-collapse min-w-[520px]">
+                  <table className="w-full text-left border-collapse min-w-[500px]">
                     <thead>
                       <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
                         <th className="py-2 pr-3">Post / Reel</th>
@@ -6945,125 +6976,40 @@ export default function Dashboard() {
                         <th className="py-2 px-2">Likes</th>
                         <th className="py-2 px-2">Comments</th>
                         <th className="py-2 px-2">Shares</th>
-                        <th className="py-2 pl-2 text-right">Actions</th>
+                        <th className="py-2 pl-2 text-right">Link</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/70 text-xs">
-                      {visibleFacebookItems.slice(0, 15).map((item) => {
-                        const isEditing = editingFbReelId === (item.id || item.issueId);
-                        return (
-                          <tr key={item.id} className="hover:bg-slate-900/40">
-                            <td className="py-2.5 pr-3 max-w-[200px] truncate text-[#e2e8f0]">
-                              {item.text}
-                            </td>
-                            <td className="py-2.5 px-2 font-mono font-bold text-[#86efac]">
-                              {isEditing ? (
-                                <input
-                                  type="number"
-                                  min="0"
-                                  autoFocus
-                                  value={tempFbReelMetrics.views}
-                                  onChange={(e) =>
-                                    setTempFbReelMetrics((prev) => ({ ...prev, views: e.target.value }))
-                                  }
-                                  className="w-16 bg-[#0b0d10] border border-[#86efac]/60 px-1 py-0.5 text-xs font-mono text-[#86efac] outline-none"
-                                />
-                              ) : (
-                                item.views.toLocaleString()
-                              )}
-                            </td>
-                            <td className="py-2.5 px-2 font-mono text-[#e2e8f0]">
-                              {isEditing ? (
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={tempFbReelMetrics.likes}
-                                  onChange={(e) =>
-                                    setTempFbReelMetrics((prev) => ({ ...prev, likes: e.target.value }))
-                                  }
-                                  className="w-14 bg-[#0b0d10] border border-white/60 px-1 py-0.5 text-xs font-mono text-white outline-none"
-                                />
-                              ) : (
-                                item.likes.toLocaleString()
-                              )}
-                            </td>
-                            <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
-                              {isEditing ? (
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={tempFbReelMetrics.comments}
-                                  onChange={(e) =>
-                                    setTempFbReelMetrics((prev) => ({ ...prev, comments: e.target.value }))
-                                  }
-                                  className="w-14 bg-[#0b0d10] border border-[#67e8f9]/60 px-1 py-0.5 text-xs font-mono text-[#67e8f9] outline-none"
-                                />
-                              ) : (
-                                item.comments.toLocaleString()
-                              )}
-                            </td>
-                            <td className="py-2.5 px-2 font-mono text-[#c084fc]">
-                              {isEditing ? (
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={tempFbReelMetrics.shares}
-                                  onChange={(e) =>
-                                    setTempFbReelMetrics((prev) => ({ ...prev, shares: e.target.value }))
-                                  }
-                                  className="w-14 bg-[#0b0d10] border border-[#c084fc]/60 px-1 py-0.5 text-xs font-mono text-[#c084fc] outline-none"
-                                />
-                              ) : (
-                                item.shares.toLocaleString()
-                              )}
-                            </td>
-                            <td className="py-2.5 pl-2 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                {isEditing ? (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleSaveEditFbReel(item)}
-                                      className="p-1 hover:bg-white/20 text-[#86efac] cursor-pointer"
-                                      title="Save verified numbers"
-                                    >
-                                      <Check className="w-3.5 h-3.5" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setEditingFbReelId(null)}
-                                      className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 cursor-pointer"
-                                      title="Cancel"
-                                    >
-                                      <X className="w-3.5 h-3.5" />
-                                    </button>
-                                  </>
-                                ) : (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleStartEditFbReel(item)}
-                                      className="p-1 text-slate-500 hover:text-white transition-colors cursor-pointer"
-                                      title="Edit verified views & engagement"
-                                    >
-                                      <Edit2 className="w-3 h-3" />
-                                    </button>
-                                    <a
-                                      href={item.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="font-mono text-[11px] text-[#86efac] hover:underline"
-                                      title="Open Reel on Facebook"
-                                    >
-                                      ↗
-                                    </a>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {visibleFacebookItems.slice(0, 15).map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-900/40">
+                          <td className="py-2.5 pr-3 max-w-[200px] truncate text-[#e2e8f0]">
+                            {item.text}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono font-bold text-[#86efac]">
+                            {item.views.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[#e2e8f0]">
+                            {item.likes.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
+                            {item.comments.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-2 font-mono text-[#c084fc]">
+                            {item.shares.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 pl-2 text-right">
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono text-[11px] text-[#86efac] hover:underline"
+                              title="Open Reel on Facebook"
+                            >
+                              ↗
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -7325,137 +7271,52 @@ export default function Dashboard() {
                           <th className="py-2 px-2">Likes</th>
                           <th className="py-2 px-2">Reposts</th>
                           <th className="py-2 px-2">Replies</th>
-                          <th className="py-2 pl-2 text-right">Actions</th>
+                          <th className="py-2 pl-2 text-right">Link</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800/70 text-xs">
-                        {visibleXItems.slice(0, 15).map((item) => {
-                          const isEditing = editingXPostId === (item.id || item.issueId);
-                          return (
-                            <tr key={item.id} className="hover:bg-slate-900/40">
-                              <td className="py-2.5 pr-3 max-w-[240px] truncate text-[#e2e8f0]">
-                                <div className="flex items-center gap-1.5">
-                                  {item.isThread && item.tweetCount > 1 && (
-                                    <span
-                                      className="px-1.5 py-0.5 border border-white/40 bg-white/10 text-[9px] font-mono text-white font-bold shrink-0"
-                                      title={`${item.tweetCount} tweets in this thread`}
-                                    >
-                                      Thread ({item.tweetCount})
-                                    </span>
-                                  )}
-                                  <span className="truncate" title={item.openingText || item.text}>
-                                    {item.openingText || item.text}
+                        {visibleXItems.slice(0, 15).map((item) => (
+                          <tr key={item.id} className="hover:bg-slate-900/40">
+                            <td className="py-2.5 pr-3 max-w-[240px] truncate text-[#e2e8f0]">
+                              <div className="flex items-center gap-1.5">
+                                {item.isThread && item.tweetCount > 1 && (
+                                  <span
+                                    className="px-1.5 py-0.5 border border-white/40 bg-white/10 text-[9px] font-mono text-white font-bold shrink-0"
+                                    title={`${item.tweetCount} tweets in this thread`}
+                                  >
+                                    Thread ({item.tweetCount})
                                   </span>
-                                </div>
-                              </td>
-                              <td className="py-2.5 px-2 font-mono font-bold text-white">
-                                {isEditing ? (
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    autoFocus
-                                    value={tempXPostMetrics.views}
-                                    onChange={(e) =>
-                                      setTempXPostMetrics((prev) => ({ ...prev, views: e.target.value }))
-                                    }
-                                    className="w-16 bg-[#0b0d10] border border-white/60 px-1 py-0.5 text-xs font-mono text-white outline-none"
-                                  />
-                                ) : (
-                                  item.views.toLocaleString()
                                 )}
-                              </td>
-                              <td className="py-2.5 px-2 font-mono text-[#fda4af]">
-                                {isEditing ? (
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    value={tempXPostMetrics.likes}
-                                    onChange={(e) =>
-                                      setTempXPostMetrics((prev) => ({ ...prev, likes: e.target.value }))
-                                    }
-                                    className="w-14 bg-[#0b0d10] border border-[#fda4af]/60 px-1 py-0.5 text-xs font-mono text-[#fda4af] outline-none"
-                                  />
-                                ) : (
-                                  item.likes.toLocaleString()
-                                )}
-                              </td>
-                              <td className="py-2.5 px-2 font-mono text-[#86efac]">
-                                {isEditing ? (
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    value={tempXPostMetrics.retweets}
-                                    onChange={(e) =>
-                                      setTempXPostMetrics((prev) => ({ ...prev, retweets: e.target.value }))
-                                    }
-                                    className="w-14 bg-[#0b0d10] border border-[#86efac]/60 px-1 py-0.5 text-xs font-mono text-[#86efac] outline-none"
-                                  />
-                                ) : (
-                                  item.retweets.toLocaleString()
-                                )}
-                              </td>
-                              <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
-                                {isEditing ? (
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    value={tempXPostMetrics.replies}
-                                    onChange={(e) =>
-                                      setTempXPostMetrics((prev) => ({ ...prev, replies: e.target.value }))
-                                    }
-                                    className="w-14 bg-[#0b0d10] border border-[#67e8f9]/60 px-1 py-0.5 text-xs font-mono text-[#67e8f9] outline-none"
-                                  />
-                                ) : (
-                                  item.replies.toLocaleString()
-                                )}
-                              </td>
-                              <td className="py-2.5 pl-2 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  {isEditing ? (
-                                    <>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleSaveEditXPost(item)}
-                                        className="p-1 hover:bg-white/20 text-[#86efac] cursor-pointer"
-                                        title="Save verified numbers"
-                                      >
-                                        <Check className="w-3.5 h-3.5" />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => setEditingXPostId(null)}
-                                        className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 cursor-pointer"
-                                        title="Cancel"
-                                      >
-                                        <X className="w-3.5 h-3.5" />
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleStartEditXPost(item)}
-                                        className="p-1 text-slate-500 hover:text-white transition-colors cursor-pointer"
-                                        title="Edit verified impressions & metrics"
-                                      >
-                                        <Edit2 className="w-3 h-3" />
-                                      </button>
-                                      <a
-                                        href={item.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="font-mono text-[11px] text-[#67e8f9] hover:underline"
-                                        title="Open Thread on X"
-                                      >
-                                        ↗
-                                      </a>
-                                    </>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                                <span className="truncate" title={item.openingText || item.text}>
+                                  {item.openingText || item.text}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-2 font-mono font-bold text-white">
+                              {item.views.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#fda4af]">
+                              {item.likes.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#86efac]">
+                              {item.retweets.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
+                              {item.replies.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 pl-2 text-right">
+                              <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-[11px] text-[#67e8f9] hover:underline"
+                                title="Open Thread on X"
+                              >
+                                ↗
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
