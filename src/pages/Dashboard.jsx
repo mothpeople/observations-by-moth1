@@ -695,27 +695,70 @@ function normalizeFacebookItem(item, idx = 0) {
   };
 }
 
+function isTweetItem(item) {
+  if (!item) return false;
+  if (item.type === 'user') return false;
+  const hasText = Boolean(
+    item.full_text ||
+    item.text ||
+    item.tweetText ||
+    item.content ||
+    item.legacy?.full_text ||
+    item.legacy?.text ||
+    item.tweet?.legacy?.full_text ||
+    item.tweet?.text ||
+    item.note_tweet?.note_tweet_results?.result?.text
+  );
+  const hasTweetId = Boolean(
+    item.id_str ||
+    item.id ||
+    item.tweetId ||
+    item.legacy?.id_str ||
+    item.tweet?.id_str ||
+    item.tweet?.id
+  );
+  return hasText || (hasTweetId && item.type === 'tweet');
+}
+
 function normalizeXItem(item, idx = 0) {
   const text = String(
     item.full_text ||
     item.text ||
     item.tweetText ||
     item.content ||
+    item.legacy?.full_text ||
+    item.legacy?.text ||
+    item.tweet?.legacy?.full_text ||
+    item.tweet?.text ||
+    item.note_tweet?.note_tweet_results?.result?.text ||
     item.note ||
     ''
   ).trim();
 
-  const id = String(item.id_str || item.id || `x-${idx}`);
+  const id = String(
+    item.id_str ||
+    item.id ||
+    item.tweetId ||
+    item.legacy?.id_str ||
+    item.legacy?.id ||
+    item.tweet?.legacy?.id_str ||
+    item.tweet?.id ||
+    `x-${idx}`
+  );
+  const tweetIdForUrl = item.id_str || item.id || item.legacy?.id_str || item.tweet?.id || '';
   const url =
     item.url ||
     item.tweetUrl ||
     item.twitterUrl ||
-    (item.id_str ? `https://x.com/Moth1NFTs/status/${item.id_str}` : 'https://x.com/Moth1NFTs');
+    (tweetIdForUrl ? `https://x.com/Moth1NFTs/status/${tweetIdForUrl}` : 'https://x.com/Moth1NFTs');
 
   const conversationId = String(
     item.conversation_id_str ||
     item.conversation_id ||
     item.conversationId ||
+    item.legacy?.conversation_id_str ||
+    item.legacy?.conversation_id ||
+    item.tweet?.legacy?.conversation_id_str ||
     item.in_reply_to_status_id_str ||
     item.inReplyToStatusId ||
     item.reply_to_tweet_id ||
@@ -728,10 +771,19 @@ function normalizeXItem(item, idx = 0) {
       ? String(item.inReplyToStatusId)
       : item.reply_to_tweet_id
         ? String(item.reply_to_tweet_id)
-        : null;
+        : item.legacy?.in_reply_to_status_id_str
+          ? String(item.legacy.in_reply_to_status_id_str)
+          : null;
 
-  const hashtags = Array.isArray(item.entities?.hashtags)
-    ? item.entities.hashtags.map((h) => String(typeof h === 'string' ? h : h.text || h.tag || '').toLowerCase())
+  const rawEntities =
+    item.entities ||
+    item.legacy?.entities ||
+    item.tweet?.legacy?.entities ||
+    item.tweet?.entities ||
+    {};
+
+  const hashtags = Array.isArray(rawEntities.hashtags)
+    ? rawEntities.hashtags.map((h) => String(typeof h === 'string' ? h : h.text || h.tag || '').toLowerCase())
     : (Array.isArray(item.hashtags)
         ? item.hashtags.map((h) => String(h).toLowerCase())
         : (text.match(/#[\w\d_]+/g) || []).map((h) => h.toLowerCase()));
@@ -741,10 +793,14 @@ function normalizeXItem(item, idx = 0) {
     item.viewCount ??
     item.viewsCount ??
     item.view_count ??
+    item.views?.count ??
     item.views ??
     item.impressions ??
     item.impression_count ??
     item.impressionCount ??
+    item.legacy?.view_count ??
+    item.legacy?.views?.count ??
+    item.tweet?.views?.count ??
     0
   ) || 0;
 
@@ -757,6 +813,9 @@ function normalizeXItem(item, idx = 0) {
     item.like_count ??
     item.likes ??
     item.favorites ??
+    item.legacy?.favorite_count ??
+    item.legacy?.favourite_count ??
+    item.tweet?.legacy?.favorite_count ??
     0
   ) || 0;
 
@@ -768,6 +827,8 @@ function normalizeXItem(item, idx = 0) {
       item.retweets ??
       item.reposts ??
       item.repostCount ??
+      item.legacy?.retweet_count ??
+      item.tweet?.legacy?.retweet_count ??
       0
     ) || 0) +
     (Number(
@@ -775,6 +836,8 @@ function normalizeXItem(item, idx = 0) {
       item.quote_count ??
       item.quotes ??
       item.quotesCount ??
+      item.legacy?.quote_count ??
+      item.tweet?.legacy?.quote_count ??
       0
     ) || 0);
 
@@ -787,6 +850,8 @@ function normalizeXItem(item, idx = 0) {
     item.comments ??
     item.commentCount ??
     item.commentsCount ??
+    item.legacy?.reply_count ??
+    item.tweet?.legacy?.reply_count ??
     0
   ) || 0;
 
@@ -795,6 +860,7 @@ function normalizeXItem(item, idx = 0) {
     item.bookmarkCount ??
     item.bookmark_count ??
     item.bookmarks ??
+    item.legacy?.bookmark_count ??
     0
   ) || 0;
 
@@ -807,6 +873,8 @@ function normalizeXItem(item, idx = 0) {
     item.date ||
     item.timestamp ||
     item.time ||
+    item.legacy?.created_at ||
+    item.tweet?.legacy?.created_at ||
     null;
 
   // Author username & follower count
@@ -817,6 +885,8 @@ function normalizeXItem(item, idx = 0) {
     item.user?.userName ||
     item.user?.username ||
     item.user?.screen_name ||
+    item.core?.user_results?.result?.legacy?.screen_name ||
+    item.legacy?.screen_name ||
     item.userName ||
     item.username ||
     item.screen_name ||
@@ -831,6 +901,7 @@ function normalizeXItem(item, idx = 0) {
     item.user?.followersCount ??
     item.user?.followers ??
     item.user?.followers_count ??
+    item.core?.user_results?.result?.legacy?.followers_count ??
     item.followersCount ??
     item.followers_count ??
     item.followers ??
@@ -1163,7 +1234,14 @@ async function fetchDirectActorDataset(actorId, token) {
               (runAct.includes('facebook') && !runAct.includes('pages-scraper'));
           }
           if (isX) {
-            return runAct.includes('twitter') || runAct.includes('tweet') || runAct.includes('x.com');
+            if (actorId.includes('user') || actorId.includes('profile')) {
+              return runAct.includes('user') || runAct.includes('profile');
+            }
+            return (
+              (runAct.includes('tweet') || runAct.includes('tweets')) &&
+              !runAct.includes('user') &&
+              !runAct.includes('profile')
+            );
           }
           return runAct.includes(actorId.replace('~', '/').toLowerCase()) || runAct.includes(actorId.toLowerCase());
         });
@@ -2425,10 +2503,14 @@ export default function Dashboard() {
           return author === 'moth1nfts' || author.includes('moth1');
         };
 
-        const rawXItems =
+        const rawXCandidateItems =
           directX?.items?.length > 0
-            ? directX.items.map((item, i) => normalizeXItem(item, i))
-            : (serverJson?.x?.items || []).map((item, i) => normalizeXItem(item, i));
+            ? directX.items
+            : (serverJson?.x?.items || []);
+
+        const rawXItems = rawXCandidateItems
+          .filter(isTweetItem)
+          .map((item, i) => normalizeXItem(item, i));
 
         const directFollowerCandidates = [
           ...(directXProfile?.items || []),
@@ -3072,13 +3154,9 @@ export default function Dashboard() {
     if (actorKey === 'x') {
       const cleanXHandle = (targets.xHandle || 'Moth1NFTs').replace(/^@/, '').trim();
       return {
-        startUrls: [
-          `https://x.com/${cleanXHandle}`,
-          `https://twitter.com/${cleanXHandle}`,
-        ],
         twitterHandles: [cleanXHandle],
-        searchTerms: [`from:${cleanXHandle}`],
-        maxItems: 30,
+        startUrls: [`https://x.com/${cleanXHandle}`],
+        maxItems: 40,
         sort: 'Latest',
       };
     }
