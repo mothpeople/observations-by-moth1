@@ -3234,11 +3234,24 @@ export default function Dashboard() {
             if (status === 'SUCCEEDED') {
               clearInterval(pollInterval);
               setRunningActor(null);
+              const defaultDatasetId = statusJson?.data?.defaultDatasetId;
+              let scrapedCount = 0;
+              if (defaultDatasetId) {
+                try {
+                  const dsRes = await fetch(
+                    `https://api.apify.com/v2/datasets/${defaultDatasetId}/items?token=${encodeURIComponent(cleanedToken)}&clean=true`
+                  );
+                  if (dsRes.ok) {
+                    const parsed = await dsRes.json();
+                    scrapedCount = Array.isArray(parsed) ? parsed.length : 0;
+                  }
+                } catch {}
+              }
               setStatusMessage(
-                `${actorMeta.label} finished! Filtering for ${targets.filterTag || '#ObservationsByMoth1'}...`
+                `${actorMeta.label} finished (${scrapedCount} items returned from Apify).`
               );
               await syncAllTelemetry(cleanedToken);
-              setTimeout(() => setStatusMessage(''), 4000);
+              setTimeout(() => setStatusMessage(''), 6000);
               return;
             } else if (
               status === 'FAILED' ||
@@ -3247,8 +3260,9 @@ export default function Dashboard() {
             ) {
               clearInterval(pollInterval);
               setRunningActor(null);
+              const errMsg = statusJson?.data?.statusMessage || statusJson?.data?.errorMessage || '';
               setStatusMessage(
-                `${actorMeta.label} ended with status: ${status}.`
+                `${actorMeta.label} ended with status: ${status}${errMsg ? `: ${errMsg}` : ''}.`
               );
               await syncAllTelemetry(cleanedToken);
               return;
@@ -3924,14 +3938,59 @@ export default function Dashboard() {
   const totalFbViews = Math.max(fbScrapedViews, fbManualViews);
   const totalFbEngagement = Math.max(fbScrapedInteractions, fbManualEngagement);
 
-  // X (Twitter) (apidojo/tweet-scraper + thread aggregator + campaign telemetry)
+  // X (Twitter) (apidojo/tweet-scraper + thread aggregator + ledger fallback)
   const allXThreads = aggregateXThreads(xState.items || []);
-  const matchedXThreads = allXThreads.filter((thread) =>
-    matchesObservationsFilter(thread, activeFilterTag)
-  );
+  const mergedXMap = new Map();
+
+  for (const p of (ledger.x?.posts || [])) {
+    const issueId = p.issueId || matchItemToIssueId(p) || '01';
+    mergedXMap.set(issueId, {
+      id: p.id || `x-post-${issueId}`,
+      issueId,
+      text: p.text || p.title || (issueId === '03' ? 'Issue #03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue #02: The Meat Grinder Needs More Meat' : 'Issue #01: Watering Grass in a Thunderstorm'),
+      title: p.title,
+      openingText: p.text || p.title,
+      url: p.url || (targets.xHandle ? `https://x.com/${targets.xHandle}` : 'https://x.com/Moth1NFTs'),
+      views: Number(p.views) || 0,
+      likes: Number(p.likes) || 0,
+      retweets: Number(p.retweets) || 0,
+      replies: Number(p.replies) || 0,
+      isThread: true,
+      tweetCount: 1,
+      status: p.status || 'Published',
+    });
+  }
+
+  // Overlay live scraped threads matching each issue
+  for (const thread of allXThreads) {
+    const issueId = matchItemToIssueId(thread);
+    if (issueId && mergedXMap.has(issueId)) {
+      const existing = mergedXMap.get(issueId);
+      mergedXMap.set(issueId, {
+        ...existing,
+        ...thread,
+        views: Math.max(existing.views, thread.views || 0),
+        likes: Math.max(existing.likes, thread.likes || 0),
+        retweets: Math.max(existing.retweets, thread.retweets || 0),
+        replies: Math.max(existing.replies, thread.replies || 0),
+        url: thread.url || existing.url,
+      });
+    } else if (matchesObservationsFilter(thread, activeFilterTag)) {
+      mergedXMap.set(thread.id, thread);
+    }
+  }
+
+  const allMergedXItems = Array.from(mergedXMap.values()).sort((a, b) => {
+    const issueA = matchItemToIssueId(a);
+    const issueB = matchItemToIssueId(b);
+    const scoreA = issueA === '03' ? 3 : issueA === '02' ? 2 : issueA === '01' ? 1 : 0;
+    const scoreB = issueB === '03' ? 3 : issueB === '02' ? 2 : issueB === '01' ? 1 : 0;
+    return scoreB - scoreA;
+  });
+
   const visibleXItems = filterOnlyObservations
-    ? matchedXThreads
-    : allXThreads;
+    ? allMergedXItems.filter((item) => matchesObservationsFilter(item, activeFilterTag) || matchItemToIssueId(item))
+    : (allXThreads.length > 0 ? allXThreads : allMergedXItems);
 
   const xScrapedViews = visibleXItems.reduce((sum, i) => sum + (i.views || 0), 0);
   const xScrapedEngagement = visibleXItems.reduce(

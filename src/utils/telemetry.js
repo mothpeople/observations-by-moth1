@@ -133,7 +133,44 @@ const DEFAULT_CHANNEL_LEDGER = {
     handle: 'Moth1NFTs',
     platform: 'X (Twitter)',
     followers: 0,
-    posts: [],
+    posts: [
+      {
+        id: 'x-post-03',
+        issueId: '03',
+        title: 'Issue #03: The War No One Was Supposed to Win',
+        text: 'The War No One Was Supposed to Win... #ObservationsByMoth1',
+        url: 'https://x.com/Moth1NFTs',
+        views: 0,
+        likes: 0,
+        retweets: 0,
+        replies: 0,
+        status: 'Published',
+      },
+      {
+        id: 'x-post-02',
+        issueId: '02',
+        title: 'Issue #02: The Meat Grinder Needs More Meat',
+        text: 'The Meat Grinder Needs More Meat... #ObservationsByMoth1',
+        url: 'https://x.com/Moth1NFTs',
+        views: 0,
+        likes: 0,
+        retweets: 0,
+        replies: 0,
+        status: 'Published',
+      },
+      {
+        id: 'x-post-01',
+        issueId: '01',
+        title: 'Issue #01: Watering Grass in a Thunderstorm',
+        text: 'Watering Grass in a Thunderstorm... #ObservationsByMoth1',
+        url: 'https://x.com/Moth1NFTs',
+        views: 0,
+        likes: 0,
+        retweets: 0,
+        replies: 0,
+        status: 'Published',
+      },
+    ],
   },
   youtube: {
     handle: 'sivaraj.pragasm',
@@ -609,6 +646,10 @@ export function loadChannelLedger() {
         ...(parsed.x || {}),
         // Cleanse corrupted foreign 536 count from historical Apify run
         followers: Number(parsed.x?.followers) === 536 ? 0 : (Number(parsed.x?.followers) || 0),
+        posts: DEFAULT_CHANNEL_LEDGER.x.posts.map((defP) => {
+          const found = (parsed.x?.posts || []).find((p) => p.id === defP.id || p.issueId === defP.issueId);
+          return found ? { ...defP, ...found } : defP;
+        }),
       },
       youtube: {
         ...DEFAULT_CHANNEL_LEDGER.youtube,
