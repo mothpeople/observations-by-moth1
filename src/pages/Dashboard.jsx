@@ -276,11 +276,14 @@ function matchesObservationsFilter(item, filterTag = '#ObservationsByMoth1') {
 
 function matchItemToIssueId(item) {
   if (!item) return null;
-  const idStr = String(item.id || item.issueId || '').toLowerCase();
-  if (idStr.includes('03') || idStr.includes('war-on-drugs')) return '03';
-  if (idStr.includes('02') || idStr.includes('meat-grinder')) return '02';
-  if (idStr.includes('01') || idStr.includes('watering-grass')) return '01';
 
+  // 1. Check explicit issueId property first
+  const cleanIssue = String(item.issueId || '').trim();
+  if (cleanIssue === '03' || cleanIssue === '3') return '03';
+  if (cleanIssue === '02' || cleanIssue === '2') return '02';
+  if (cleanIssue === '01' || cleanIssue === '1') return '01';
+
+  // 2. Check title / caption / text content (the true semantic indicator)
   const text = `${item.caption || ''} ${item.text || ''} ${item.title || ''} ${item.url || ''}`.toLowerCase();
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags.map((h) => String(h).toLowerCase()).join(' ') : '';
   const haystack = `${text} ${hashtags}`;
@@ -346,6 +349,12 @@ function matchItemToIssueId(item) {
   ) {
     return '01';
   }
+
+  // 3. Fallback: check explicit slug strings on custom ID (e.g. "ig-reel-02", "fb-reel-01", "war-on-drugs")
+  const idStr = String(item.id || '').toLowerCase();
+  if (idStr.includes('war-on-drugs') || /issue-?0?3/i.test(idStr) || idStr.includes('reel-03') || idStr.includes('post-03')) return '03';
+  if (idStr.includes('meat-grinder') || /issue-?0?2/i.test(idStr) || idStr.includes('reel-02') || idStr.includes('post-02')) return '02';
+  if (idStr.includes('watering-grass') || /issue-?0?1/i.test(idStr) || idStr.includes('reel-01') || idStr.includes('post-01')) return '01';
 
   return null;
 }
