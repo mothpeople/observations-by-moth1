@@ -183,13 +183,13 @@ const DEFAULT_CHANNEL_LEDGER = {
     videos: [
       {
         id: 'yt-shorts-03',
-        videoId: '',
+        videoId: 'KXwpmCaOMTE',
         issueId: '03',
         title: 'Issue 03: The War No One Was Supposed to Win',
-        views: 0,
+        views: 2,
         likes: 0,
-        comments: 0,
-        url: 'https://observations.moth1.xyz/war-on-drugs',
+        comments: 1,
+        url: 'https://www.youtube.com/shorts/KXwpmCaOMTE',
         trackingUrl: 'https://observations.moth1.xyz/war-on-drugs?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-03',
         playlistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
       },
@@ -660,12 +660,17 @@ export function loadChannelLedger() {
         subscribers: Math.max(Number(DEFAULT_CHANNEL_LEDGER.youtube.subscribers) || 0, Number(parsed.youtube?.subscribers) || 0),
         totalViews: Math.max(Number(DEFAULT_CHANNEL_LEDGER.youtube.totalViews) || 0, Number(parsed.youtube?.totalViews) || 0),
         videos: DEFAULT_CHANNEL_LEDGER.youtube.videos.map((defV) => {
-          const found = (parsed.youtube?.videos || []).find((v) => v.videoId === defV.videoId || v.issueId === defV.issueId);
+          const found = (parsed.youtube?.videos || []).find((v) => (v.videoId && v.videoId === defV.videoId) || v.issueId === defV.issueId);
           if (!found) return defV;
+          let views = Number(found.views) || 0;
+          // Cleanse corrupted historical value where issue 03 erroneously took issue 02's views (>=120)
+          if (defV.issueId === '03' && views >= 120) {
+            views = Number(defV.views) || 2;
+          }
           return {
             ...defV,
             ...found,
-            views: Math.max(Number(defV.views) || 0, Number(found.views) || 0),
+            views: Math.max(Number(defV.views) || 0, views),
             likes: Math.max(Number(defV.likes) || 0, Number(found.likes) || 0),
             comments: Math.max(Number(defV.comments) || 0, Number(found.comments) || 0),
           };

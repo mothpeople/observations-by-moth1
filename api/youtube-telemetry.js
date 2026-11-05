@@ -22,13 +22,13 @@ const VERIFIED_FALLBACK = {
   videos: [
     {
       id: 'yt-shorts-03',
-      videoId: '',
+      videoId: 'KXwpmCaOMTE',
       issueId: '03',
       title: 'Issue 03: The War No One Was Supposed to Win',
-      views: 0,
+      views: 2,
       likes: 0,
-      comments: 0,
-      url: 'https://observations.moth1.xyz/war-on-drugs',
+      comments: 1,
+      url: 'https://www.youtube.com/shorts/KXwpmCaOMTE',
       trackingUrl: 'https://observations.moth1.xyz/war-on-drugs?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-03',
     },
     {
@@ -142,12 +142,14 @@ async function scrapeLiveChannel(handle) {
 }
 
 async function scrapeLiveYouTube() {
-  const [v02, v01, ch] = await Promise.all([
+  const [v03, v02, v01, ch] = await Promise.all([
+    scrapeLiveVideo('KXwpmCaOMTE'),
     scrapeLiveVideo('XiAPHfIshfY'),
     scrapeLiveVideo('tp6FqVQUO9w'),
     scrapeLiveChannel('sivaraj.pragasm'),
   ]);
 
+  const v03Views = Math.max(v03?.views || 0, 2);
   const v02Views = Math.max(v02?.views || 0, 126);
   const v01Views = Math.max(v01?.views || 0, 62);
   const subs = Math.max(ch?.subscribers || 0, 6);
@@ -164,17 +166,24 @@ async function scrapeLiveYouTube() {
     videos: [
       {
         ...VERIFIED_FALLBACK.videos[0],
-        views: v02Views,
-        likes: Math.max(v02?.likes || 0, 0),
-        comments: Math.max(v02?.comments || 0, 1),
-        title: v02?.title || VERIFIED_FALLBACK.videos[0].title,
+        views: v03Views,
+        likes: Math.max(v03?.likes || 0, 0),
+        comments: Math.max(v03?.comments || 0, 1),
+        title: v03?.title || VERIFIED_FALLBACK.videos[0].title,
       },
       {
         ...VERIFIED_FALLBACK.videos[1],
+        views: v02Views,
+        likes: Math.max(v02?.likes || 0, 0),
+        comments: Math.max(v02?.comments || 0, 1),
+        title: v02?.title || VERIFIED_FALLBACK.videos[1].title,
+      },
+      {
+        ...VERIFIED_FALLBACK.videos[2],
         views: v01Views,
         likes: Math.max(v01?.likes || 0, 0),
         comments: Math.max(v01?.comments || 0, 1),
-        title: v01?.title || VERIFIED_FALLBACK.videos[1].title,
+        title: v01?.title || VERIFIED_FALLBACK.videos[2].title,
       },
     ],
   };
@@ -212,7 +221,7 @@ export default async function handler(req, res) {
           const headers = { Authorization: `Bearer ${accessToken}` };
 
           const vRes = await fetch(
-            'https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=XiAPHfIshfY,tp6FqVQUO9w',
+            'https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=KXwpmCaOMTE,XiAPHfIshfY,tp6FqVQUO9w',
             { headers }
           );
 

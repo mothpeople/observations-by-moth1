@@ -2954,14 +2954,22 @@ export default function Dashboard() {
             }
             if (Array.isArray(data.videos) && Array.isArray(next.youtube?.videos)) {
               const updatedYtVideos = next.youtube.videos.map((vid) => {
-                const live = data.videos.find((v) => v.videoId === vid.videoId || v.issueId === vid.issueId);
+                const live = data.videos.find((v) => (v.videoId && v.videoId === vid.videoId) || v.issueId === vid.issueId);
                 if (!live) return vid;
-                const maxV = Math.max(Number(vid.views) || 0, Number(live.views) || 0);
+                const existingViews = (vid.issueId === '03' && Number(vid.views) >= 120) ? 0 : (Number(vid.views) || 0);
+                const maxV = Math.max(existingViews, Number(live.views) || 0);
                 const maxL = Math.max(Number(vid.likes) || 0, Number(live.likes) || 0);
                 const maxC = Math.max(Number(vid.comments) || 0, Number(live.comments) || 0);
-                if (maxV !== vid.views || maxL !== vid.likes || maxC !== vid.comments) {
+                if (maxV !== vid.views || maxL !== vid.likes || maxC !== vid.comments || (live.videoId && live.videoId !== vid.videoId)) {
                   changed = true;
-                  return { ...vid, views: maxV, likes: maxL, comments: maxC, title: live.title || vid.title };
+                  return {
+                    ...vid,
+                    ...live,
+                    views: maxV,
+                    likes: maxL,
+                    comments: maxC,
+                    title: live.title || vid.title,
+                  };
                 }
                 return vid;
               });
