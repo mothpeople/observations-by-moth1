@@ -157,7 +157,7 @@ export default function TerminalSolutions({ data }) {
                         <img
                           src={activeProp.image}
                           alt={activeProp.title}
-                          className="w-full h-full object-cover transition-opacity duration-300"
+                          className="w-full h-full object-cover"
                         />
                         <div
                           className="pointer-events-none absolute inset-0"
@@ -197,7 +197,7 @@ export default function TerminalSolutions({ data }) {
                           width: `${Math.round(activeProp.barPercent * barFill)}%`,
                           backgroundColor: activeProp.accent,
                         }}
-                        className="h-full transition-all duration-150"
+                        className="h-full"
                       />
                     </div>
                     <p className="font-mono text-[8.5px] sm:text-[10px] text-slate-400 leading-tight">

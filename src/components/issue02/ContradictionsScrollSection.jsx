@@ -145,7 +145,7 @@ export default function ContradictionsScrollSection({ data }) {
                         style={{
                           opacity: cardOpacity,
                         }}
-                        className="w-full shrink-0 px-0.5 sm:px-1 transition-opacity duration-75"
+                        className="w-full shrink-0 px-0.5 sm:px-1"
                       >
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-2 sm:gap-4 lg:gap-6 items-center">
                           {/* Graphic-Novel Illustration Panel (100% Full Width x 190px on Mobile, 6 cols on Tablet, 7 cols on Desktop) */}
@@ -205,7 +205,7 @@ export default function ContradictionsScrollSection({ data }) {
                                     width: `${Math.round(step.barPercent * barGrowth)}%`,
                                     backgroundColor: step.accent,
                                   }}
-                                  className="h-full transition-all duration-100"
+                                  className="h-full"
                                 />
                               </div>
                             </div>

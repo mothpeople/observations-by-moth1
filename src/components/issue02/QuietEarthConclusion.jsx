@@ -54,7 +54,7 @@ export default function QuietEarthConclusion({ data, sources }) {
             <div className="relative w-full h-full bg-[#121316] text-[#e2e8f0] overflow-hidden flex items-center justify-center px-4 sm:px-8 pt-14 pb-6">
               {/* Full-Screen Animated Botanical Reclamation Artwork */}
               <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-150 will-change-transform"
+                className="absolute inset-0 bg-cover bg-center will-change-transform"
                 style={{
                   backgroundImage: `url('${data.backgroundImage}')`,
                   opacity: bgOpacity,
@@ -87,7 +87,7 @@ export default function QuietEarthConclusion({ data, sources }) {
                 <CyberPanel
                   label="Biological Correction"
                   accent="#86efac"
-                  className="bg-[#121316]/84 backdrop-blur-md p-3.5 sm:p-6"
+                  className="bg-[#121316] p-3.5 sm:p-6 shadow-[0_24px_60px_rgba(0,0,0,0.95)]"
                 >
                   <h2 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-[#e2e8f0] leading-tight mb-2.5 sm:mb-4">
                     {data.lead}
@@ -102,7 +102,7 @@ export default function QuietEarthConclusion({ data, sources }) {
 
                   <div
                     style={{ opacity: punchlineOpacity }}
-                    className="space-y-3.5 sm:space-y-5 transition-opacity duration-200"
+                    className="space-y-3.5 sm:space-y-5"
                   >
                     <p className="text-sm sm:text-lg md:text-2xl font-extrabold text-[#86efac] border-l-2 border-[#86efac] pl-3 sm:pl-4 py-0.5 sm:py-1 leading-snug">
                       {data.punchline}

@@ -42,11 +42,11 @@ export default function StickySplitSection({ data }) {
         const leaderAgePct = ageMorph * 88;
         const popAgePct = ageMorph * 35;
 
-        // Right Column: 3 Cards with dedicated Animate-In -> Bar-Complete -> Static-Reading-Hold windows
+        // Right Column: 3 Cards with seamless continuous crossfading & zero dead-zone reading holds
         const cardWindows = [
-          { enterStart: 0.0, enterEnd: 0.08, barEnd: 0.15, holdEnd: 0.28, exitEnd: 0.34, targetBar: 86 },
-          { enterStart: 0.33, enterEnd: 0.41, barEnd: 0.48, holdEnd: 0.60, exitEnd: 0.66, targetBar: 92 },
-          { enterStart: 0.65, enterEnd: 0.73, barEnd: 0.80, holdEnd: 0.96, exitEnd: 1.01, targetBar: 96 },
+          { enterStart: 0.0, enterEnd: 0.06, barEnd: 0.15, holdEnd: 0.29, exitEnd: 0.36, targetBar: 86 },
+          { enterStart: 0.29, enterEnd: 0.36, barEnd: 0.45, holdEnd: 0.62, exitEnd: 0.69, targetBar: 92 },
+          { enterStart: 0.62, enterEnd: 0.69, barEnd: 0.78, holdEnd: 0.96, exitEnd: 1.01, targetBar: 96 },
         ];
 
         const cardCitations = [
@@ -115,7 +115,7 @@ export default function StickySplitSection({ data }) {
             {/* Main 50/50 Split Stage */}
             <div className="relative z-10 max-w-6xl w-full mx-auto my-auto grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-8 items-center">
               {/* Left Pinned Comparison Card (5 cols) */}
-              <div className="md:col-span-5 ink-panel ink-panel-crimson border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-2.5 md:p-5">
+              <div className="md:col-span-5 ink-panel ink-panel-crimson border border-neutral-800 bg-[#0e1014] p-2.5 md:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.95)]">
                 <div className="flex items-center justify-between border-b border-neutral-800 pb-1 md:pb-2.5 mb-1.5 md:mb-3 font-mono text-[10px] md:text-xs">
                   <span className="text-[#e6e4dd] font-bold truncate">
                     {isAgeMode
@@ -404,8 +404,8 @@ export default function StickySplitSection({ data }) {
                   const enter = invLerp(w.enterStart, w.enterEnd, progress);
                   const exit = invLerp(w.holdEnd, w.exitEnd, progress);
                   const opacity = enter * (1 - exit);
-                  const y = (1 - enter) * 24 - exit * 16;
-                  const scale = 0.96 + opacity * 0.04;
+                  const y = (1 - enter) * 14 - exit * 10;
+                  const scale = 0.98 + opacity * 0.02;
                   const barFill =
                     invLerp(w.enterStart, w.barEnd, progress) * w.targetBar;
 
@@ -422,7 +422,7 @@ export default function StickySplitSection({ data }) {
                       <article
                         className={`ink-panel ${
                           card.accent === '#dc2626' ? 'ink-panel-crimson' : ''
-                        } w-full border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-2.5 sm:p-8`}
+                        } w-full border border-neutral-800 bg-[#0e1014] shadow-[0_20px_50px_rgba(0,0,0,0.95)] p-2.5 sm:p-8`}
                       >
                         <div className="mb-1.5 sm:mb-4 pb-1 sm:pb-3 border-b border-neutral-800">
                           <h3

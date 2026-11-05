@@ -76,7 +76,7 @@ export default function HorizontalScrollSection({ data }) {
                       <div
                         className={`ink-panel ${
                           item.accent === '#dc2626' ? 'ink-panel-crimson' : ''
-                        } relative w-full max-w-5xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md overflow-hidden`}
+                        } relative w-full max-w-5xl border border-neutral-800 bg-[#0e1014] shadow-[0_24px_60px_rgba(0,0,0,0.95)] overflow-hidden`}
                       >
                         {!imgErrors[index] && (
                           <div className="relative h-28 sm:h-56 md:h-72 w-full overflow-hidden border-b border-neutral-800 bg-[#08090a]">

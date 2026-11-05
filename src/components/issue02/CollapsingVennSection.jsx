@@ -361,11 +361,13 @@ export default function CollapsingVennSection({ data }) {
 
           {/* RIGHT COLUMN: Flow-Aware CSS Grid Illustrated Story Cards (No Mobile Overlap) */}
           <div className="md:col-span-6 grid grid-cols-1 items-start md:items-center">
-            {data.cards.map((card) => {
+            {data.cards.map((card, idx) => {
               const { opacity, y } = getCardEnvelope(
                 scrollProgress,
                 card.start,
-                card.end
+                card.end,
+                idx === 0,
+                idx === data.cards.length - 1
               );
               return (
                 <div
@@ -375,7 +377,7 @@ export default function CollapsingVennSection({ data }) {
                     transform: `translate3d(0, ${y}px, 0)`,
                     pointerEvents: opacity > 0.25 ? 'auto' : 'none',
                   }}
-                  className="col-start-1 row-start-1 w-full transition-opacity duration-75"
+                  className="col-start-1 row-start-1 w-full"
                 >
                   <CyberPanel
                     label={card.headline}

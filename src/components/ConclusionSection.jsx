@@ -127,7 +127,7 @@ export default function ConclusionSection({ data, meta }) {
                             opacity: isVisible ? 1 : 0,
                             color: '#e6e4dd',
                           }}
-                          className="transition-opacity duration-75 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
+                          className="drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
                         >
                           {word}{' '}
                         </span>
@@ -151,7 +151,7 @@ export default function ConclusionSection({ data, meta }) {
                             opacity: isVisible ? 1 : 0,
                             color: '#dc2626',
                           }}
-                          className="transition-opacity duration-75 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
+                          className="drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
                         >
                           {word}{' '}
                         </span>
@@ -171,7 +171,7 @@ export default function ConclusionSection({ data, meta }) {
                   transform: `translateY(${(1 - formReveal) * 28}px)`,
                   pointerEvents: formReveal > 0.3 ? 'auto' : 'none',
                 }}
-                className="ink-panel border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3.5 sm:p-7 will-change-transform"
+                className="ink-panel border border-neutral-800 bg-[#0e1014] shadow-[0_24px_60px_rgba(0,0,0,0.95)] p-3.5 sm:p-7 will-change-transform"
               >
                 <div className="max-w-2xl">
                   <div className="inline-flex items-center gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-[#08090a] border border-neutral-700 text-[#d97706] font-mono text-[10px] sm:text-xs uppercase tracking-widest mb-1.5 sm:mb-2.5">

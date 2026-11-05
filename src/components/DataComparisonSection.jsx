@@ -129,7 +129,7 @@ export default function DataComparisonSection({ data }) {
                 }}
                 className="seq-layer will-change-transform"
               >
-                <div className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3 sm:p-7 overflow-hidden">
+                <div className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014] shadow-[0_24px_60px_rgba(0,0,0,0.95)] p-3 sm:p-7 overflow-hidden">
                   {!scaleImgError && (
                     <img
                       src={scaleImageSrc}
@@ -296,7 +296,7 @@ export default function DataComparisonSection({ data }) {
                 }}
                 className="seq-layer will-change-transform"
               >
-                <article className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3 sm:p-8 overflow-hidden">
+                <article className="ink-panel ink-panel-crimson w-full max-w-4xl border border-neutral-800 bg-[#0e1014] shadow-[0_24px_60px_rgba(0,0,0,0.95)] p-3 sm:p-8 overflow-hidden">
                   <img
                     src="/issues/issue-01/protest-2.webp"
                     alt=""
@@ -392,7 +392,7 @@ export default function DataComparisonSection({ data }) {
                 }}
                 className="seq-layer will-change-transform"
               >
-                <article className="ink-panel w-full max-w-4xl border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-3 sm:p-8 overflow-hidden">
+                <article className="ink-panel w-full max-w-4xl border border-neutral-800 bg-[#0e1014] shadow-[0_24px_60px_rgba(0,0,0,0.95)] p-3 sm:p-8 overflow-hidden">
                   <img
                     src="/issues/issue-01/protest-4.webp"
                     alt=""
@@ -464,7 +464,7 @@ export default function DataComparisonSection({ data }) {
                       <div className="h-1.5 sm:h-2 w-full bg-[#1f232b] overflow-hidden mb-1 sm:mb-2">
                         <div
                           style={{ width: `${currentYearStat.bar}%` }}
-                          className="h-full bg-gradient-to-r from-[#d97706] to-[#dc2626] transition-all duration-150"
+                          className="h-full bg-gradient-to-r from-[#d97706] to-[#dc2626]"
                         />
                       </div>
 

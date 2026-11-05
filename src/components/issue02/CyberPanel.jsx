@@ -19,7 +19,7 @@ export default function CyberPanel({
       style={style}
       data-panel="cyber"
       {...rest}
-      className={`relative backdrop-blur-md p-3.5 sm:p-5 md:p-7 transition-colors duration-200 ${
+      className={`relative p-3.5 sm:p-5 md:p-7 transition-colors duration-200 ${
         isLight
           ? 'bg-white/95 border border-slate-200/90 shadow-[0_12px_36px_rgba(0,0,0,0.06)] text-slate-800'
           : 'bg-[#121316]/94 border border-slate-800/90 shadow-[0_24px_60px_rgba(0,0,0,0.85)] text-[#e2e8f0]'

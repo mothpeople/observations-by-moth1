@@ -12,7 +12,7 @@ export default function Issue01() {
       {/* Floating Graphic Novel Act Index (Desktop) */}
       <nav
         aria-label="Graphic Novel Acts"
-        className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-3 p-2.5 ink-panel border border-neutral-800 bg-[#0e1014]/90 backdrop-blur-md"
+        className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-3 p-2.5 ink-panel border border-neutral-800 bg-[#0e1014] shadow-2xl"
       >
         {[
           { href: '#hero', label: 'Watering Grass in a Thunderstorm' },

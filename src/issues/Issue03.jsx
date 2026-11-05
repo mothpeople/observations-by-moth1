@@ -15,7 +15,7 @@ export default function Issue03() {
       {/* Floating Surveillance Chapter Index (Desktop) */}
       <nav
         aria-label="Issue 03 Sections"
-        className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-3 p-2.5 border border-slate-800 bg-[#0a0b0e]/90 backdrop-blur-md"
+        className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-3 p-2.5 border border-slate-800 bg-[#0a0b0e] shadow-2xl"
       >
         {[
           { href: '#phantom', label: 'The Trillion-Dollar Phantom' },

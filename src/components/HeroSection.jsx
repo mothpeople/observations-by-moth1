@@ -143,7 +143,7 @@ export default function HeroSection({ data, meta }) {
               }}
               className="absolute inset-x-4 sm:inset-x-6 z-20 max-w-3xl mx-auto will-change-transform"
             >
-              <div className="ink-panel ink-panel-crimson border border-neutral-800 bg-[#0e1014]/95 backdrop-blur-md p-4 sm:p-10 shadow-2xl">
+              <div className="ink-panel ink-panel-crimson border border-neutral-800 bg-[#0e1014] p-4 sm:p-10 shadow-2xl">
                 <p className="font-editorial text-lg sm:text-2xl md:text-3xl text-[#e6e4dd] leading-snug sm:leading-relaxed font-medium mb-4 sm:mb-6">
                   {data.paragraphs[0]}
                 </p>

@@ -47,7 +47,7 @@ export default function HeroMachineSection({ data }) {
           <div className="relative w-full h-full bg-[#121316] text-[#e2e8f0] overflow-hidden">
             {/* Animated Cyberpunk Line-Art Skyline Background */}
             <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-150 will-change-transform"
+              className="absolute inset-0 bg-cover bg-center will-change-transform"
               style={{
                 backgroundImage: `url('${hero.image}')`,
                 opacity: bgOpacity,
@@ -196,7 +196,7 @@ export default function HeroMachineSection({ data }) {
                                 width: `${pct}%`,
                                 backgroundColor: anchor.color,
                               }}
-                              className="h-full transition-all duration-100"
+                              className="h-full"
                             />
                           </div>
                           <p className="hidden sm:block text-[10.5px] lg:text-xs text-slate-400 leading-snug">
