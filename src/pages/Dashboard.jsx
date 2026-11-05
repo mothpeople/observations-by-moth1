@@ -1238,7 +1238,7 @@ async function fetchDirectActorDataset(actorId, token) {
               return runAct.includes('user') || runAct.includes('profile');
             }
             return (
-              (runAct.includes('tweet') || runAct.includes('tweets')) &&
+              (runAct.includes('twitter') || runAct.includes('tweet') || runAct.includes('x.com')) &&
               !runAct.includes('user') &&
               !runAct.includes('profile')
             );
@@ -3955,7 +3955,7 @@ export default function Dashboard() {
       likes: Number(p.likes) || 0,
       retweets: Number(p.retweets) || 0,
       replies: Number(p.replies) || 0,
-      isThread: true,
+      isThread: false,
       tweetCount: 1,
       status: p.status || 'Published',
     });
@@ -3974,6 +3974,8 @@ export default function Dashboard() {
         retweets: Math.max(existing.retweets, thread.retweets || 0),
         replies: Math.max(existing.replies, thread.replies || 0),
         url: thread.url || existing.url,
+        isThread: Boolean(thread.tweetCount > 1),
+        tweetCount: thread.tweetCount || 1,
       });
     } else if (matchesObservationsFilter(thread, activeFilterTag)) {
       mergedXMap.set(thread.id, thread);
@@ -7105,7 +7107,7 @@ export default function Dashboard() {
                           <tr key={item.id} className="hover:bg-slate-900/40">
                             <td className="py-2.5 pr-3 max-w-[240px] truncate text-[#e2e8f0]">
                               <div className="flex items-center gap-1.5">
-                                {item.isThread && (
+                                {item.isThread && item.tweetCount > 1 && (
                                   <span
                                     className="px-1.5 py-0.5 border border-white/40 bg-white/10 text-[9px] font-mono text-white font-bold shrink-0"
                                     title={`${item.tweetCount} tweets in this thread`}

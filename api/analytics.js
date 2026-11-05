@@ -966,7 +966,7 @@ async function fetchPlatformTelemetry(platformKey, primaryActorId, alternateActo
           }
           if (platformKey === 'x') {
             return (
-              (target.includes('tweet') || target.includes('tweets')) &&
+              (target.includes('twitter') || target.includes('tweet') || target.includes('x.com')) &&
               !target.includes('user') &&
               !target.includes('profile')
             );
