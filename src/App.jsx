@@ -281,6 +281,8 @@ export default function App() {
               </PublicationLayout>
             }
           />
+          {/* Route /dashboard alias redirect to /analytics */}
+          <Route path="/dashboard" element={<Navigate to="/analytics" replace />} />
 
           {/* Route /:slug and /issue/:id: Dynamically renders the matching dispatch */}
           <Route path="/:slug" element={<DynamicDispatchRoute />} />
