@@ -1846,6 +1846,13 @@ export default function Dashboard() {
     retweets: 0,
     replies: 0,
   });
+  const [editingFbReelId, setEditingFbReelId] = useState(null);
+  const [tempFbReelMetrics, setTempFbReelMetrics] = useState({
+    views: 0,
+    likes: 0,
+    comments: 0,
+    shares: 0,
+  });
 
   // Layout View Tabs & Filter States for Compact, Less-Scroll Experience
   const [activeMacroSection, setActiveMacroSection] = useState('analytics'); // 'analytics' | 'funnel'
@@ -2445,14 +2452,12 @@ export default function Dashboard() {
               ...item,
               id: item.id || existing?.id || `fb-reel-${issueId}`,
               issueId,
-              text: item.text || existing?.text || item.title || (issueId === '03' ? 'Issue 03 - The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+              text: item.text || existing?.text || item.title || (issueId === '03' ? 'The War No One Was Supposed to Win' : issueId === '02' ? 'The Meat Grinder Needs More Meat' : 'Watering Grass in a Thunderstorm'),
               views: Math.max(existing?.views || 0, item.views || 0),
               likes: Math.max(existing?.likes || 0, item.likes || 0),
               comments: Math.max(existing?.comments || 0, item.comments || 0),
               shares: Math.max(existing?.shares || 0, item.shares || 0),
             });
-          } else {
-            mergedFbMap.set(item.id || `fb-item-${mergedFbMap.size}`, item);
           }
         }
 
@@ -3457,8 +3462,76 @@ export default function Dashboard() {
     };
     setLedger(updated);
     saveChannelLedger(updated);
+    setXState((prev) => ({
+      ...prev,
+      items: (prev.items || []).map((p) => {
+        if (p.id === item.id || p.issueId === targetIssue) {
+          return {
+            ...p,
+            views: Math.max(0, Number(tempXPostMetrics.views) || 0),
+            likes: Math.max(0, Number(tempXPostMetrics.likes) || 0),
+            retweets: Math.max(0, Number(tempXPostMetrics.retweets) || 0),
+            replies: Math.max(0, Number(tempXPostMetrics.replies) || 0),
+          };
+        }
+        return p;
+      }),
+    }));
     setEditingXPostId(null);
     setStatusMessage(`Saved verified X telemetry for Issue #${targetIssue}.`);
+    setTimeout(() => setStatusMessage(''), 4000);
+  };
+
+  const handleStartEditFbReel = (item) => {
+    setEditingFbReelId(item.id || item.issueId);
+    setTempFbReelMetrics({
+      views: item.views || 0,
+      likes: item.likes || 0,
+      comments: item.comments || 0,
+      shares: item.shares || 0,
+    });
+  };
+
+  const handleSaveEditFbReel = (item) => {
+    const targetIssue = item.issueId || matchItemToIssueId(item) || '01';
+    const updated = {
+      ...ledger,
+      facebook: {
+        ...ledger.facebook,
+        reels: (ledger.facebook?.reels || DEFAULT_CHANNEL_LEDGER.facebook.reels).map((r) => {
+          if (r.id === item.id || r.issueId === targetIssue) {
+            return {
+              ...r,
+              views: Math.max(0, Number(tempFbReelMetrics.views) || 0),
+              likes: Math.max(0, Number(tempFbReelMetrics.likes) || 0),
+              comments: Math.max(0, Number(tempFbReelMetrics.comments) || 0),
+              shares: Math.max(0, Number(tempFbReelMetrics.shares) || 0),
+              status: 'Published',
+            };
+          }
+          return r;
+        }),
+      },
+    };
+    setLedger(updated);
+    saveChannelLedger(updated);
+    setFacebookState((prev) => ({
+      ...prev,
+      items: (prev.items || []).map((r) => {
+        if (r.id === item.id || r.issueId === targetIssue) {
+          return {
+            ...r,
+            views: Math.max(0, Number(tempFbReelMetrics.views) || 0),
+            likes: Math.max(0, Number(tempFbReelMetrics.likes) || 0),
+            comments: Math.max(0, Number(tempFbReelMetrics.comments) || 0),
+            shares: Math.max(0, Number(tempFbReelMetrics.shares) || 0),
+          };
+        }
+        return r;
+      }),
+    }));
+    setEditingFbReelId(null);
+    setStatusMessage(`Saved verified Facebook telemetry for Issue #${targetIssue}.`);
     setTimeout(() => setStatusMessage(''), 4000);
   };
 
@@ -3504,9 +3577,9 @@ export default function Dashboard() {
       )
     : threadsState.items;
 
-  // Strict Video-Only Filter & Display Sorting for Facebook Scraper Data (100% Pure Dynamic)
+  // Strict Video-Only Filter & Display Sorting for Facebook Scraper Data (Canonical Observations Series Only)
   const visibleFacebookItems = sortFacebookReelsForDisplay(
-    (facebookState.items || []).filter((item) => isFacebookVideoReel(item, item))
+    (facebookState.items || []).filter((item) => isFacebookVideoReel(item, item) && Boolean(matchItemToIssueId(item)))
   );
 
   // Resolve pageviews and visitors for a given route, aggregating all visits with query parameters (?utm_...) and trailing slashes
@@ -4022,8 +4095,8 @@ export default function Dashboard() {
       likes: Number(p.likes) || 0,
       retweets: Number(p.retweets) || 0,
       replies: Number(p.replies) || 0,
-      isThread: false,
-      tweetCount: 1,
+      isThread: Boolean(p.isThread),
+      tweetCount: p.tweetCount || 1,
       status: p.status || 'Published',
     });
   }
@@ -6863,8 +6936,8 @@ export default function Dashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="overflow-x-auto mb-4 max-h-[240px] -mx-1 sm:mx-0">
-                  <table className="w-full text-left border-collapse min-w-[480px]">
+                <div className="overflow-x-auto mb-4 max-h-[280px] -mx-1 sm:mx-0">
+                  <table className="w-full text-left border-collapse min-w-[520px]">
                     <thead>
                       <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
                         <th className="py-2 pr-3">Post / Reel</th>
@@ -6872,39 +6945,125 @@ export default function Dashboard() {
                         <th className="py-2 px-2">Likes</th>
                         <th className="py-2 px-2">Comments</th>
                         <th className="py-2 px-2">Shares</th>
-                        <th className="py-2 pl-2 text-right">Link</th>
+                        <th className="py-2 pl-2 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/70 text-xs">
-                      {visibleFacebookItems.slice(0, 15).map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-900/40">
-                          <td className="py-2.5 pr-3 max-w-[200px] truncate text-[#e2e8f0]">
-                            {item.text}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono font-bold text-[#86efac]">
-                            {item.views.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#e2e8f0]">
-                            {item.likes.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
-                            {item.comments.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#c084fc]">
-                            {item.shares.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 pl-2 text-right">
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-[11px] text-[#86efac] hover:underline"
-                            >
-                              ↗
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
+                      {visibleFacebookItems.slice(0, 15).map((item) => {
+                        const isEditing = editingFbReelId === (item.id || item.issueId);
+                        return (
+                          <tr key={item.id} className="hover:bg-slate-900/40">
+                            <td className="py-2.5 pr-3 max-w-[200px] truncate text-[#e2e8f0]">
+                              {item.text}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono font-bold text-[#86efac]">
+                              {isEditing ? (
+                                <input
+                                  type="number"
+                                  min="0"
+                                  autoFocus
+                                  value={tempFbReelMetrics.views}
+                                  onChange={(e) =>
+                                    setTempFbReelMetrics((prev) => ({ ...prev, views: e.target.value }))
+                                  }
+                                  className="w-16 bg-[#0b0d10] border border-[#86efac]/60 px-1 py-0.5 text-xs font-mono text-[#86efac] outline-none"
+                                />
+                              ) : (
+                                item.views.toLocaleString()
+                              )}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#e2e8f0]">
+                              {isEditing ? (
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={tempFbReelMetrics.likes}
+                                  onChange={(e) =>
+                                    setTempFbReelMetrics((prev) => ({ ...prev, likes: e.target.value }))
+                                  }
+                                  className="w-14 bg-[#0b0d10] border border-white/60 px-1 py-0.5 text-xs font-mono text-white outline-none"
+                                />
+                              ) : (
+                                item.likes.toLocaleString()
+                              )}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
+                              {isEditing ? (
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={tempFbReelMetrics.comments}
+                                  onChange={(e) =>
+                                    setTempFbReelMetrics((prev) => ({ ...prev, comments: e.target.value }))
+                                  }
+                                  className="w-14 bg-[#0b0d10] border border-[#67e8f9]/60 px-1 py-0.5 text-xs font-mono text-[#67e8f9] outline-none"
+                                />
+                              ) : (
+                                item.comments.toLocaleString()
+                              )}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#c084fc]">
+                              {isEditing ? (
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={tempFbReelMetrics.shares}
+                                  onChange={(e) =>
+                                    setTempFbReelMetrics((prev) => ({ ...prev, shares: e.target.value }))
+                                  }
+                                  className="w-14 bg-[#0b0d10] border border-[#c084fc]/60 px-1 py-0.5 text-xs font-mono text-[#c084fc] outline-none"
+                                />
+                              ) : (
+                                item.shares.toLocaleString()
+                              )}
+                            </td>
+                            <td className="py-2.5 pl-2 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {isEditing ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSaveEditFbReel(item)}
+                                      className="p-1 hover:bg-white/20 text-[#86efac] cursor-pointer"
+                                      title="Save verified numbers"
+                                    >
+                                      <Check className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingFbReelId(null)}
+                                      className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 cursor-pointer"
+                                      title="Cancel"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleStartEditFbReel(item)}
+                                      className="p-1 text-slate-500 hover:text-white transition-colors cursor-pointer"
+                                      title="Edit verified views & engagement"
+                                    >
+                                      <Edit2 className="w-3 h-3" />
+                                    </button>
+                                    <a
+                                      href={item.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-mono text-[11px] text-[#86efac] hover:underline"
+                                      title="Open Reel on Facebook"
+                                    >
+                                      ↗
+                                    </a>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

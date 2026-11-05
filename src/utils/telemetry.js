@@ -101,31 +101,31 @@ const DEFAULT_CHANNEL_LEDGER = {
         shares: 0,
         saves: 0,
         linkClicks: 0,
-        status: 'Ready to Post',
+        status: 'Published',
       },
       {
         id: 'fb-reel-02',
         issueId: '02',
         title: 'The Meat Grinder Needs More Meat (9:16 Reel • 42s)',
-        views: 0,
+        views: 29,
         likes: 0,
-        comments: 0,
+        comments: 1,
         shares: 0,
         saves: 0,
         linkClicks: 0,
-        status: 'Ready to Post',
+        status: 'Published',
       },
       {
         id: 'fb-reel-01',
         issueId: '01',
         title: 'Watering Grass in a Thunderstorm (9:16 Reel • 35s)',
-        views: 0,
+        views: 36,
         likes: 0,
-        comments: 0,
+        comments: 1,
         shares: 0,
         saves: 0,
         linkClicks: 0,
-        status: 'Ready to Post',
+        status: 'Published',
       },
     ],
   },
@@ -144,6 +144,8 @@ const DEFAULT_CHANNEL_LEDGER = {
         likes: 0,
         retweets: 0,
         replies: 0,
+        isThread: false,
+        tweetCount: 1,
         status: 'Published',
       },
       {
@@ -156,6 +158,8 @@ const DEFAULT_CHANNEL_LEDGER = {
         likes: 0,
         retweets: 0,
         replies: 0,
+        isThread: true,
+        tweetCount: 6,
         status: 'Published',
       },
       {
@@ -168,6 +172,8 @@ const DEFAULT_CHANNEL_LEDGER = {
         likes: 0,
         retweets: 0,
         replies: 0,
+        isThread: false,
+        tweetCount: 1,
         status: 'Published',
       },
     ],
@@ -619,6 +625,10 @@ export function loadChannelLedger() {
       const savedVal = typeof window !== 'undefined' ? window.localStorage.getItem(savedKey) : null;
       return {
         ...base,
+        views: Math.max(Number(defReel.views) || 0, Number(found?.views) || 0),
+        likes: Math.max(Number(defReel.likes) || 0, Number(found?.likes) || 0),
+        comments: Math.max(Number(defReel.comments) || 0, Number(found?.comments) || 0),
+        shares: Math.max(Number(defReel.shares) || 0, Number(found?.shares) || 0),
         saves: savedVal !== null ? (Number(savedVal) || 0) : (Number(base.saves) || 0),
       };
     });
@@ -648,7 +658,17 @@ export function loadChannelLedger() {
         followers: Number(parsed.x?.followers) === 536 ? 0 : (Number(parsed.x?.followers) || 0),
         posts: DEFAULT_CHANNEL_LEDGER.x.posts.map((defP) => {
           const found = (parsed.x?.posts || []).find((p) => p.id === defP.id || p.issueId === defP.issueId);
-          return found ? { ...defP, ...found } : defP;
+          if (!found) return defP;
+          return {
+            ...defP,
+            ...found,
+            views: Math.max(Number(defP.views) || 0, Number(found.views) || 0),
+            likes: Math.max(Number(defP.likes) || 0, Number(found.likes) || 0),
+            retweets: Math.max(Number(defP.retweets) || 0, Number(found.retweets) || 0),
+            replies: Math.max(Number(defP.replies) || 0, Number(found.replies) || 0),
+            isThread: found.isThread ?? defP.isThread,
+            tweetCount: found.tweetCount || defP.tweetCount,
+          };
         }),
       },
       youtube: {
