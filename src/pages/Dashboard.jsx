@@ -726,6 +726,9 @@ function normalizeXItem(item, idx = 0) {
     item.text ||
     item.tweetText ||
     item.content ||
+    item.rawContent ||
+    item.raw_content ||
+    item.body ||
     item.legacy?.full_text ||
     item.legacy?.text ||
     item.tweet?.legacy?.full_text ||
@@ -798,6 +801,8 @@ function normalizeXItem(item, idx = 0) {
     item.impressions ??
     item.impression_count ??
     item.impressionCount ??
+    item.public_metrics?.impression_count ??
+    item.metrics?.impression_count ??
     item.legacy?.view_count ??
     item.legacy?.views?.count ??
     item.tweet?.views?.count ??
@@ -813,6 +818,8 @@ function normalizeXItem(item, idx = 0) {
     item.like_count ??
     item.likes ??
     item.favorites ??
+    item.public_metrics?.like_count ??
+    item.metrics?.like_count ??
     item.legacy?.favorite_count ??
     item.legacy?.favourite_count ??
     item.tweet?.legacy?.favorite_count ??
@@ -827,6 +834,8 @@ function normalizeXItem(item, idx = 0) {
       item.retweets ??
       item.reposts ??
       item.repostCount ??
+      item.public_metrics?.retweet_count ??
+      item.metrics?.retweet_count ??
       item.legacy?.retweet_count ??
       item.tweet?.legacy?.retweet_count ??
       0
@@ -836,6 +845,7 @@ function normalizeXItem(item, idx = 0) {
       item.quote_count ??
       item.quotes ??
       item.quotesCount ??
+      item.public_metrics?.quote_count ??
       item.legacy?.quote_count ??
       item.tweet?.legacy?.quote_count ??
       0
@@ -850,6 +860,8 @@ function normalizeXItem(item, idx = 0) {
     item.comments ??
     item.commentCount ??
     item.commentsCount ??
+    item.public_metrics?.reply_count ??
+    item.metrics?.reply_count ??
     item.legacy?.reply_count ??
     item.tweet?.legacy?.reply_count ??
     0
@@ -1827,6 +1839,13 @@ export default function Dashboard() {
   const [copiedLink, setCopiedLink] = useState('');
   const [editingPlatform, setEditingPlatform] = useState(null); // 'substack' | 'instagram' | 'threads' | 'facebook' | 'youtube' | null
   const [tempEditVal, setTempEditVal] = useState('');
+  const [editingXPostId, setEditingXPostId] = useState(null);
+  const [tempXPostMetrics, setTempXPostMetrics] = useState({
+    views: 0,
+    likes: 0,
+    retweets: 0,
+    replies: 0,
+  });
 
   // Layout View Tabs & Filter States for Compact, Less-Scroll Experience
   const [activeMacroSection, setActiveMacroSection] = useState('analytics'); // 'analytics' | 'funnel'
@@ -3162,8 +3181,10 @@ export default function Dashboard() {
     if (actorKey === 'x') {
       const cleanXHandle = (targets.xHandle || 'Moth1NFTs').replace(/^@/, '').trim();
       return {
-        twitterHandles: [cleanXHandle],
-        startUrls: [`https://x.com/${cleanXHandle}`],
+        searchTerms: [
+          `from:${cleanXHandle}`,
+          '#ObservationsByMoth1',
+        ],
         maxItems: 40,
         sort: 'Latest',
       };
@@ -3172,6 +3193,7 @@ export default function Dashboard() {
     if (actorKey === 'xProfile') {
       const cleanXHandle = (targets.xHandle || 'Moth1NFTs').replace(/^@/, '').trim();
       return {
+        searchTerms: [cleanXHandle],
         twitterHandles: [cleanXHandle],
         startUrls: [`https://x.com/${cleanXHandle}`],
         maxItems: 1,
@@ -3401,6 +3423,43 @@ export default function Dashboard() {
   const handleSaveEditFollower = (platform) => {
     updateFollowerCount(platform, tempEditVal);
     setEditingPlatform(null);
+  };
+
+  const handleStartEditXPost = (item) => {
+    setEditingXPostId(item.id || item.issueId);
+    setTempXPostMetrics({
+      views: item.views || 0,
+      likes: item.likes || 0,
+      retweets: item.retweets || 0,
+      replies: item.replies || 0,
+    });
+  };
+
+  const handleSaveEditXPost = (item) => {
+    const targetIssue = item.issueId || matchItemToIssueId(item) || '01';
+    const updated = {
+      ...ledger,
+      x: {
+        ...ledger.x,
+        posts: (ledger.x?.posts || DEFAULT_CHANNEL_LEDGER.x.posts).map((p) => {
+          if (p.id === item.id || p.issueId === targetIssue) {
+            return {
+              ...p,
+              views: Math.max(0, Number(tempXPostMetrics.views) || 0),
+              likes: Math.max(0, Number(tempXPostMetrics.likes) || 0),
+              retweets: Math.max(0, Number(tempXPostMetrics.retweets) || 0),
+              replies: Math.max(0, Number(tempXPostMetrics.replies) || 0),
+            };
+          }
+          return p;
+        }),
+      },
+    };
+    setLedger(updated);
+    saveChannelLedger(updated);
+    setEditingXPostId(null);
+    setStatusMessage(`Saved verified X telemetry for Issue #${targetIssue}.`);
+    setTimeout(() => setStatusMessage(''), 4000);
   };
 
   const copyUtmLink = (slug, issueId, platform = 'instagram', medium = 'story') => {
@@ -7098,8 +7157,8 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <>
-                  <div className="overflow-x-auto mb-4 max-h-[240px] -mx-1 sm:mx-0">
-                    <table className="w-full text-left border-collapse min-w-[480px]">
+                  <div className="overflow-x-auto mb-4 max-h-[280px] -mx-1 sm:mx-0">
+                    <table className="w-full text-left border-collapse min-w-[520px]">
                       <thead>
                         <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
                           <th className="py-2 pr-3">Post / Thread</th>
@@ -7107,52 +7166,137 @@ export default function Dashboard() {
                           <th className="py-2 px-2">Likes</th>
                           <th className="py-2 px-2">Reposts</th>
                           <th className="py-2 px-2">Replies</th>
-                          <th className="py-2 pl-2 text-right">Link</th>
+                          <th className="py-2 pl-2 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800/70 text-xs">
-                        {visibleXItems.slice(0, 15).map((item) => (
-                          <tr key={item.id} className="hover:bg-slate-900/40">
-                            <td className="py-2.5 pr-3 max-w-[240px] truncate text-[#e2e8f0]">
-                              <div className="flex items-center gap-1.5">
-                                {item.isThread && item.tweetCount > 1 && (
-                                  <span
-                                    className="px-1.5 py-0.5 border border-white/40 bg-white/10 text-[9px] font-mono text-white font-bold shrink-0"
-                                    title={`${item.tweetCount} tweets in this thread`}
-                                  >
-                                    Thread ({item.tweetCount})
+                        {visibleXItems.slice(0, 15).map((item) => {
+                          const isEditing = editingXPostId === (item.id || item.issueId);
+                          return (
+                            <tr key={item.id} className="hover:bg-slate-900/40">
+                              <td className="py-2.5 pr-3 max-w-[240px] truncate text-[#e2e8f0]">
+                                <div className="flex items-center gap-1.5">
+                                  {item.isThread && item.tweetCount > 1 && (
+                                    <span
+                                      className="px-1.5 py-0.5 border border-white/40 bg-white/10 text-[9px] font-mono text-white font-bold shrink-0"
+                                      title={`${item.tweetCount} tweets in this thread`}
+                                    >
+                                      Thread ({item.tweetCount})
+                                    </span>
+                                  )}
+                                  <span className="truncate" title={item.openingText || item.text}>
+                                    {item.openingText || item.text}
                                   </span>
+                                </div>
+                              </td>
+                              <td className="py-2.5 px-2 font-mono font-bold text-white">
+                                {isEditing ? (
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    autoFocus
+                                    value={tempXPostMetrics.views}
+                                    onChange={(e) =>
+                                      setTempXPostMetrics((prev) => ({ ...prev, views: e.target.value }))
+                                    }
+                                    className="w-16 bg-[#0b0d10] border border-white/60 px-1 py-0.5 text-xs font-mono text-white outline-none"
+                                  />
+                                ) : (
+                                  item.views.toLocaleString()
                                 )}
-                                <span className="truncate" title={item.openingText || item.text}>
-                                  {item.openingText || item.text}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="py-2.5 px-2 font-mono font-bold text-white">
-                              {item.views.toLocaleString()}
-                            </td>
-                            <td className="py-2.5 px-2 font-mono text-[#fda4af]">
-                              {item.likes.toLocaleString()}
-                            </td>
-                            <td className="py-2.5 px-2 font-mono text-[#86efac]">
-                              {item.retweets.toLocaleString()}
-                            </td>
-                            <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
-                              {item.replies.toLocaleString()}
-                            </td>
-                            <td className="py-2.5 pl-2 text-right">
-                              <a
-                                href={item.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-mono text-[11px] text-[#67e8f9] hover:underline"
-                                title="Open Thread on X"
-                              >
-                                ↗
-                              </a>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                              <td className="py-2.5 px-2 font-mono text-[#fda4af]">
+                                {isEditing ? (
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={tempXPostMetrics.likes}
+                                    onChange={(e) =>
+                                      setTempXPostMetrics((prev) => ({ ...prev, likes: e.target.value }))
+                                    }
+                                    className="w-14 bg-[#0b0d10] border border-[#fda4af]/60 px-1 py-0.5 text-xs font-mono text-[#fda4af] outline-none"
+                                  />
+                                ) : (
+                                  item.likes.toLocaleString()
+                                )}
+                              </td>
+                              <td className="py-2.5 px-2 font-mono text-[#86efac]">
+                                {isEditing ? (
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={tempXPostMetrics.retweets}
+                                    onChange={(e) =>
+                                      setTempXPostMetrics((prev) => ({ ...prev, retweets: e.target.value }))
+                                    }
+                                    className="w-14 bg-[#0b0d10] border border-[#86efac]/60 px-1 py-0.5 text-xs font-mono text-[#86efac] outline-none"
+                                  />
+                                ) : (
+                                  item.retweets.toLocaleString()
+                                )}
+                              </td>
+                              <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
+                                {isEditing ? (
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={tempXPostMetrics.replies}
+                                    onChange={(e) =>
+                                      setTempXPostMetrics((prev) => ({ ...prev, replies: e.target.value }))
+                                    }
+                                    className="w-14 bg-[#0b0d10] border border-[#67e8f9]/60 px-1 py-0.5 text-xs font-mono text-[#67e8f9] outline-none"
+                                  />
+                                ) : (
+                                  item.replies.toLocaleString()
+                                )}
+                              </td>
+                              <td className="py-2.5 pl-2 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  {isEditing ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSaveEditXPost(item)}
+                                        className="p-1 hover:bg-white/20 text-[#86efac] cursor-pointer"
+                                        title="Save verified numbers"
+                                      >
+                                        <Check className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setEditingXPostId(null)}
+                                        className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 cursor-pointer"
+                                        title="Cancel"
+                                      >
+                                        <X className="w-3.5 h-3.5" />
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleStartEditXPost(item)}
+                                        className="p-1 text-slate-500 hover:text-white transition-colors cursor-pointer"
+                                        title="Edit verified impressions & metrics"
+                                      >
+                                        <Edit2 className="w-3 h-3" />
+                                      </button>
+                                      <a
+                                        href={item.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-mono text-[11px] text-[#67e8f9] hover:underline"
+                                        title="Open Thread on X"
+                                      >
+                                        ↗
+                                      </a>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

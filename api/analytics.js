@@ -443,6 +443,9 @@ export function normalizeXItem(item, idx = 0) {
     item.text ||
     item.tweetText ||
     item.content ||
+    item.rawContent ||
+    item.raw_content ||
+    item.body ||
     item.legacy?.full_text ||
     item.legacy?.text ||
     item.tweet?.legacy?.full_text ||
@@ -515,6 +518,8 @@ export function normalizeXItem(item, idx = 0) {
     item.impressions ??
     item.impression_count ??
     item.impressionCount ??
+    item.public_metrics?.impression_count ??
+    item.metrics?.impression_count ??
     item.legacy?.view_count ??
     item.legacy?.views?.count ??
     item.tweet?.views?.count ??
@@ -530,6 +535,8 @@ export function normalizeXItem(item, idx = 0) {
     item.like_count ??
     item.likes ??
     item.favorites ??
+    item.public_metrics?.like_count ??
+    item.metrics?.like_count ??
     item.legacy?.favorite_count ??
     item.legacy?.favourite_count ??
     item.tweet?.legacy?.favorite_count ??
@@ -544,6 +551,8 @@ export function normalizeXItem(item, idx = 0) {
       item.retweets ??
       item.reposts ??
       item.repostCount ??
+      item.public_metrics?.retweet_count ??
+      item.metrics?.retweet_count ??
       item.legacy?.retweet_count ??
       item.tweet?.legacy?.retweet_count ??
       0
@@ -553,6 +562,7 @@ export function normalizeXItem(item, idx = 0) {
       item.quote_count ??
       item.quotes ??
       item.quotesCount ??
+      item.public_metrics?.quote_count ??
       item.legacy?.quote_count ??
       item.tweet?.legacy?.quote_count ??
       0
@@ -567,6 +577,8 @@ export function normalizeXItem(item, idx = 0) {
     item.comments ??
     item.commentCount ??
     item.commentsCount ??
+    item.public_metrics?.reply_count ??
+    item.metrics?.reply_count ??
     item.legacy?.reply_count ??
     item.tweet?.legacy?.reply_count ??
     0
