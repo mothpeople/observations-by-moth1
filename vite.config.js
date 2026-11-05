@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import analyticsHandler from './api/analytics.js';
 import trackStoryClickHandler from './api/track-story-click.js';
+import youtubeTelemetryHandler from './api/youtube-telemetry.js';
+import pinterestTelemetryHandler from './api/pinterest-telemetry.js';
 
 function localVercelApiPlugin() {
   return {
@@ -46,6 +48,8 @@ function localVercelApiPlugin() {
 
       server.middlewares.use('/api/analytics', wrapHandler(analyticsHandler));
       server.middlewares.use('/api/track-story-click', wrapHandler(trackStoryClickHandler));
+      server.middlewares.use('/api/youtube-telemetry', wrapHandler(youtubeTelemetryHandler));
+      server.middlewares.use('/api/pinterest-telemetry', wrapHandler(pinterestTelemetryHandler));
     },
   };
 }

@@ -21,6 +21,17 @@ const VERIFIED_FALLBACK = {
   },
   videos: [
     {
+      id: 'yt-shorts-03',
+      videoId: '',
+      issueId: '03',
+      title: 'Issue 03: The War No One Was Supposed to Win',
+      views: 0,
+      likes: 0,
+      comments: 0,
+      url: 'https://observations.moth1.xyz/war-on-drugs',
+      trackingUrl: 'https://observations.moth1.xyz/war-on-drugs?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-03',
+    },
+    {
       id: 'yt-shorts-02',
       videoId: 'XiAPHfIshfY',
       issueId: '02',

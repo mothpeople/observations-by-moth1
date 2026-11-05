@@ -7,6 +7,13 @@ const TMP_FILE = '/tmp/moth1_story_telemetry.json';
 
 const DEFAULT_DATA = {
   issues: {
+    'war-on-drugs': {
+      instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
+      facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
+      x: { clicks: 0, scroll75: 0, subscribers: 0 },
+      youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
+      pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
+    },
     'the-meat-grinder': {
       instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
       facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
@@ -148,8 +155,16 @@ export default async function handler(req, res) {
       ).toLowerCase();
 
       // Normalize issue key
-      let issueKey = 'the-meat-grinder';
+      let issueKey = 'war-on-drugs';
       if (
+        rawIssue.includes('war') ||
+        rawIssue.includes('drug') ||
+        rawIssue.includes('phantom') ||
+        rawIssue === 'issue-03' ||
+        rawIssue === '03'
+      ) {
+        issueKey = 'war-on-drugs';
+      } else if (
         rawIssue.includes('watering') ||
         rawIssue.includes('grass') ||
         rawIssue.includes('thunderstorm') ||

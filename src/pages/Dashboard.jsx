@@ -267,6 +267,25 @@ function matchItemToIssueId(item) {
   const haystack = `${text} ${hashtags}`;
 
   if (
+    haystack.includes('war on drugs') ||
+    haystack.includes('war-on-drugs') ||
+    haystack.includes('the-war-no-one-was-supposed-to-win') ||
+    haystack.includes('supposed to win') ||
+    haystack.includes('issue-03') ||
+    haystack.includes('issue 03') ||
+    haystack.includes('issue 3') ||
+    haystack.includes('issue #03') ||
+    haystack.includes('issue #3') ||
+    haystack.includes('trillion-dollar phantom') ||
+    haystack.includes('oligarch') ||
+    haystack.includes('portugal') ||
+    haystack.includes('rat park') ||
+    haystack.includes('microdose in boardrooms')
+  ) {
+    return '03';
+  }
+
+  if (
     haystack.includes('meat grinder') ||
     haystack.includes('the-meat-grinder') ||
     haystack.includes('issue-02') ||
@@ -967,6 +986,7 @@ function isFacebookVideoReel(rawItem, item) {
 function getReelDisplayTitle(item, fallbackIdx = 0) {
   if (!item) return `Reel #${fallbackIdx + 1}`;
   const issueId = matchItemToIssueId(item);
+  if (issueId === '03') return 'Issue #03: The War No One Was Supposed to Win';
   if (issueId === '02') return 'Issue #02: The Meat Grinder Needs More Meat';
   if (issueId === '01') return 'Issue #01: Watering Grass in a Thunderstorm';
   return item.title || item.text || item.caption || `Reel #${fallbackIdx + 1}`;
@@ -978,11 +998,11 @@ function sortReelsForDisplay(items) {
     const issueA = matchItemToIssueId(a);
     const issueB = matchItemToIssueId(b);
 
-    const scoreA = issueA === '02' ? 2 : issueA === '01' ? 1 : 0;
-    const scoreB = issueB === '02' ? 2 : issueB === '01' ? 1 : 0;
+    const scoreA = issueA === '03' ? 3 : issueA === '02' ? 2 : issueA === '01' ? 1 : 0;
+    const scoreB = issueB === '03' ? 3 : issueB === '02' ? 2 : issueB === '01' ? 1 : 0;
 
     if (scoreA !== scoreB) {
-      return scoreB - scoreA; // Row 1 = Issue 02 (The Meat Grinder), Row 2 = Issue 01 (Watering Grass)
+      return scoreB - scoreA; // Row 1 = Issue 03 (War on Drugs), Row 2 = Issue 02 (Meat Grinder), Row 3 = Issue 01 (Watering Grass)
     }
 
     const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
@@ -1163,6 +1183,138 @@ async function fetchDirectActorDataset(actorId, token) {
 
 // Pre-configured UTM links for Observations by Moth1 distribution campaigns
 const PRECONFIGURED_UTM_LINKS = [
+  // Issue #03: The War No One Was Supposed to Win
+  {
+    id: '03-instagram-story',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'instagram',
+    platformLabel: 'Instagram Story',
+    medium: 'story',
+    campaign: 'issue-03',
+    badge: 'IG Story',
+    color: '#fda4af',
+    description: 'Instagram 9:16 Reel/Story sticker link pointing to Issue #03',
+  },
+  {
+    id: '03-facebook-story',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'facebook',
+    platformLabel: 'Facebook Reel / Story',
+    medium: 'story',
+    campaign: 'issue-03',
+    badge: 'FB Story',
+    color: '#60a5fa',
+    description: 'Facebook 9:16 Reel pinned comment or story link pointing to Issue #03',
+  },
+  {
+    id: '03-x-thread',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'x',
+    platformLabel: 'X (Twitter) Thread',
+    medium: 'thread',
+    campaign: 'issue-03',
+    badge: '𝕏 Thread',
+    color: '#e2e8f0',
+    description: 'Final call-to-action link in the X thread on @Moth1NFTs for Issue #03',
+  },
+  {
+    id: '03-x-video',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'x',
+    platformLabel: 'X Video / Reel',
+    medium: 'video',
+    campaign: 'issue-03',
+    badge: '𝕏 Video',
+    color: '#67e8f9',
+    description: 'Direct tweet accompanying 9:16 vertical video reel pointing to Issue #03',
+  },
+  {
+    id: '03-threads-post',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'threads',
+    platformLabel: 'Threads Post',
+    medium: 'post',
+    campaign: 'issue-03',
+    badge: 'Threads Post',
+    color: '#c084fc',
+    description: 'Threads carousel or launch post link for Issue #03 dispatch',
+  },
+  {
+    id: '03-youtube-profile',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'youtube',
+    platformLabel: 'YouTube Profile / Bio',
+    medium: 'profile',
+    campaign: 'issue-03',
+    badge: 'YT Profile',
+    color: '#f87171',
+    description: 'YouTube channel bio / link in profile pointing to Issue #03',
+  },
+  {
+    id: '03-youtube-shorts',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'youtube',
+    platformLabel: 'YouTube Shorts / Video',
+    medium: 'shorts',
+    campaign: 'issue-03',
+    badge: 'YT Shorts',
+    color: '#ef4444',
+    description: 'Pinned comment or description tracking link for YouTube Short Issue #03',
+  },
+  {
+    id: '03-youtube-community',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'youtube',
+    platformLabel: 'YouTube Community Post',
+    medium: 'community',
+    campaign: 'issue-03',
+    badge: 'YT Community',
+    color: '#f87171',
+    description: 'YouTube Community Tab update link pointing to Issue #03',
+  },
+  {
+    id: '03-pinterest-pin',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'pinterest',
+    platformLabel: 'Pinterest Pin Plate',
+    medium: 'pin',
+    campaign: 'issue-03',
+    badge: 'Pinterest Pin',
+    color: '#e60023',
+    description: '1000×1500 Retina Infographic or Quote Pin link for Issue #03 on @moth1siv',
+  },
+  {
+    id: '03-substack-post',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'substack',
+    platformLabel: 'Substack Note / Link',
+    medium: 'post',
+    campaign: 'issue-03',
+    badge: 'Substack Note',
+    color: '#fbbf24',
+    description: 'Direct Substack note or newsletter link pointing to the interactive essay',
+  },
+
   // Issue #02: The Meat Grinder Needs More Meat
   {
     id: '02-instagram-story',
@@ -2510,9 +2662,10 @@ export default function Dashboard() {
 
           setYoutubeSyncSuccess(true);
           setTimeout(() => setYoutubeSyncSuccess(false), 4500);
+          const v03Count = data.videos.find((v) => v.issueId === '03')?.views || 0;
           const v02Count = data.videos.find((v) => v.issueId === '02')?.views || 0;
           const v01Count = data.videos.find((v) => v.issueId === '01')?.views || 0;
-          setStatusMessage(`✓ YouTube Synced: ${totViews.toLocaleString()} total Shorts views (Issue #02: ${v02Count}, Issue #01: ${v01Count})`);
+          setStatusMessage(`✓ YouTube Synced: ${totViews.toLocaleString()} total Shorts views (Issue #03: ${v03Count}, Issue #02: ${v02Count}, Issue #01: ${v01Count})`);
           setTimeout(() => setStatusMessage(''), 6000);
         }
       }
@@ -6490,11 +6643,12 @@ export default function Dashboard() {
                         (a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)
                       );
                       return sortedYtVideos.map((vid) => {
+                        const isIssue03 = vid.issueId === '03';
                         const isIssue02 = vid.issueId === '02';
-                        const slug = isIssue02 ? 'the-meat-grinder' : 'watering-grass-in-a-thunderstorm';
-                        const medium = isIssue02 ? 'profile' : 'community';
-                        const campaign = isIssue02 ? 'issue-02' : 'issue-01';
-                        const copyKey = isIssue02 ? 'yt-copy-02' : 'yt-copy-01';
+                        const slug = isIssue03 ? 'war-on-drugs' : isIssue02 ? 'the-meat-grinder' : 'watering-grass-in-a-thunderstorm';
+                        const medium = isIssue03 ? 'shorts' : isIssue02 ? 'profile' : 'community';
+                        const campaign = isIssue03 ? 'issue-03' : isIssue02 ? 'issue-02' : 'issue-01';
+                        const copyKey = `yt-copy-${vid.issueId || '03'}`;
                         const trackingUrl = `https://observations.moth1.xyz/${slug}?utm_source=youtube&utm_medium=${medium}&utm_campaign=${campaign}`;
                         const clicks = Number(storyClickStats?.issues?.[slug]?.youtube?.clicks || 0);
 
@@ -6680,7 +6834,8 @@ export default function Dashboard() {
                   <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
                     {pinList.map((pin) => {
                       const copyKey = `pin-${pin.id}`;
-                      const issueClicks = Number(storyClickStats?.issues?.[pin.issueId === '02' ? 'the-meat-grinder' : 'watering-grass-in-a-thunderstorm']?.pinterest?.clicks || 0);
+                      const issueSlug = pin.issueId === '03' ? 'war-on-drugs' : pin.issueId === '02' ? 'the-meat-grinder' : 'watering-grass-in-a-thunderstorm';
+                      const issueClicks = Number(storyClickStats?.issues?.[issueSlug]?.pinterest?.clicks || 0);
 
                       return (
                         <tr key={pin.id} className="hover:bg-slate-900/40 transition-colors">
@@ -6895,6 +7050,17 @@ export default function Dashboard() {
               }`}
             >
               All
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterIssue('03')}
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterIssue === '03'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#f472b6] text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
+              }`}
+            >
+              #03
             </button>
             <button
               type="button"
@@ -7355,7 +7521,7 @@ export default function Dashboard() {
                           className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 border border-[#fda4af]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#fda4af] hover:text-[#fda4af] transition-colors cursor-pointer shrink-0 w-full xs:w-auto"
                           title="Copy IG Story Link with utm_source=instagram&utm_medium=story"
                         >
-                          {copiedLink === `${issueTag}-instagram` ? (
+                          {copiedLink === `${issueTag}-instagram` || copiedLink === `${issueTag}-instagram-story` ? (
                             <>
                               <Check className="w-3 h-3 text-[#86efac]" />
                               <span className="text-[#86efac]">Copied IG Link!</span>
@@ -7462,7 +7628,7 @@ export default function Dashboard() {
                           className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 border border-[#60a5fa]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#60a5fa] hover:text-[#60a5fa] transition-colors cursor-pointer shrink-0 w-full xs:w-auto"
                           title="Copy FB Story Link with utm_source=facebook&utm_medium=story"
                         >
-                          {copiedLink === `${issueTag}-facebook` ? (
+                          {copiedLink === `${issueTag}-facebook` || copiedLink === `${issueTag}-facebook-story` ? (
                             <>
                               <Check className="w-3 h-3 text-[#86efac]" />
                               <span className="text-[#86efac]">Copied FB Link!</span>

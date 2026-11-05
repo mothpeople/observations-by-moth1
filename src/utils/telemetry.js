@@ -18,6 +18,14 @@ const DEFAULT_CHANNEL_LEDGER = {
         avgScrollDepth: 0,
       },
       {
+        id: '03',
+        path: '/war-on-drugs',
+        title: 'Issue #03: The War No One Was Supposed to Win',
+        views: 0,
+        shares: 0,
+        avgScrollDepth: 0,
+      },
+      {
         id: '02',
         path: '/the-meat-grinder',
         title: 'Issue #02: The Meat Grinder Needs More Meat',
@@ -40,6 +48,18 @@ const DEFAULT_CHANNEL_LEDGER = {
     platform: 'Instagram Reels',
     followers: 0,
     reels: [
+      {
+        id: 'ig-reel-03',
+        issueId: '03',
+        title: 'The War No One Was Supposed to Win (9:16 Reel • 45s)',
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        saves: 0,
+        avgWatchTimeSec: 0,
+        status: 'Ready to Post',
+      },
       {
         id: 'ig-reel-02',
         issueId: '02',
@@ -71,6 +91,18 @@ const DEFAULT_CHANNEL_LEDGER = {
     platform: 'Facebook Reels & Page',
     followers: 0,
     reels: [
+      {
+        id: 'fb-reel-03',
+        issueId: '03',
+        title: 'The War No One Was Supposed to Win (9:16 Reel • 45s)',
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        saves: 0,
+        linkClicks: 0,
+        status: 'Ready to Post',
+      },
       {
         id: 'fb-reel-02',
         issueId: '02',
@@ -113,6 +145,18 @@ const DEFAULT_CHANNEL_LEDGER = {
     totalViews: 1816,
     videos: [
       {
+        id: 'yt-shorts-03',
+        videoId: '',
+        issueId: '03',
+        title: 'Issue 03: The War No One Was Supposed to Win',
+        views: 0,
+        likes: 0,
+        comments: 0,
+        url: 'https://observations.moth1.xyz/war-on-drugs',
+        trackingUrl: 'https://observations.moth1.xyz/war-on-drugs?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-03',
+        playlistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
+      },
+      {
         id: 'yt-shorts-02',
         videoId: 'XiAPHfIshfY',
         issueId: '02',
@@ -149,6 +193,39 @@ const DEFAULT_CHANNEL_LEDGER = {
     savedPins: 4,
     boardsCount: 0,
     pins: [
+      {
+        id: 'pin-03-01',
+        issueId: '03',
+        plate: '01_infographic_plate',
+        title: 'Fifty Years of Prohibition: $1T Burned, Potency Up +190%, Street Price Down -81%',
+        views: 0,
+        saves: 0,
+        linkClicks: 0,
+        link: 'https://observations.moth1.xyz/war-on-drugs?utm_source=pinterest&utm_medium=pin&utm_campaign=issue-03&utm_content=50-year-burn',
+        status: 'Ready to Publish',
+      },
+      {
+        id: 'pin-03-02',
+        issueId: '03',
+        plate: '02_thesis_quote_plate',
+        title: 'Billionaires Microdose in Boardrooms While Working-Class Kids Rot in Cells',
+        views: 0,
+        saves: 0,
+        linkClicks: 0,
+        link: 'https://observations.moth1.xyz/war-on-drugs?utm_source=pinterest&utm_medium=pin&utm_campaign=issue-03&utm_content=class-divide-quote',
+        status: 'Ready to Publish',
+      },
+      {
+        id: 'pin-03-03',
+        issueId: '03',
+        plate: '03_interactive_mockup_plate',
+        title: 'Portugal Law 30/2000: Health Over Handcuffs and the 80% Overdose Drop',
+        views: 0,
+        saves: 0,
+        linkClicks: 0,
+        link: 'https://observations.moth1.xyz/war-on-drugs?utm_source=pinterest&utm_medium=pin&utm_campaign=issue-03&utm_content=portugal-model',
+        status: 'Ready to Publish',
+      },
       {
         id: 'pin-02-01',
         issueId: '02',
@@ -226,6 +303,42 @@ const DEFAULT_CHANNEL_LEDGER = {
   storyFunnel: {
     defaultImpressions: 0,
     dispatches: [
+      {
+        id: '03',
+        issueId: '03',
+        slug: 'war-on-drugs',
+        title: 'Issue #03: The War No One Was Supposed to Win',
+        instagram: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        facebook: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        x: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        youtube: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        pinterest: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+      },
       {
         id: '02',
         issueId: '02',
@@ -337,6 +450,10 @@ export function loadChannelLedger() {
       const ytScroll75 = Number(found.youtube?.scroll75) || 0;
       const ytSubs = Number(found.youtube?.subscribers) || 0;
 
+      const pinEntrances = Number(found.pinterest?.entrances ?? found.pinterest?.clicks) || 0;
+      const pinScroll75 = Number(found.pinterest?.scroll75) || 0;
+      const pinSubs = Number(found.pinterest?.subscribers) || 0;
+
       return {
         ...def,
         ...found,
@@ -363,6 +480,12 @@ export function loadChannelLedger() {
           clicks: ytEntrances,
           scroll75: ytScroll75,
           subscribers: ytSubs,
+        },
+        pinterest: {
+          entrances: pinEntrances,
+          clicks: pinEntrances,
+          scroll75: pinScroll75,
+          subscribers: pinSubs,
         },
       };
     });

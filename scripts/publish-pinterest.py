@@ -20,6 +20,45 @@ import requests
 ENV_FILE = ".env.local"
 
 ISSUE_MAP = {
+    "03": {
+        "slug": "war-on-drugs",
+        "dir": "dist-packages/issue-03-war-on-drugs/pinterest",
+        "pins": [
+            {
+                "file": "dist-packages/issue-03-war-on-drugs/pinterest/pins/01_infographic_plate.png",
+                "title": "Fifty Years of Prohibition: $1T Burned, Potency Up +190%, Street Price Down -81% | Observations by Moth1",
+                "description": (
+                    "The fifty-year fiscal burn of prohibition: over a trillion dollars spent to eradicate illicit chemistry, "
+                    "yet narcotics are cheaper, more potent, and more accessible than at any point in modern history. "
+                    "Read the full scrollytelling essay with interactive data simulators at Observations by Moth1."
+                ),
+                "alt_text": "High-contrast data infographic plate detailing fifty years of drug war enforcement failure: $1T incinerated, -81% price drop, +190% potency increase.",
+                "link": "https://observations.moth1.xyz/war-on-drugs?utm_source=pinterest&utm_medium=pin&utm_campaign=issue-03&utm_content=50-year-burn"
+            },
+            {
+                "file": "dist-packages/issue-03-war-on-drugs/pinterest/pins/02_thesis_quote_plate.png",
+                "title": "Billionaires Microdose in Boardrooms While Working-Class Kids Rot in Cells | Observations by Moth1",
+                "description": (
+                    "“Billionaires microdose in high-rise tech boardrooms to unlock creative clarity, while working-class kids rot in solitary cages "
+                    "for self-medicating the isolation and exhaustion of late-stage capitalism.” "
+                    "Explore the moral and economic contradictions of modern prohibition at Observations by Moth1."
+                ),
+                "alt_text": "Atmospheric sumi-e surveillance artwork with bold typography: Billionaires microdose in boardrooms while working-class kids rot in cells.",
+                "link": "https://observations.moth1.xyz/war-on-drugs?utm_source=pinterest&utm_medium=pin&utm_campaign=issue-03&utm_content=class-divide-quote"
+            },
+            {
+                "file": "dist-packages/issue-03-war-on-drugs/pinterest/pins/03_interactive_mockup_plate.png",
+                "title": "Portugal Law 30/2000: Health Over Handcuffs and the 80% Overdose Drop | Observations by Moth1",
+                "description": (
+                    "What happens when a nation stops caging users: Portugal’s 20-year empirical decriminalisation model produced an 80% drop "
+                    "in overdose deaths, a 90% plunge in HIV diagnoses among users, and an 18% reduction in total social cost. "
+                    "Read the full interactive case study at Observations by Moth1."
+                ),
+                "alt_text": "Three-stage civic health architecture plate outlining Portugal Law 30/2000 dissuasion commissions and clinical outcomes.",
+                "link": "https://observations.moth1.xyz/war-on-drugs?utm_source=pinterest&utm_medium=pin&utm_campaign=issue-03&utm_content=portugal-model"
+            }
+        ]
+    },
     "01": {
         "slug": "watering-grass-in-a-thunderstorm",
         "dir": "dist-packages/issue-01-watering-grass/pinterest",
