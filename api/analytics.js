@@ -17,22 +17,21 @@ const ACTORS = {
   x: 'apidojo~tweet-scraper',
 };
 
-export function isObservationsContent(text = '', hashtags = [], filterTag = '#observations') {
+export function isObservationsContent(text = '', hashtags = [], filterTag = '#ObservationsByMoth1') {
   const rawText = String(text || '').toLowerCase();
   const rawHashtags = (Array.isArray(hashtags) ? hashtags.map((h) => String(h).toLowerCase()).join(' ') : '').toLowerCase();
   const haystack = `${rawText} ${rawHashtags}`;
-  const normalizedTag = (filterTag || '#observations').trim().toLowerCase();
+  const normalizedTag = (filterTag || '#ObservationsByMoth1').trim().toLowerCase();
   const tagWithoutHash = normalizedTag.replace(/^#/, '');
 
   if (normalizedTag && haystack.includes(normalizedTag)) return true;
-  if (haystack.includes('#observations')) return true;
   if (haystack.includes('#observationsbymoth1')) return true;
 
   if (
     Array.isArray(hashtags) &&
     hashtags.some((h) => {
       const clean = String(h).toLowerCase().replace(/^#/, '');
-      return clean === tagWithoutHash || clean === 'observations' || clean === 'observationsbymoth1';
+      return clean === tagWithoutHash || clean === 'observationsbymoth1';
     })
   ) {
     return true;
@@ -293,8 +292,13 @@ export function normalizeFacebookItem(item, idx = 0) {
       text = 'The War No One Was Supposed to Win...';
     } else if (
       lowerCaption.includes('meat grinder') ||
-      item.url?.includes('/reel') ||
-      item.type === 'video'
+      lowerCaption.includes('the-meat-grinder') ||
+      lowerCaption.includes('billionaires panic') ||
+      lowerCaption.includes('issue-02') ||
+      lowerCaption.includes('issue 02') ||
+      lowerCaption.includes('issue #02') ||
+      lowerCaption.includes('issue 2') ||
+      lowerCaption.includes('issue #2')
     ) {
       text = 'The Meat Grinder Needs More Meat...';
     } else if (
@@ -1548,7 +1552,7 @@ export default async function handler(req, res) {
           t.includes('issue 3') ||
           t.includes('issue #3')
         );
-      }) || (facebookItems.length >= 1 ? facebookItems[0] : null);
+      }) || (facebookItems.length >= 3 ? facebookItems[0] : null);
 
     const fbIssue02Item =
       facebookItems.find((i) => {
@@ -1563,7 +1567,7 @@ export default async function handler(req, res) {
           t.includes('issue 2') ||
           t.includes('issue #2')
         );
-      }) || (facebookItems.length >= 2 ? facebookItems[1] : null);
+      }) || (facebookItems.length >= 3 ? facebookItems[1] : facebookItems.length >= 2 ? facebookItems[0] : null);
 
     const fbIssue01Item =
       facebookItems.find((i) => {
@@ -1579,7 +1583,7 @@ export default async function handler(req, res) {
           t.includes('issue 1') ||
           t.includes('issue #1')
         );
-      }) || (facebookItems.length >= 3 ? facebookItems[2] : null);
+      }) || (facebookItems.length >= 3 ? facebookItems[2] : facebookItems.length >= 2 ? facebookItems[1] : facebookItems.length >= 1 ? facebookItems[0] : null);
 
     const facebookReels = [
       {

@@ -558,6 +558,11 @@ export function loadChannelLedger() {
         (r) => r.id === defReel.id || r.issueId === defReel.issueId
       );
       const base = found ? { ...defReel, ...found } : defReel;
+      if (Number(base.views) === 35683) {
+        base.views = 0;
+        base.likes = 0;
+        base.comments = 0;
+      }
       const cleanIssue = String(base.issueId || '01').padStart(2, '0');
       const savedKey = `saves_ig_issue_${cleanIssue}`;
       const savedVal = typeof window !== 'undefined' ? window.localStorage.getItem(savedKey) : null;

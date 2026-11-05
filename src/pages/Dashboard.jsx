@@ -181,7 +181,7 @@ const DEFAULT_TARGETS = {
   youtubeHandle: 'sivaraj.pragasm',
   youtubeChannelUrl: 'https://www.youtube.com/@sivaraj.pragasm',
   youtubePlaylistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
-  filterTag: '#observations',
+  filterTag: '#ObservationsByMoth1',
 };
 
 const ACTORS = {
@@ -227,24 +227,27 @@ const ACTORS = {
   },
 };
 
-function matchesObservationsFilter(item, filterTag = '#observations') {
+function matchesObservationsFilter(item, filterTag = '#ObservationsByMoth1') {
   const rawText = `${item.caption || ''} ${item.text || ''} ${item.combinedText || ''}`.toLowerCase();
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
   const rawHashtags = (hashtags.map((h) => String(h).toLowerCase()).join(' ')).toLowerCase();
   const haystack = `${rawText} ${rawHashtags}`;
 
-  const normalizedTag = (filterTag || '#observations').trim().toLowerCase();
+  const rawNormalized = (filterTag || '#ObservationsByMoth1').trim().toLowerCase();
+  const normalizedTag =
+    rawNormalized === '#observations' || rawNormalized === 'observations'
+      ? '#observationsbymoth1'
+      : rawNormalized;
   const tagWithoutHash = normalizedTag.replace(/^#/, '');
 
-  // 1. Direct hashtag match (#observations or #observationsbymoth1)
-  if (haystack.includes(normalizedTag)) return true;
-  if (haystack.includes('#observations')) return true;
+  // 1. Direct hashtag match (#ObservationsByMoth1)
+  if (normalizedTag && haystack.includes(normalizedTag)) return true;
   if (haystack.includes('#observationsbymoth1')) return true;
 
   if (
     hashtags.some((h) => {
       const clean = String(h).toLowerCase().replace(/^#/, '');
-      return clean === tagWithoutHash || clean === 'observations' || clean === 'observationsbymoth1';
+      return clean === tagWithoutHash || clean === 'observationsbymoth1';
     })
   ) {
     return true;
@@ -572,8 +575,13 @@ function normalizeFacebookItem(item, idx = 0) {
       text = 'The War No One Was Supposed to Win...';
     } else if (
       lowerCaption.includes('meat grinder') ||
-      item.url?.includes('/reel') ||
-      item.type === 'video'
+      lowerCaption.includes('the-meat-grinder') ||
+      lowerCaption.includes('billionaires panic') ||
+      lowerCaption.includes('issue-02') ||
+      lowerCaption.includes('issue 02') ||
+      lowerCaption.includes('issue #02') ||
+      lowerCaption.includes('issue 2') ||
+      lowerCaption.includes('issue #2')
     ) {
       text = 'The Meat Grinder Needs More Meat...';
     } else if (
@@ -1949,6 +1957,13 @@ export default function Dashboard() {
         if (!parsed.xHandle || parsed.xHandle === 'moth1_siv') {
           parsed.xHandle = 'Moth1NFTs';
         }
+        if (
+          !parsed.filterTag ||
+          parsed.filterTag.trim().toLowerCase() === '#observations' ||
+          parsed.filterTag.trim().toLowerCase() === 'observations'
+        ) {
+          parsed.filterTag = '#ObservationsByMoth1';
+        }
         return { ...DEFAULT_TARGETS, ...parsed };
       }
       return DEFAULT_TARGETS;
@@ -2299,23 +2314,27 @@ export default function Dashboard() {
 
         // Ensure all 3 publication issues (03, 02, 01) are always represented in Facebook reels
         const mergedFbMap = new Map();
-        const baseReels = serverFbReels.length > 0 ? serverFbReels : (ledger.facebook?.reels || []).map((r, i) => ({
-          id: r.id || `fb-reel-${r.issueId || i}`,
-          issueId: r.issueId,
-          text: r.text || r.title || (r.issueId === '03' ? 'Issue 03 - The War No One Was Supposed to Win' : r.issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
-          caption: r.caption || r.title || '',
-          url: r.url || 'https://www.facebook.com/observationsbymoth1',
-          views: Number(r.views) || 0,
-          likes: Number(r.likes) || 0,
-          comments: Number(r.comments) || 0,
-          shares: Number(r.shares) || 0,
-          isReel: true,
-          publishedAt: r.publishedAt || new Date().toISOString(),
-        }));
+        for (const r of (ledger.facebook?.reels || [])) {
+          const issueId = r.issueId || matchItemToIssueId(r) || '01';
+          mergedFbMap.set(issueId, {
+            id: r.id || `fb-reel-${issueId}`,
+            issueId,
+            text: r.text || r.title || (issueId === '03' ? 'Issue 03 - The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+            caption: r.caption || r.title || '',
+            url: r.url || 'https://www.facebook.com/observationsbymoth1',
+            views: Number(r.views) || 0,
+            likes: Number(r.likes) || 0,
+            comments: Number(r.comments) || 0,
+            shares: Number(r.shares) || 0,
+            isReel: true,
+            publishedAt: r.publishedAt || new Date().toISOString(),
+          });
+        }
 
-        for (const r of baseReels) {
+        for (const r of serverFbReels) {
           const issueId = matchItemToIssueId(r) || r.issueId || '01';
-          mergedFbMap.set(issueId, r);
+          const existing = mergedFbMap.get(issueId) || {};
+          mergedFbMap.set(issueId, { ...existing, ...r, issueId });
         }
 
         // Overlay live scraped reels from directFacebook / serverFbItems
@@ -2498,8 +2517,16 @@ export default function Dashboard() {
           // 2. Auto-populate Instagram Issue Reels from scraped items
           if (igItems.length > 0 && Array.isArray(next.instagram?.reels)) {
             const updatedIgReels = next.instagram.reels.map((reel) => {
+              if (Number(reel.views) === 35683) {
+                reel.views = 0;
+                reel.likes = 0;
+                reel.comments = 0;
+                changed = true;
+              }
               const matchedItems = igItems.filter(
-                (item) => matchItemToIssueId(item) === reel.issueId
+                (item) =>
+                  matchesObservationsFilter(item, targets.filterTag || '#ObservationsByMoth1') &&
+                  matchItemToIssueId(item) === reel.issueId
               );
               if (matchedItems.length === 0) return reel;
 
@@ -3130,7 +3157,7 @@ export default function Dashboard() {
               clearInterval(pollInterval);
               setRunningActor(null);
               setStatusMessage(
-                `${actorMeta.label} finished! Filtering for ${targets.filterTag || '#observations'}...`
+                `${actorMeta.label} finished! Filtering for ${targets.filterTag || '#ObservationsByMoth1'}...`
               );
               await syncAllTelemetry(cleanedToken);
               setTimeout(() => setStatusMessage(''), 4000);
@@ -3301,8 +3328,8 @@ export default function Dashboard() {
     }
   };
 
-  // Filtered Social Items (#observations filter)
-  const activeFilterTag = targets.filterTag || '#observations';
+  // Filtered Social Items (#ObservationsByMoth1 filter)
+  const activeFilterTag = targets.filterTag || '#ObservationsByMoth1';
 
   const visibleInstagramItems = sortReelsForDisplay(
     filterOnlyObservations
@@ -3751,11 +3778,14 @@ export default function Dashboard() {
     (sum, i) => sum + (i.comments || 0),
     0
   );
-  const igManualViews = ledger.instagram.reels.reduce(
+  const cleanIgManualReels = (ledger.instagram?.reels || []).map((r) =>
+    Number(r.views) === 35683 ? { ...r, views: 0, likes: 0, comments: 0 } : r
+  );
+  const igManualViews = cleanIgManualReels.reduce(
     (sum, r) => sum + (Number(r.views) || 0),
     0
   );
-  const igManualInteractions = ledger.instagram.reels.reduce(
+  const igManualInteractions = cleanIgManualReels.reduce(
     (sum, r) =>
       sum +
       (Number(r.likes) || 0) +
@@ -3764,11 +3794,17 @@ export default function Dashboard() {
       (Number(r.saves) || 0),
     0
   );
-  const totalIgViews = Math.max(igScrapedViews, igManualViews);
-  const totalIgEngagement = Math.max(
-    igScrapedLikes + igScrapedComments,
-    igManualInteractions
-  );
+  const totalIgViews = filterOnlyObservations
+    ? (igScrapedViews > 0 ? igScrapedViews : igManualViews)
+    : Math.max(igScrapedViews, igManualViews);
+  const totalIgEngagement = filterOnlyObservations
+    ? (igScrapedLikes + igScrapedComments > 0
+        ? igScrapedLikes + igScrapedComments
+        : igManualInteractions)
+    : Math.max(
+        igScrapedLikes + igScrapedComments,
+        igManualInteractions
+      );
 
   // Threads (automation-lab/threads-scraper)
   const totalThreadsLikes = visibleThreadsItems.reduce(
@@ -3816,7 +3852,7 @@ export default function Dashboard() {
     matchesObservationsFilter(thread, activeFilterTag)
   );
   const visibleXItems = filterOnlyObservations
-    ? (matchedXThreads.length > 0 ? matchedXThreads : allXThreads)
+    ? matchedXThreads
     : allXThreads;
 
   const xScrapedViews = visibleXItems.reduce((sum, i) => sum + (i.views || 0), 0);
@@ -4222,7 +4258,7 @@ export default function Dashboard() {
                         filterTag: e.target.value,
                       }))
                     }
-                    placeholder="#observations"
+                    placeholder="#ObservationsByMoth1"
                     className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#86efac] font-bold focus:outline-none focus:border-[#86efac]"
                   />
                 </div>
@@ -6915,20 +6951,6 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <>
-                  {filterOnlyObservations && matchedXThreads.length === 0 && allXThreads.length > 0 && (
-                    <div className="mb-3 px-3 py-2 bg-[#0b0d10] border border-amber-500/40 flex items-center justify-between font-mono text-[11px] text-amber-300">
-                      <span>
-                        Showing all {allXThreads.length} dispatches from @{targets.xHandle || 'Moth1NFTs'} (no dispatches explicitly tagged with {activeFilterTag}).
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setFilterOnlyObservations(false)}
-                        className="underline hover:text-white cursor-pointer"
-                      >
-                        Disable filter
-                      </button>
-                    </div>
-                  )}
                   <div className="overflow-x-auto mb-4 max-h-[240px] -mx-1 sm:mx-0">
                     <table className="w-full text-left border-collapse min-w-[480px]">
                       <thead>
