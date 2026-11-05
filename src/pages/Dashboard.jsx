@@ -4366,12 +4366,9 @@ export default function Dashboard() {
             <h1 className="text-xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#e2e8f0] uppercase break-words">
               Observations by Moth1{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#86efac] via-[#67e8f9] to-[#f472b6]">
-                Analytics
+                Performance Hub
               </span>
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Tracking Web Traffic, UTM Funnel Conversion (<code>utm_medium=story</code>) &amp; Social Scrapers.
-            </p>
           </div>
 
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full lg:w-auto">
@@ -4819,23 +4816,15 @@ export default function Dashboard() {
         {/* ================================================================= */}
         <section id="analytics-hub" className="space-y-6 pt-2">
           {/* Section Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <BarChart3 className="w-4 h-4 text-[#86efac]" />
-                <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
-                  Analytics Hub
-                </h2>
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold tracking-wider">
-                  Multi-Channel Telemetry
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">
-                Live Vercel Web Analytics, Apify social scrapers, publication reach, and speed insights.
-              </p>
-            </div>
-            <div className="text-[11px] font-mono text-slate-400">
-              Tip: Click any KPI card below to filter the detailed view
+          <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-800">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-[#86efac]" />
+              <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
+                Analytics Hub
+              </h2>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold tracking-wider">
+                Multi-Channel Telemetry
+              </span>
             </div>
           </div>
 
@@ -5707,9 +5696,6 @@ export default function Dashboard() {
               <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
                 Website Audience &amp; Route Performance
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Real-time pageviews, visitors, referrers, and regional distribution from Vercel Analytics.
-              </p>
             </div>
             <a
               href="https://vercel.com/dashboard"
@@ -6098,9 +6084,6 @@ export default function Dashboard() {
                   Speed Insights & Real User Experience (CWV)
                 </h2>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Live Core Web Vitals telemetry captured via @vercel/speed-insights and browser Performance APIs.
-              </p>
             </div>
             <a
               href="https://vercel.com/dashboard"
@@ -7857,19 +7840,14 @@ export default function Dashboard() {
   >
     <div className="pb-5 mb-5 border-b border-slate-800 space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
-              UTM Campaign &amp; Funnel Tracker
-            </h2>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#86efac] animate-pulse" />
-              100% AUTOMATED TELEMETRY
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 mt-1 max-w-3xl">
-            Inbound traffic from Instagram &amp; Facebook stories, X campaigns, 75%+ scroll retention, and Substack subscriptions.
-          </p>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
+            UTM Campaign &amp; Funnel Tracker
+          </h2>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#86efac] animate-pulse" />
+            100% AUTOMATED TELEMETRY
+          </span>
         </div>
       </div>
 
@@ -7960,19 +7938,14 @@ export default function Dashboard() {
     {/* Specific UTM Campaign Links Hub */}
     <div className="p-4 sm:p-5 bg-[#0b0d10] border border-slate-800 space-y-4 mb-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <Link2 className="w-4 h-4 text-[#f472b6]" />
-            <h3 className="text-sm sm:text-base font-bold text-[#e2e8f0]">
-              Specific UTM Campaign Links Hub
-            </h3>
-            <span className="px-2 py-0.5 bg-[#f472b6]/10 border border-[#f472b6]/30 text-[#f472b6] text-[10px] font-mono uppercase font-bold">
-              {activeUtmLinks.length} Active Links
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Pre-configured distribution URLs with verified <code>utm_source</code>, <code>utm_medium</code>, and <code>utm_campaign</code> parameters for automated tracking.
-          </p>
+        <div className="flex items-center gap-2">
+          <Link2 className="w-4 h-4 text-[#f472b6]" />
+          <h3 className="text-sm sm:text-base font-bold text-[#e2e8f0]">
+            Specific UTM Campaign Links Hub
+          </h3>
+          <span className="px-2 py-0.5 bg-[#f472b6]/10 border border-[#f472b6]/30 text-[#f472b6] text-[10px] font-mono uppercase font-bold">
+            {activeUtmLinks.length} Active Links
+          </span>
         </div>
 
         {/* Filter Pills */}
