@@ -30,8 +30,8 @@ function PublicationLayout({ dispatch = null, children }) {
       const rawMedium = (medium || '').toLowerCase();
       const rawSource = (source || '').toLowerCase();
       const isTrackedCampaign =
-        ['story', 'thread', 'video', 'teaser', 'community', 'shorts', 'short', 'post', 'profile', 'bio'].includes(rawMedium) ||
-        ['instagram', 'facebook', 'x', 'twitter', 'ig', 'fb', 'youtube', 'yt', 'threads'].includes(rawSource) ||
+        ['story', 'thread', 'video', 'teaser', 'community', 'shorts', 'short', 'post', 'profile', 'bio', 'pin', 'note', 'email', 'newsletter'].includes(rawMedium) ||
+        ['instagram', 'facebook', 'x', 'twitter', 'ig', 'fb', 'youtube', 'yt', 'threads', 'pinterest', 'pin', 'substack', 'email', 'mail', 'newsletter'].includes(rawSource) ||
         Boolean(campaign);
 
       if (isTrackedCampaign) {
@@ -123,8 +123,8 @@ function PublicationLayout({ dispatch = null, children }) {
               '';
 
             const isCampaignSession =
-              ['story', 'thread', 'video', 'teaser', 'community', 'shorts', 'short', 'post', 'profile', 'bio'].includes(storedMedium.toLowerCase()) ||
-              ['instagram', 'facebook', 'x', 'twitter', 'ig', 'fb', 'youtube', 'yt', 'threads'].includes(storedSource.toLowerCase()) ||
+              ['story', 'thread', 'video', 'teaser', 'community', 'shorts', 'short', 'post', 'profile', 'bio', 'pin', 'note', 'email', 'newsletter'].includes(storedMedium.toLowerCase()) ||
+              ['instagram', 'facebook', 'x', 'twitter', 'ig', 'fb', 'youtube', 'yt', 'threads', 'pinterest', 'pin', 'substack', 'email', 'mail', 'newsletter'].includes(storedSource.toLowerCase()) ||
               Boolean(storedCampaign);
 
             if (isCampaignSession) {

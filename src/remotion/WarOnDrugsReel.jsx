@@ -222,12 +222,12 @@ const SceneHook = () => {
     <VisualStage
       bgImage={
         isPartB
-          ? 'issues/issue-03/class-contradiction.webp'
+          ? 'issues/issue-03/trillion-burn.webp'
           : 'issues/issue-03/hero-dossier.webp'
       }
       bgScale={imgScale}
       bgOpacity={0.32}
-      sectionLabel={isPartB ? 'THE CLASS DIVIDE' : 'ISSUE #03'}
+      sectionLabel={isPartB ? 'THE REAL KPI' : 'ISSUE #03'}
       accent={isPartB ? COLORS.red : COLORS.yellow}
       globalProgress={frame / TOTAL_FRAMES}
     >
@@ -244,7 +244,7 @@ const SceneHook = () => {
         <Img
           src={staticFile(
             isPartB
-              ? 'issues/issue-03/class-contradiction.webp'
+              ? 'issues/issue-03/trillion-burn.webp'
               : 'issues/issue-03/hero-dossier.webp'
           )}
           style={{
@@ -270,7 +270,7 @@ const SceneHook = () => {
             textTransform: 'uppercase',
           }}
         >
-          {isPartB ? 'BOARDROOM VS. PRISON CELL' : '$1,000,000,000,000+ SPENT'}
+          {isPartB ? '50 YEARS OF PROHIBITION' : '$1,000,000,000,000+ SPENT'}
         </div>
       </div>
 
@@ -309,11 +309,11 @@ const SceneHook = () => {
           <CyberPosterCard accent={COLORS.red}>
             <div
               style={{
-                fontSize: 64,
+                fontSize: 62,
                 fontWeight: 900,
                 lineHeight: 1.05,
                 textTransform: 'uppercase',
-                marginBottom: 18,
+                marginBottom: 14,
               }}
             >
               THE STATE POLICES{' '}
@@ -321,13 +321,61 @@ const SceneHook = () => {
             </div>
             <div
               style={{
-                fontSize: 38,
+                fontSize: 36,
                 fontWeight: 600,
                 color: COLORS.slate300,
-                lineHeight: 1.25,
+                lineHeight: 1.22,
+                marginBottom: 20,
               }}
             >
               Billionaires microdose in lofts; workers rot in cells.
+            </div>
+
+            {/* 3 Giant Stat Badges */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr 1fr',
+                gap: 14,
+              }}
+            >
+              {[
+                { stat: '$1T+', label: 'WEALTH BURNED', color: COLORS.yellow },
+                { stat: '72 / 100', label: 'ALCOHOL HARM', color: COLORS.red },
+                { stat: '-90%', label: 'PORTUGAL HIV', color: COLORS.green },
+              ].map((b) => (
+                <div
+                  key={b.label}
+                  style={{
+                    backgroundColor: '#08090c',
+                    border: `1.5px solid ${b.color}`,
+                    padding: '12px 14px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 34,
+                      fontWeight: 900,
+                      color: b.color,
+                      lineHeight: 1.05,
+                    }}
+                  >
+                    {b.stat}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 800,
+                      color: COLORS.slate300,
+                      letterSpacing: '0.1em',
+                      marginTop: 4,
+                    }}
+                  >
+                    {b.label}
+                  </div>
+                </div>
+              ))}
             </div>
           </CyberPosterCard>
         )}
@@ -613,15 +661,15 @@ const PORTUGAL_SLIDES = [
     accent: COLORS.green,
   },
   {
-    image: 'issues/issue-03/lisbon-model.webp',
+    image: 'issues/issue-03/dissuasion-panel.webp',
     badge: '20-YEAR EMPIRICAL LEDGER',
     title: '6 PER 1M OVERDOSE DEATHS',
     punchline: 'Europe’s lowest mortality vs. 300+ per million in the US.',
     accent: COLORS.yellow,
   },
   {
-    image: 'issues/issue-03/lisbon-model.webp',
-    badge: 'THE PRAGMATIC BLUEPRINT',
+    image: 'issues/issue-03/civic-renewal.webp',
+    badge: 'HEALTH OVER HANDCUFFS',
     title: '-65% DRUG INCARCERATION',
     punchline: 'Treat trauma and regulate supply to starve street cartels.',
     accent: COLORS.green,

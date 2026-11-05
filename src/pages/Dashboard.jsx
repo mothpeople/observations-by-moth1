@@ -1307,12 +1307,25 @@ const PRECONFIGURED_UTM_LINKS = [
     issueTitle: 'Issue #03: The War No One Was Supposed to Win',
     slug: 'war-on-drugs',
     platform: 'substack',
-    platformLabel: 'Substack Note / Link',
-    medium: 'post',
+    platformLabel: 'Substack Note / Post',
+    medium: 'note',
     campaign: 'issue-03',
     badge: 'Substack Note',
     color: '#fbbf24',
-    description: 'Direct Substack note or newsletter link pointing to the interactive essay',
+    description: 'Substack Note or post link pointing to Issue #03 interactive essay',
+  },
+  {
+    id: '03-substack-email',
+    issueId: '03',
+    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
+    slug: 'war-on-drugs',
+    platform: 'substack',
+    platformLabel: 'Substack Email Broadcast',
+    medium: 'email',
+    campaign: 'issue-03',
+    badge: 'Substack Email',
+    color: '#67e8f9',
+    description: 'Email newsletter broadcast tracking link pointing to Issue #03',
   },
 
   // Issue #02: The Meat Grinder Needs More Meat
@@ -1433,6 +1446,32 @@ const PRECONFIGURED_UTM_LINKS = [
     color: '#e60023',
     description: '1000×1500 Retina Infographic or Quote Pin link for Issue #02 on @moth1siv',
   },
+  {
+    id: '02-substack-post',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'substack',
+    platformLabel: 'Substack Note / Post',
+    medium: 'note',
+    campaign: 'issue-02',
+    badge: 'Substack Note',
+    color: '#fbbf24',
+    description: 'Substack Note or post link pointing to Issue #02 interactive essay',
+  },
+  {
+    id: '02-substack-email',
+    issueId: '02',
+    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
+    slug: 'the-meat-grinder',
+    platform: 'substack',
+    platformLabel: 'Substack Email Broadcast',
+    medium: 'email',
+    campaign: 'issue-02',
+    badge: 'Substack Email',
+    color: '#67e8f9',
+    description: 'Email newsletter broadcast tracking link pointing to Issue #02',
+  },
 
   // Issue #01: Watering Grass in a Thunderstorm
   {
@@ -1552,6 +1591,32 @@ const PRECONFIGURED_UTM_LINKS = [
     color: '#e60023',
     description: '1000×1500 Retina Infographic or Protest Loop Pin link for Issue #01 on @moth1siv',
   },
+  {
+    id: '01-substack-post',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'substack',
+    platformLabel: 'Substack Note / Post',
+    medium: 'note',
+    campaign: 'issue-01',
+    badge: 'Substack Note',
+    color: '#fbbf24',
+    description: 'Substack Note or post link pointing to Issue #01 interactive essay',
+  },
+  {
+    id: '01-substack-email',
+    issueId: '01',
+    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
+    slug: 'watering-grass-in-a-thunderstorm',
+    platform: 'substack',
+    platformLabel: 'Substack Email Broadcast',
+    medium: 'email',
+    campaign: 'issue-01',
+    badge: 'Substack Email',
+    color: '#67e8f9',
+    description: 'Email newsletter broadcast tracking link pointing to Issue #01',
+  },
 
   // Main Publication Landing Page
   {
@@ -1624,7 +1689,7 @@ export default function Dashboard() {
   const [analyticsTab, setAnalyticsTab] = useState('website'); // 'website' | 'reels' | 'substack' | 'social' | 'all'
   const [socialPlatformTab, setSocialPlatformTab] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'threads' | 'x' | 'youtube'
   const [utmLinksFilterIssue, setUtmLinksFilterIssue] = useState('all'); // 'all' | '03' | '02' | '01' | 'home'
-  const [utmLinksFilterPlatform, setUtmLinksFilterPlatform] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'x' | 'threads' | 'youtube'
+  const [utmLinksFilterPlatform, setUtmLinksFilterPlatform] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'x' | 'threads' | 'youtube' | 'pinterest' | 'substack'
 
   // Custom UTM Generator Form State
   const [customUtmIssue, setCustomUtmIssue] = useState('war-on-drugs');
@@ -2544,20 +2609,25 @@ export default function Dashboard() {
             const updatedDispatches = next.storyFunnel.dispatches.map((d) => {
               const serverIgClicks = Number(storyClickStats?.issues?.[d.slug]?.instagram?.clicks || 0);
               const serverFbClicks = Number(storyClickStats?.issues?.[d.slug]?.facebook?.clicks || 0);
+              const serverSubClicks = Number(storyClickStats?.issues?.[d.slug]?.substack?.clicks || 0);
+              const serverMailClicks = Number(storyClickStats?.issues?.[d.slug]?.email?.clicks || 0);
+
               const currentIgClicks = Number(d.instagram?.entrances ?? d.instagram?.clicks ?? 0);
               const currentFbClicks = Number(d.facebook?.entrances ?? d.facebook?.clicks ?? 0);
+              const currentSubClicks = Number(d.substack?.entrances ?? d.substack?.clicks ?? 0);
+              const currentMailClicks = Number(d.email?.entrances ?? d.email?.clicks ?? 0);
 
-              // Distribute or ratchet to the latest issue (the-meat-grinder)
-              const igTarget =
-                d.slug === 'the-meat-grinder'
-                  ? Math.max(currentIgClicks, serverIgClicks, vercelIg)
-                  : Math.max(currentIgClicks, serverIgClicks);
-              const fbTarget =
-                d.slug === 'the-meat-grinder'
-                  ? Math.max(currentFbClicks, serverFbClicks, vercelFb)
-                  : Math.max(currentFbClicks, serverFbClicks);
+              const igTarget = Math.max(currentIgClicks, serverIgClicks, d.slug === 'the-meat-grinder' ? vercelIg : 0);
+              const fbTarget = Math.max(currentFbClicks, serverFbClicks, d.slug === 'the-meat-grinder' ? vercelFb : 0);
+              const subTarget = Math.max(currentSubClicks, serverSubClicks);
+              const mailTarget = Math.max(currentMailClicks, serverMailClicks);
 
-              if (igTarget !== currentIgClicks || fbTarget !== currentFbClicks) {
+              if (
+                igTarget !== currentIgClicks ||
+                fbTarget !== currentFbClicks ||
+                subTarget !== currentSubClicks ||
+                mailTarget !== currentMailClicks
+              ) {
                 changed = true;
                 return {
                   ...d,
@@ -2570,6 +2640,16 @@ export default function Dashboard() {
                     ...d.facebook,
                     entrances: fbTarget,
                     clicks: fbTarget,
+                  },
+                  substack: {
+                    ...d.substack,
+                    entrances: subTarget,
+                    clicks: subTarget,
+                  },
+                  email: {
+                    ...d.email,
+                    entrances: mailTarget,
+                    clicks: mailTarget,
                   },
                 };
               }
@@ -3397,10 +3477,97 @@ export default function Dashboard() {
       ? ((pinStorySubscribers / pinStoryEntrances) * 100).toFixed(1)
       : '0.0';
 
+  // Substack & Email Campaign Aggregates
+  const vercelSubstackReferrals = vercelReferrersList
+    .filter((r) => (r.referrerHostname || '').toLowerCase().includes('substack'))
+    .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
+
+  const vercelEmailReferrals = vercelReferrersList
+    .filter((r) => {
+      const h = (r.referrerHostname || '').toLowerCase();
+      return h.includes('mail.') || h.includes('email') || h.includes('outlook') || h.includes('webmail');
+    })
+    .reduce((sum, r) => sum + (Number(r.visitors) || Number(r.pageviews) || 0), 0);
+
+  const vercelUtmSourcesList = Array.isArray(vercelAnalytics?.utmSources) ? vercelAnalytics.utmSources : [];
+  const vercelUtmMediumsList = Array.isArray(vercelAnalytics?.utmMediums) ? vercelAnalytics.utmMediums : [];
+
+  const vercelSubstackUtmVisitors = vercelUtmSourcesList
+    .filter((u) => (u.utmSource || u.source || '').toLowerCase().includes('substack'))
+    .reduce((sum, u) => sum + (Number(u.visitors) || Number(u.pageviews) || 0), 0);
+
+  const vercelEmailUtmVisitors =
+    vercelUtmSourcesList
+      .filter((u) => {
+        const s = (u.utmSource || u.source || '').toLowerCase();
+        return s.includes('email') || s.includes('mail') || s.includes('newsletter');
+      })
+      .reduce((sum, u) => sum + (Number(u.visitors) || Number(u.pageviews) || 0), 0) +
+    vercelUtmMediumsList
+      .filter((u) => {
+        const m = (u.utmMedium || u.medium || '').toLowerCase();
+        return m.includes('email') || m.includes('newsletter');
+      })
+      .reduce((sum, u) => sum + (Number(u.visitors) || Number(u.pageviews) || 0), 0);
+
+  const substackStoryEntrances = Math.max(
+    storyDispatches.reduce((sum, d) => {
+      const serverClicks = Number(storyClickStats?.issues?.[d.slug]?.substack?.clicks || 0);
+      const ledgerClicks = Number(d.substack?.entrances ?? d.substack?.clicks ?? 0);
+      return sum + Math.max(serverClicks, ledgerClicks);
+    }, 0) || Number(serverStoryTotal.substack?.clicks || 0),
+    vercelSubstackReferrals,
+    vercelSubstackUtmVisitors
+  );
+
+  const emailStoryEntrances = Math.max(
+    storyDispatches.reduce((sum, d) => {
+      const serverClicks = Number(storyClickStats?.issues?.[d.slug]?.email?.clicks || 0);
+      const ledgerClicks = Number(d.email?.entrances ?? d.email?.clicks ?? 0);
+      return sum + Math.max(serverClicks, ledgerClicks);
+    }, 0) || Number(serverStoryTotal.email?.clicks || 0),
+    vercelEmailReferrals,
+    vercelEmailUtmVisitors
+  );
+
+  const totalSubstackVisitors = substackStoryEntrances + emailStoryEntrances;
+
+  const substackStoryScroll75 =
+    storyDispatches.reduce((sum, d) => {
+      const serverScroll = Number(storyClickStats?.issues?.[d.slug]?.substack?.scroll75 || 0);
+      const ledgerScroll = Number(d.substack?.scroll75 || 0);
+      return sum + Math.max(serverScroll, ledgerScroll);
+    }, 0) || Number(serverStoryTotal.substack?.scroll75 || 0);
+
+  const emailStoryScroll75 =
+    storyDispatches.reduce((sum, d) => {
+      const serverScroll = Number(storyClickStats?.issues?.[d.slug]?.email?.scroll75 || 0);
+      const ledgerScroll = Number(d.email?.scroll75 || 0);
+      return sum + Math.max(serverScroll, ledgerScroll);
+    }, 0) || Number(serverStoryTotal.email?.scroll75 || 0);
+
+  const totalSubstackEmailScroll75 = substackStoryScroll75 + emailStoryScroll75;
+
+  const substackStorySubscribers =
+    storyDispatches.reduce((sum, d) => {
+      const serverSubs = Number(storyClickStats?.issues?.[d.slug]?.substack?.subscribers || 0);
+      const ledgerSubs = Number(d.substack?.subscribers || 0);
+      return sum + Math.max(serverSubs, ledgerSubs);
+    }, 0) || Number(serverStoryTotal.substack?.subscribers || 0);
+
+  const emailStorySubscribers =
+    storyDispatches.reduce((sum, d) => {
+      const serverSubs = Number(storyClickStats?.issues?.[d.slug]?.email?.subscribers || 0);
+      const ledgerSubs = Number(d.email?.subscribers || 0);
+      return sum + Math.max(serverSubs, ledgerSubs);
+    }, 0) || Number(serverStoryTotal.email?.subscribers || 0);
+
+  const totalSubstackEmailSubscribers = substackStorySubscribers + emailStorySubscribers;
+
   // Combined Totals
-  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances + xStoryEntrances + ytStoryEntrances + pinStoryEntrances;
-  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75 + xStoryScroll75 + ytStoryScroll75 + pinStoryScroll75;
-  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers + xStorySubscribers + ytStorySubscribers + pinStorySubscribers;
+  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances + xStoryEntrances + ytStoryEntrances + pinStoryEntrances + totalSubstackVisitors;
+  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75 + xStoryScroll75 + ytStoryScroll75 + pinStoryScroll75 + totalSubstackEmailScroll75;
+  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers + xStorySubscribers + ytStorySubscribers + pinStorySubscribers + totalSubstackEmailSubscribers;
   const totalStoryRetentionPct =
     totalStoryEntrances > 0
       ? Math.min(100, (totalStoryScroll75 / totalStoryEntrances) * 100).toFixed(1)
@@ -4153,10 +4320,10 @@ export default function Dashboard() {
             </div>
           </CyberPanel>
 
-          {/* KPI 2: Substack (automation-lab/substack-scraper) */}
+          {/* KPI 2: Substack & Email (automation-lab/substack-scraper + Vercel UTMs) */}
           <CyberPanel
             theme={theme}
-            label="Substack • Apify"
+            label="Substack & Email • Apify + Vercel"
             accent="#67e8f9"
             className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
               analyticsTab === 'substack' ? 'ring-1 ring-[#67e8f9]' : ''
@@ -4166,15 +4333,16 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-mono text-[11px] text-slate-400 truncate">
-                  substack-scraper
+                  @{targets.substackUrl?.replace('https://', '').split('.')[0] || 'observationsbymoth1'}
                 </span>
                 <BookOpen className="w-4 h-4 text-[#67e8f9] shrink-0" />
               </div>
               <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
-                {substackPosts.length} Posts
+                {totalSubstackVisitors.toLocaleString()}{' '}
+                <span className="text-sm font-bold text-slate-400">Visitors</span>
               </div>
               <div className="text-xs text-slate-400 mt-0.5">
-                {totalSubstackLikes} Likes • {totalSubstackComments} Comments
+                <strong className="text-[#67e8f9]">{emailStoryEntrances.toLocaleString()}</strong> Email • <strong className="text-[#67e8f9]">{substackStoryEntrances.toLocaleString()}</strong> Web ({substackPosts.length} Posts)
               </div>
             </div>
 
@@ -5799,6 +5967,59 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Substack & Email Inbound Telemetry Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 font-mono">
+            <div className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-1">
+              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                Total Inbound Visitors
+              </div>
+              <div className="text-2xl font-black text-[#67e8f9] tabular-nums">
+                {totalSubstackVisitors.toLocaleString()}
+              </div>
+              <div className="text-[10px] text-slate-400">
+                Combined Substack Web + Email
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-1">
+              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                Email Newsletter Inbound
+              </div>
+              <div className="text-2xl font-black text-[#86efac] tabular-nums">
+                {emailStoryEntrances.toLocaleString()}
+              </div>
+              <div className="text-[10px] text-slate-400">
+                utm_medium=email / webmail referrals
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-1">
+              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                Substack Web &amp; Notes
+              </div>
+              <div className="text-2xl font-black text-[#fbbf24] tabular-nums">
+                {substackStoryEntrances.toLocaleString()}
+              </div>
+              <div className="text-[10px] text-slate-400">
+                substack.com / notes / web dispatches
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-[#0b0d10] border border-slate-800 space-y-1">
+              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                Scroll Retention (75%+)
+              </div>
+              <div className="text-2xl font-black text-white tabular-nums">
+                {totalSubstackEmailScroll75.toLocaleString()}
+              </div>
+              <div className="text-[10px] text-slate-400">
+                {totalSubstackVisitors > 0
+                  ? ((totalSubstackEmailScroll75 / totalSubstackVisitors) * 100).toFixed(1)
+                  : '0.0'}% completed reading essay
+              </div>
+            </div>
+          </div>
+
           {loadingSync ? (
             <div className="py-8 text-center font-mono text-xs text-slate-400 animate-pulse">
               Syncing Substack dispatches...
@@ -7015,6 +7236,16 @@ export default function Dashboard() {
               border: 'border-[#e60023]/30',
               text: 'text-[#f87171]',
             },
+            {
+              id: 'sub',
+              label: 'Substack & Email',
+              clicks: totalSubstackVisitors,
+              retention: totalSubstackVisitors > 0 ? ((totalSubstackEmailScroll75 / totalSubstackVisitors) * 100).toFixed(1) : '0.0',
+              subs: totalSubstackEmailSubscribers,
+              bg: 'bg-[#67e8f9]/10',
+              border: 'border-[#67e8f9]/30',
+              text: 'text-[#67e8f9]',
+            },
           ].sort((a, b) => b.clicks - a.clicks || parseFloat(b.retention) - parseFloat(a.retention));
 
           return funnelBadges.map((b) => (
@@ -7178,6 +7409,28 @@ export default function Dashboard() {
               }`}
             >
               YouTube
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterPlatform('pinterest')}
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterPlatform === 'pinterest'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#e60023] text-white font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#f87171] hover:bg-[#e60023]/10')
+              }`}
+            >
+              Pin
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterPlatform('substack')}
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterPlatform === 'substack'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#67e8f9] text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#67e8f9] hover:bg-[#67e8f9]/10')
+              }`}
+            >
+              Substack
             </button>
           </div>
         </div>
@@ -7495,6 +7748,46 @@ export default function Dashboard() {
                   ? ((pinSubs / pinEntrances) * 100).toFixed(1)
                   : '0.0';
 
+              // Metric calculations for Substack Notes & Email Newsletter
+              const subEntrances = Math.max(
+                Number(issueStats.substack?.clicks || 0),
+                Number(dispatch.substack?.entrances ?? dispatch.substack?.clicks ?? 0)
+              );
+              const subScroll75 = Math.max(
+                Number(issueStats.substack?.scroll75 || 0),
+                Number(dispatch.substack?.scroll75 ?? 0)
+              );
+              const subSubs = Math.max(
+                Number(issueStats.substack?.subscribers || 0),
+                Number(dispatch.substack?.subscribers ?? 0)
+              );
+
+              const mailEntrances = Math.max(
+                Number(issueStats.email?.clicks || 0),
+                Number(dispatch.email?.entrances ?? dispatch.email?.clicks ?? 0)
+              );
+              const mailScroll75 = Math.max(
+                Number(issueStats.email?.scroll75 || 0),
+                Number(dispatch.email?.scroll75 ?? 0)
+              );
+              const mailSubs = Math.max(
+                Number(issueStats.email?.subscribers || 0),
+                Number(dispatch.email?.subscribers ?? 0)
+              );
+
+              const totalSubIssueEntrances = subEntrances + mailEntrances;
+              const totalSubIssueScroll75 = subScroll75 + mailScroll75;
+              const totalSubIssueSubs = subSubs + mailSubs;
+
+              const subRetentionPct =
+                totalSubIssueEntrances > 0
+                  ? Math.min(100, (totalSubIssueScroll75 / totalSubIssueEntrances) * 100).toFixed(1)
+                  : (totalSubIssueScroll75 > 0 ? '100.0' : '0.0');
+              const subConvPct =
+                totalSubIssueEntrances > 0
+                  ? ((totalSubIssueSubs / totalSubIssueEntrances) * 100).toFixed(1)
+                  : '0.0';
+
               return (
                 <div
                   key={dispatch.id}
@@ -7511,8 +7804,8 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* 4-Platform Cross-Channel Columns Sorted by Highest Inbound Performance */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+                  {/* Cross-Channel Columns Sorted by Highest Inbound Performance */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                     {(() => {
                       const platformCards = [
                         {
@@ -8120,6 +8413,134 @@ export default function Dashboard() {
                             className="h-full bg-[#86efac] transition-all duration-500"
                             style={{
                               width: `${Math.min(100, Math.max(0, Number(pinConvPct) || 0))}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  id: 'substack',
+                  entrances: totalSubIssueEntrances,
+                  scroll75: totalSubIssueScroll75,
+                  card: (
+                    <div
+                      key="substack"
+                      className="p-3.5 sm:p-4 bg-[#121316] border border-[#67e8f9]/40 space-y-3 relative overflow-hidden"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-800">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-[#67e8f9]" />
+                          <span className="font-mono text-xs font-bold text-white">
+                            Substack &amp; Email
+                          </span>
+                          <span className="px-1.5 py-0.5 text-[9px] font-mono uppercase bg-[#67e8f9]/10 text-[#67e8f9] border border-[#67e8f9]/30">
+                            Newsletter
+                          </span>
+                        </div>
+
+                        {/* Copy UTM Link Buttons for Substack */}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'substack', 'note')}
+                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-[#fbbf24]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#fbbf24] hover:text-[#fbbf24] transition-colors cursor-pointer"
+                            title="Copy Substack Note Link"
+                          >
+                            {copiedLink === `${issueTag}-substack-note` ? (
+                              <span className="text-[#86efac]">Copied Note!</span>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-[#fbbf24]" />
+                                <span>Copy Note Link</span>
+                              </>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'substack', 'email')}
+                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-[#67e8f9]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#67e8f9] hover:text-[#67e8f9] transition-colors cursor-pointer"
+                            title="Copy Substack Email Newsletter Link"
+                          >
+                            {copiedLink === `${issueTag}-substack-email` ? (
+                              <span className="text-[#86efac]">Copied Email!</span>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-[#67e8f9]" />
+                                <span>Copy Email Link</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 3 Automated Telemetry Metrics for Substack */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="flex items-center justify-between text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            <span>Inbound Visitors</span>
+                            <span className="text-[8px] font-bold text-[#67e8f9] bg-[#67e8f9]/10 px-1 py-0.5 border border-[#67e8f9]/30">
+                              {mailEntrances} Email • {subEntrances} Web
+                            </span>
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#67e8f9] tabular-nums mt-1">
+                            {totalSubIssueEntrances.toLocaleString()}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            Substack &amp; Email Newsletter
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Scroll Retention
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#fbbf24] tabular-nums mt-1">
+                            {subRetentionPct}%
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            {totalSubIssueScroll75} read past 75% depth
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
+                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
+                            Subscriber Conv.
+                          </div>
+                          <div className="font-mono text-xl sm:text-2xl font-black text-[#86efac] tabular-nums mt-1">
+                            {totalSubIssueSubs}{' '}
+                            <span className="text-xs font-normal text-slate-400">
+                              ({subConvPct}%)
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                            Substack subscriptions
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Visual Funnel Bar */}
+                      <div className="space-y-1 pt-1">
+                        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono">
+                          <span className="text-slate-400">
+                            75% Retention: <strong className="text-[#fbbf24]">{subRetentionPct}%</strong>
+                          </span>
+                          <span className="text-slate-400">
+                            Substack Conv: <strong className="text-[#86efac]">{subConvPct}%</strong>
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
+                          <div
+                            className="h-full bg-[#fbbf24] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, Number(subRetentionPct) || 0))}%`,
+                            }}
+                          />
+                          <div
+                            className="h-full bg-[#86efac] transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, Number(subConvPct) || 0))}%`,
                             }}
                           />
                         </div>

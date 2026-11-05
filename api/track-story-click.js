@@ -13,6 +13,8 @@ const DEFAULT_DATA = {
       x: { clicks: 0, scroll75: 0, subscribers: 0 },
       youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
       pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
+      substack: { clicks: 0, scroll75: 0, subscribers: 0 },
+      email: { clicks: 0, scroll75: 0, subscribers: 0 },
     },
     'the-meat-grinder': {
       instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
@@ -20,6 +22,8 @@ const DEFAULT_DATA = {
       x: { clicks: 0, scroll75: 0, subscribers: 0 },
       youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
       pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
+      substack: { clicks: 0, scroll75: 0, subscribers: 0 },
+      email: { clicks: 0, scroll75: 0, subscribers: 0 },
     },
     'watering-grass-in-a-thunderstorm': {
       instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
@@ -27,6 +31,8 @@ const DEFAULT_DATA = {
       x: { clicks: 0, scroll75: 0, subscribers: 0 },
       youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
       pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
+      substack: { clicks: 0, scroll75: 0, subscribers: 0 },
+      email: { clicks: 0, scroll75: 0, subscribers: 0 },
     },
   },
   total: {
@@ -35,6 +41,8 @@ const DEFAULT_DATA = {
     x: { clicks: 0, scroll75: 0, subscribers: 0 },
     youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
     pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
+    substack: { clicks: 0, scroll75: 0, subscribers: 0 },
+    email: { clicks: 0, scroll75: 0, subscribers: 0 },
   },
   recent: [],
 };
@@ -181,7 +189,7 @@ export default async function handler(req, res) {
         issueKey = 'the-meat-grinder';
       }
 
-      // Normalize platform key: 'x' for twitter/x, 'facebook' for fb, 'youtube' for yt, 'pinterest' for pin, else 'instagram'
+      // Normalize platform key: 'x' for twitter/x, 'facebook' for fb, 'youtube' for yt, 'pinterest' for pin, 'email' for email/newsletter, 'substack' for substack/note, else 'instagram'
       let platformKey = 'instagram';
       if (rawSource.includes('facebook') || rawSource === 'fb') {
         platformKey = 'facebook';
@@ -203,6 +211,21 @@ export default async function handler(req, res) {
         rawSource.includes('pin')
       ) {
         platformKey = 'pinterest';
+      } else if (
+        rawSource.includes('email') ||
+        rawSource.includes('mail') ||
+        medium === 'email' ||
+        medium === 'newsletter'
+      ) {
+        platformKey = 'email';
+      } else if (
+        rawSource.includes('substack') ||
+        rawSource.includes('note') ||
+        medium === 'note' ||
+        medium === 'substack' ||
+        medium === 'post'
+      ) {
+        platformKey = 'substack';
       }
 
       let store = getStoryClickStore();
@@ -216,6 +239,8 @@ export default async function handler(req, res) {
           x: { clicks: 0, scroll75: 0, subscribers: 0 },
           youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
           pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
+          substack: { clicks: 0, scroll75: 0, subscribers: 0 },
+          email: { clicks: 0, scroll75: 0, subscribers: 0 },
         };
       }
       if (!store.issues[issueKey][platformKey]) {

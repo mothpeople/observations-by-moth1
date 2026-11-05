@@ -338,6 +338,18 @@ const DEFAULT_CHANNEL_LEDGER = {
           scroll75: 0,
           subscribers: 0,
         },
+        substack: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        email: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
       },
       {
         id: '02',
@@ -374,6 +386,18 @@ const DEFAULT_CHANNEL_LEDGER = {
           scroll75: 0,
           subscribers: 0,
         },
+        substack: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        email: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
       },
       {
         id: '01',
@@ -405,6 +429,18 @@ const DEFAULT_CHANNEL_LEDGER = {
           subscribers: 0,
         },
         pinterest: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        substack: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        email: {
           entrances: 0,
           clicks: 0,
           scroll75: 0,
@@ -454,6 +490,14 @@ export function loadChannelLedger() {
       const pinScroll75 = Number(found.pinterest?.scroll75) || 0;
       const pinSubs = Number(found.pinterest?.subscribers) || 0;
 
+      const subEntrances = Number(found.substack?.entrances ?? found.substack?.clicks) || 0;
+      const subScroll75 = Number(found.substack?.scroll75) || 0;
+      const subSubs = Number(found.substack?.subscribers) || 0;
+
+      const mailEntrances = Number(found.email?.entrances ?? found.email?.clicks) || 0;
+      const mailScroll75 = Number(found.email?.scroll75) || 0;
+      const mailSubs = Number(found.email?.subscribers) || 0;
+
       return {
         ...def,
         ...found,
@@ -486,6 +530,18 @@ export function loadChannelLedger() {
           clicks: pinEntrances,
           scroll75: pinScroll75,
           subscribers: pinSubs,
+        },
+        substack: {
+          entrances: subEntrances,
+          clicks: subEntrances,
+          scroll75: subScroll75,
+          subscribers: subSubs,
+        },
+        email: {
+          entrances: mailEntrances,
+          clicks: mailEntrances,
+          scroll75: mailScroll75,
+          subscribers: mailSubs,
         },
       };
     });

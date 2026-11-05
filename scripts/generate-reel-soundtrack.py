@@ -433,6 +433,66 @@ def generate_issue02_soundtrack(duration=36.00):
     save_wav(mastered, out_wav)
     return out_wav
 
+def generate_issue03_soundtrack(duration=36.00):
+    """
+    Issue 03 (The War No One Was Supposed to Win):
+    - Base: Forensic surveillance hum + 52Hz sub-bass tension drone
+    - Rhythm: Precision mechanical watch escapement ticking (60 BPM)
+    - Accents: Deep resonant Japanese temple gongs & crystalline singing bowls timed to the 5 scenes:
+      * 0.1s  (Scene 1: The $1 Trillion Hook)
+      * 3.0s  (Scene 1 Part B: Class Contradiction Split)
+      * 6.0s  (Scene 2: The Lancet 16-Criteria Harm Matrix)
+      * 13.0s (Scene 3: 4 Rapid Forensic Evidence Slides)
+      * 22.3s (Scene 4: Portugal Law 30/2000 Blueprint & Civic Renewal)
+      * 29.3s (Scene 5: The Mirror Finale & Verdict)
+    """
+    print(f"\n[Sound Design] Composing Issue 03 (Bells & Clock Ticking, 36.00s)...")
+    n_samples = int(duration * SR)
+    master = np.zeros((2, n_samples))
+
+    # Layer 1: Subtle Forensic Surveillance Room Bed
+    room = industrial_ambient_bed(duration)
+    master += room * 0.65
+
+    # Layer 2: Deep Sub-Bass Tension Drone (52Hz)
+    drone = sub_bass_drone(duration, freq=52.0)
+    master += drone * 0.42
+
+    # Layer 3: Precision Clock Escapement Ticking (60 BPM)
+    ticking = subtle_clock_ticking(duration, bpm=60)
+    master += ticking * 0.40
+
+    # Layer 4: Resonant Temple Bells & Singing Bowls aligned with WarOnDrugsReel scenes
+    # Scene 1A (0.1s): Opening Dossier Gong (87.3Hz F2) + Singing Bowl (261.6Hz C4)
+    mix_track(master, deep_temple_gong(fundamental=87.3, duration=6.0), 0.1, volume=0.88)
+    mix_track(master, singing_bowl_chime(fundamental=261.6, duration=5.0), 0.3, volume=0.68)
+
+    # Scene 1B (3.0s): Class Contradiction Shift -> Minor Bowl Chime (311.1Hz Eb4)
+    mix_track(master, singing_bowl_chime(fundamental=311.1, duration=4.2), 3.0, volume=0.58)
+
+    # Scene 2 (6.0s): The Alcohol Paradox / Lancet Matrix -> Deep Bronze Gong (73.4Hz D2)
+    mix_track(master, deep_temple_gong(fundamental=73.4, duration=6.2), 6.0, volume=0.90)
+    mix_track(master, singing_bowl_chime(fundamental=293.7, duration=4.8), 6.2, volume=0.68)
+
+    # Scene 3 (13.0s): 4 Forensic Evidence Slides -> Resonant Temple Bell (98.0Hz G2)
+    mix_track(master, deep_temple_gong(fundamental=98.0, duration=5.8), 13.0, volume=0.85)
+    mix_track(master, singing_bowl_chime(fundamental=349.2, duration=4.5), 13.2, volume=0.64)
+
+    # Scene 4 (22.3s): Portugal Law 30/2000 & Sunlit Civic Renewal -> Warm Harmonic Gong (110.0Hz A2)
+    mix_track(master, deep_temple_gong(fundamental=110.0, duration=5.8), 22.3, volume=0.85)
+    mix_track(master, singing_bowl_chime(fundamental=329.6, duration=4.8), 22.5, volume=0.70)
+    mix_track(master, singing_bowl_chime(fundamental=440.0, duration=4.5), 22.7, volume=0.55)
+
+    # Scene 5 (29.3s): The Mirror Finale -> Deep Resolution Chord (65.4Hz C2 + 196Hz G3 + 392Hz G4)
+    mix_track(master, deep_temple_gong(fundamental=65.4, duration=6.5), 29.3, volume=0.92)
+    mix_track(master, singing_bowl_chime(fundamental=196.0, duration=6.0), 29.5, volume=0.75)
+    mix_track(master, singing_bowl_chime(fundamental=392.0, duration=5.5), 29.7, volume=0.68)
+
+    mastered = master_audio(master, target_peak_db=-1.2, fade_in_s=1.0, fade_out_s=2.4)
+    out_wav = os.path.join(AUDIO_DIR, "issue-03-soundtrack.wav")
+    save_wav(mastered, out_wav)
+    return out_wav
+
 def mux_audio_into_video(video_path, audio_path):
     """
     Muxes the generated audio stream into the target video using Remotion's bundled ffmpeg.
@@ -488,7 +548,19 @@ def main():
     print("\n--- Muxing Audio into Issue 02 Packages ---")
     mux_audio_into_video("dist-packages/issue-02-the-meat-grinder/youtube/video/the-meat-grinder-needs-more-meat-shorts-1080x1920.mp4", wav_02)
     mux_audio_into_video("dist-packages/issue-02-the-meat-grinder/x/video/the-meat-grinder-needs-more-meat-reel-1080x1920.mp4", wav_02)
-    
+
+    # 5. Synthesize Issue 03 Soundtrack (36.00s) & Mux into Issue 03 Reel Packages
+    wav_03 = generate_issue03_soundtrack(duration=36.00)
+    print("\n--- Muxing Audio into Issue 03 Packages ---")
+    import shutil
+    os.makedirs("dist-packages/issue-03-war-on-drugs/x/video", exist_ok=True)
+    os.makedirs("dist-packages/issue-03-war-on-drugs/youtube/video", exist_ok=True)
+    if os.path.exists("out/war-on-drugs-reel.mp4"):
+        mux_audio_into_video("out/war-on-drugs-reel.mp4", wav_03)
+        shutil.copy2("out/war-on-drugs-reel.mp4", "dist-packages/issue-03-war-on-drugs/x/video/the-war-no-one-was-supposed-to-win-reel-1080x1920.mp4")
+        shutil.copy2("out/war-on-drugs-reel.mp4", "dist-packages/issue-03-war-on-drugs/youtube/video/the-war-no-one-was-supposed-to-win-shorts-1080x1920.mp4")
+        print("✅ Copied muxed Issue 03 Reel to dist-packages/issue-03-war-on-drugs/x/video/ and youtube/video/")
+
     print("\nAll videos upgraded with bells and subtle clock ticking!")
 
 if __name__ == "__main__":
