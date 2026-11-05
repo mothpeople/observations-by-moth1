@@ -7574,9 +7574,9 @@ export default function Dashboard() {
     accent="#f472b6"
     className="p-4 sm:p-6"
   >
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
-      <div>
-        <div className="flex flex-wrap items-center gap-2.5 mb-1">
+    <div className="pb-4 mb-5 border-b border-slate-800 space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <h2 className="text-base sm:text-xl font-bold text-[#e2e8f0]">
             UTM Campaign &amp; Funnel Tracker
           </h2>
@@ -7585,12 +7585,12 @@ export default function Dashboard() {
             100% AUTOMATED TELEMETRY
           </span>
         </div>
-        <p className="text-xs text-slate-400">
-          Inbound traffic from Instagram &amp; Facebook stories, X campaigns, 75%+ scroll retention, and Substack subscriptions.
-        </p>
       </div>
+      <p className="text-xs text-slate-400 max-w-3xl">
+        Inbound traffic from Instagram &amp; Facebook stories, X campaigns, 75%+ scroll retention, and Substack subscriptions.
+      </p>
 
-      <div className="flex flex-wrap items-center gap-2 text-xs font-mono shrink-0">
+      <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-mono">
         {(() => {
           const funnelBadges = [
             {
@@ -7656,8 +7656,13 @@ export default function Dashboard() {
           ].sort((a, b) => b.clicks - a.clicks || parseFloat(b.retention) - parseFloat(a.retention));
 
           return funnelBadges.map((b) => (
-            <span key={b.id} className={`px-2 py-1 ${b.bg} border ${b.border} ${b.text}`}>
-              {b.label}: <strong>{b.clicks}</strong> clicks • <strong>{b.retention}%</strong> 75% read • <strong>{b.subs}</strong> subs
+            <span key={b.id} className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${b.bg} border ${b.border} ${b.text}`}>
+              <span className="font-bold">{b.label}:</span>
+              <span><strong>{b.clicks}</strong> {b.clicks === 1 ? 'click' : 'clicks'}</span>
+              <span className="opacity-30">•</span>
+              <span><strong>{b.retention}%</strong> 75% read</span>
+              <span className="opacity-30">•</span>
+              <span><strong>{b.subs}</strong> {b.subs === 1 ? 'sub' : 'subs'}</span>
             </span>
           ));
         })()}
