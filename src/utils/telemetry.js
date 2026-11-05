@@ -490,23 +490,38 @@ export function loadChannelLedger() {
       };
     });
 
-    const igReels = (parsed.instagram?.reels || DEFAULT_CHANNEL_LEDGER.instagram.reels).map((r) => {
-      const cleanIssue = String(r.issueId || '01').padStart(2, '0');
+    const mergedRoutes = DEFAULT_CHANNEL_LEDGER.website.routes.map((defRoute) => {
+      const found = (parsed.website?.routes || []).find(
+        (r) => r.id === defRoute.id || r.path === defRoute.path
+      );
+      return found ? { ...defRoute, ...found } : defRoute;
+    });
+
+    const igReels = DEFAULT_CHANNEL_LEDGER.instagram.reels.map((defReel) => {
+      const found = (parsed.instagram?.reels || []).find(
+        (r) => r.id === defReel.id || r.issueId === defReel.issueId
+      );
+      const base = found ? { ...defReel, ...found } : defReel;
+      const cleanIssue = String(base.issueId || '01').padStart(2, '0');
       const savedKey = `saves_ig_issue_${cleanIssue}`;
       const savedVal = typeof window !== 'undefined' ? window.localStorage.getItem(savedKey) : null;
       return {
-        ...r,
-        saves: savedVal !== null ? (Number(savedVal) || 0) : (Number(r.saves) || 0),
+        ...base,
+        saves: savedVal !== null ? (Number(savedVal) || 0) : (Number(base.saves) || 0),
       };
     });
 
-    const fbReels = (parsed.facebook?.reels || DEFAULT_CHANNEL_LEDGER.facebook.reels).map((r) => {
-      const cleanIssue = String(r.issueId || '01').padStart(2, '0');
+    const fbReels = DEFAULT_CHANNEL_LEDGER.facebook.reels.map((defReel) => {
+      const found = (parsed.facebook?.reels || []).find(
+        (r) => r.id === defReel.id || r.issueId === defReel.issueId
+      );
+      const base = found ? { ...defReel, ...found } : defReel;
+      const cleanIssue = String(base.issueId || '01').padStart(2, '0');
       const savedKey = `saves_fb_issue_${cleanIssue}`;
       const savedVal = typeof window !== 'undefined' ? window.localStorage.getItem(savedKey) : null;
       return {
-        ...r,
-        saves: savedVal !== null ? (Number(savedVal) || 0) : (Number(r.saves) || 0),
+        ...base,
+        saves: savedVal !== null ? (Number(savedVal) || 0) : (Number(base.saves) || 0),
       };
     });
 
@@ -516,7 +531,7 @@ export function loadChannelLedger() {
       website: {
         ...DEFAULT_CHANNEL_LEDGER.website,
         ...(parsed.website || {}),
-        routes: parsed.website?.routes || DEFAULT_CHANNEL_LEDGER.website.routes,
+        routes: mergedRoutes,
       },
       instagram: {
         ...DEFAULT_CHANNEL_LEDGER.instagram,

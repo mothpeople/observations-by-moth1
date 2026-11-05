@@ -1623,14 +1623,14 @@ export default function Dashboard() {
   const [activeMacroSection, setActiveMacroSection] = useState('analytics'); // 'analytics' | 'funnel'
   const [analyticsTab, setAnalyticsTab] = useState('website'); // 'website' | 'reels' | 'substack' | 'social' | 'all'
   const [socialPlatformTab, setSocialPlatformTab] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'threads' | 'x' | 'youtube'
-  const [utmLinksFilterIssue, setUtmLinksFilterIssue] = useState('all'); // 'all' | '02' | '01' | 'home'
+  const [utmLinksFilterIssue, setUtmLinksFilterIssue] = useState('all'); // 'all' | '03' | '02' | '01' | 'home'
   const [utmLinksFilterPlatform, setUtmLinksFilterPlatform] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'x' | 'threads' | 'youtube'
 
   // Custom UTM Generator Form State
-  const [customUtmIssue, setCustomUtmIssue] = useState('the-meat-grinder');
+  const [customUtmIssue, setCustomUtmIssue] = useState('war-on-drugs');
   const [customUtmSource, setCustomUtmSource] = useState('instagram');
   const [customUtmMedium, setCustomUtmMedium] = useState('story');
-  const [customUtmCampaign, setCustomUtmCampaign] = useState('issue-02');
+  const [customUtmCampaign, setCustomUtmCampaign] = useState('issue-03');
 
   // Dark / Light Theme State with LocalStorage Persistence
   const [theme, setTheme] = useState(() => {
@@ -1880,6 +1880,17 @@ export default function Dashboard() {
       url: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
     },
     videos: [
+      {
+        id: 'yt-shorts-03',
+        videoId: '',
+        issueId: '03',
+        title: 'Issue 03: The War No One Was Supposed to Win',
+        views: 0,
+        likes: 0,
+        comments: 0,
+        url: 'https://www.youtube.com/@sivaraj.pragasm/shorts',
+        trackingUrl: 'https://observations.moth1.xyz/war-on-drugs?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-03',
+      },
       {
         id: 'yt-shorts-02',
         videoId: 'XiAPHfIshfY',
@@ -2152,7 +2163,7 @@ export default function Dashboard() {
 
         const serverFbReels = (serverJson?.facebook?.reels || []).map((r, i) => ({
           id: r.id || `fb-reel-${r.issueId || i}`,
-          text: r.text || r.title || (r.issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+          text: r.text || r.title || (r.issueId === '03' ? 'Issue 03 - The War No One Was Supposed to Win' : r.issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
           caption: r.caption || r.title || '',
           url: r.url || 'https://www.facebook.com/observationsbymoth1',
           views: Number(r.views) || 0,
@@ -5018,7 +5029,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {ledger.website.routes.map((route) => {
               const metrics = getRouteMetrics(route.path);
               const allRouteViews = ledger.website.routes.map((r) => getRouteMetrics(r.path).pageviews);
@@ -7270,7 +7281,9 @@ export default function Dashboard() {
             onChange={(e) => {
               const val = e.target.value;
               setCustomUtmIssue(val);
-              if (val === 'the-meat-grinder') {
+              if (val === 'war-on-drugs') {
+                setCustomUtmCampaign('issue-03');
+              } else if (val === 'the-meat-grinder') {
                 setCustomUtmCampaign('issue-02');
               } else if (val === 'watering-grass-in-a-thunderstorm') {
                 setCustomUtmCampaign('issue-01');
@@ -7280,6 +7293,7 @@ export default function Dashboard() {
             }}
             className="w-full bg-[#121316] border border-slate-700 px-2.5 py-1.5 text-xs font-mono text-[#e2e8f0] outline-none"
           >
+            <option value="war-on-drugs">Issue #03: The War No One Was Supposed to Win</option>
             <option value="the-meat-grinder">Issue #02: The Meat Grinder Needs More Meat</option>
             <option value="watering-grass-in-a-thunderstorm">Issue #01: Watering Grass in a Thunderstorm</option>
             <option value="">Home: Main Publication Page</option>
