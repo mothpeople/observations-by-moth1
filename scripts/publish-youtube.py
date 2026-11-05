@@ -257,11 +257,31 @@ def upload_short(issue_key, privacy_status="public"):
         else:
             print(f"⚠️ Note on playlist insertion: {pl_res.status_code} - {pl_res.text}")
         
+    # 5. Upload Custom Safe-Centered Thumbnail
+    thumb_path = os.path.join(data["dir"], "thumbnails", f"issue-{issue_key}-thumbnail-1280x720.png")
+    if os.path.exists(thumb_path):
+        print(f"\nUploading custom thumbnail: {thumb_path}...")
+        with open(thumb_path, "rb") as tf:
+            thumb_headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "image/png"
+            }
+            th_res = requests.post(
+                f"https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId={video_id}",
+                headers=thumb_headers,
+                data=tf.read(),
+                timeout=15
+            )
+            if th_res.status_code == 200:
+                print("✅ Custom thumbnail uploaded successfully to YouTube!")
+            else:
+                print(f"⚠️ Note on thumbnail upload: {th_res.status_code} - {th_res.text[:200]}")
+
     return video_id, shorts_url
 
 def main():
     parser = argparse.ArgumentParser(description="Publish YouTube Shorts for Observations by Moth1")
-    parser.add_argument("--issue", required=True, choices=["01", "02", "1", "2"], help="Issue number (01 or 02)")
+    parser.add_argument("--issue", required=True, choices=["01", "02", "03", "1", "2", "3"], help="Issue number (01, 02, or 03)")
     parser.add_argument("--privacy", default="public", choices=["public", "unlisted", "private"], help="Video privacy status (default: public)")
     
     args = parser.parse_args()
