@@ -25,7 +25,10 @@ export function isObservationsContent(text = '', hashtags = [], filterTag = '#ob
   if (normalizedTag && haystack.includes(normalizedTag)) return true;
   if (
     Array.isArray(hashtags) &&
-    hashtags.some((h) => String(h).toLowerCase().replace(/^#/, '') === tagWithoutHash)
+    hashtags.some((h) => {
+      const clean = String(h).toLowerCase().replace(/^#/, '');
+      return clean === tagWithoutHash || clean === 'observationsbymoth1' || clean === 'observations';
+    })
   ) {
     return true;
   }
@@ -34,13 +37,53 @@ export function isObservationsContent(text = '', hashtags = [], filterTag = '#ob
     haystack.includes('#observationsbymoth1') ||
     haystack.includes('observationsbymoth1') ||
     haystack.includes('#observations') ||
+    haystack.includes('observations') ||
+    haystack.includes('moth1') ||
+    haystack.includes('moth 1') ||
     haystack.includes('observations.moth1.xyz') ||
     haystack.includes('observations by moth1') ||
+    // Issue 03 keywords
+    haystack.includes('war-on-drugs') ||
+    haystack.includes('war on drugs') ||
+    haystack.includes('the war no one was supposed to win') ||
+    haystack.includes('the-war-no-one-was-supposed-to-win') ||
+    haystack.includes('supposed to win') ||
+    haystack.includes('prohibition') ||
+    haystack.includes('portugal') ||
+    haystack.includes('rat park') ||
+    haystack.includes('microdose') ||
+    haystack.includes('trillion-dollar') ||
+    haystack.includes('trillion dollar') ||
+    haystack.includes('phantom') ||
+    haystack.includes('law 30/2000') ||
+    haystack.includes('issue-03') ||
+    haystack.includes('issue 03') ||
+    haystack.includes('issue 3') ||
+    haystack.includes('issue #03') ||
+    haystack.includes('issue #3') ||
+    // Issue 02 keywords
     haystack.includes('the-meat-grinder') ||
     haystack.includes('meat grinder') ||
+    haystack.includes('billionaires panic') ||
+    haystack.includes('venn diagram') ||
+    haystack.includes('issue-02') ||
+    haystack.includes('issue 02') ||
+    haystack.includes('issue 2') ||
+    haystack.includes('issue #02') ||
+    haystack.includes('issue #2') ||
+    // Issue 01 keywords
     haystack.includes('watering-grass-in-a-thunderstorm') ||
     haystack.includes('watering grass') ||
-    haystack.includes('bread and circus')
+    haystack.includes('watering-grass') ||
+    haystack.includes('thunderstorm') ||
+    haystack.includes('bread and circus') ||
+    haystack.includes('sidequest') ||
+    haystack.includes('geriatric') ||
+    haystack.includes('issue-01') ||
+    haystack.includes('issue 01') ||
+    haystack.includes('issue 1') ||
+    haystack.includes('issue #01') ||
+    haystack.includes('issue #1')
   );
 }
 
@@ -269,6 +312,21 @@ export function normalizeFacebookItem(item, idx = 0) {
   let text = caption;
   if (!text || /^Facebook Post #\d+/i.test(text)) {
     if (
+      lowerCaption.includes('war on drugs') ||
+      lowerCaption.includes('war-on-drugs') ||
+      lowerCaption.includes('the war no one was supposed to win') ||
+      lowerCaption.includes('supposed to win') ||
+      lowerCaption.includes('prohibition') ||
+      lowerCaption.includes('portugal') ||
+      lowerCaption.includes('rat park') ||
+      lowerCaption.includes('issue-03') ||
+      lowerCaption.includes('issue 03') ||
+      lowerCaption.includes('issue #03') ||
+      lowerCaption.includes('issue 3') ||
+      lowerCaption.includes('issue #3')
+    ) {
+      text = 'The War No One Was Supposed to Win...';
+    } else if (
       lowerCaption.includes('meat grinder') ||
       item.url?.includes('/reel') ||
       item.type === 'video'
@@ -661,6 +719,18 @@ export function isFacebookVideoReel(rawItem, item) {
 
   // Known reel keyword match is ALWAYS accepted
   const matchesKnownReelCaption =
+    lowerText.includes('war on drugs') ||
+    lowerText.includes('war-on-drugs') ||
+    lowerText.includes('the war no one was supposed to win') ||
+    lowerText.includes('supposed to win') ||
+    lowerText.includes('prohibition') ||
+    lowerText.includes('portugal') ||
+    lowerText.includes('rat park') ||
+    lowerText.includes('issue-03') ||
+    lowerText.includes('issue 03') ||
+    lowerText.includes('issue #03') ||
+    lowerText.includes('issue 3') ||
+    lowerText.includes('issue #3') ||
     lowerText.includes('meat grinder') ||
     lowerText.includes('watering grass') ||
     lowerText.includes('observations by moth1') ||
@@ -669,9 +739,13 @@ export function isFacebookVideoReel(rawItem, item) {
     lowerText.includes('issue-02') ||
     lowerText.includes('issue 02') ||
     lowerText.includes('issue #02') ||
+    lowerText.includes('issue 2') ||
+    lowerText.includes('issue #2') ||
     lowerText.includes('issue-01') ||
     lowerText.includes('issue 01') ||
-    lowerText.includes('issue #01');
+    lowerText.includes('issue #01') ||
+    lowerText.includes('issue 1') ||
+    lowerText.includes('issue #1');
 
   if (matchesKnownReelCaption) {
     return true;
@@ -718,14 +792,34 @@ export function sortFacebookReelsForDisplay(items) {
     const textA = `${a.text || ''} ${a.caption || ''} ${a.url || ''}`.toLowerCase();
     const textB = `${b.text || ''} ${b.caption || ''} ${b.url || ''}`.toLowerCase();
 
-    // Row 1: Issue 02 ("The Meat Grinder Needs More Meat...") -> Score 2
-    // Row 2: Issue 01 ("Observations by Moth1 is a new story...") -> Score 1
+    // Row 1: Issue 03 ("The War No One Was Supposed to Win...") -> Score 3
+    // Row 2: Issue 02 ("The Meat Grinder Needs More Meat...") -> Score 2
+    // Row 3: Issue 01 ("Observations by Moth1 is a new story...") -> Score 1
     const getScore = (text) => {
       if (
+        text.includes('war on drugs') ||
+        text.includes('war-on-drugs') ||
+        text.includes('the war no one was supposed to win') ||
+        text.includes('supposed to win') ||
+        text.includes('prohibition') ||
+        text.includes('portugal') ||
+        text.includes('rat park') ||
+        text.includes('issue-03') ||
+        text.includes('issue 03') ||
+        text.includes('issue #03') ||
+        text.includes('issue 3') ||
+        text.includes('issue #3')
+      ) {
+        return 3;
+      }
+      if (
         text.includes('meat grinder') ||
+        text.includes('the-meat-grinder') ||
         text.includes('issue-02') ||
         text.includes('issue 02') ||
         text.includes('issue #02') ||
+        text.includes('issue 2') ||
+        text.includes('issue #2') ||
         text.includes('billionaires panic')
       ) {
         return 2;
@@ -733,10 +827,13 @@ export function sortFacebookReelsForDisplay(items) {
       if (
         text.includes('observations by moth1 is a new story') ||
         text.includes('watering grass') ||
+        text.includes('watering-grass') ||
         text.includes('thunderstorm') ||
         text.includes('issue-01') ||
         text.includes('issue 01') ||
-        text.includes('issue #01')
+        text.includes('issue #01') ||
+        text.includes('issue 1') ||
+        text.includes('issue #1')
       ) {
         return 1;
       }
@@ -747,7 +844,7 @@ export function sortFacebookReelsForDisplay(items) {
     const scoreB = getScore(textB);
 
     if (scoreA !== scoreB) {
-      return scoreB - scoreA; // Issue 02 (score 2) appears in Row 1, Issue 01 (score 1) in Row 2
+      return scoreB - scoreA; // Issue 03 (score 3) in Row 1, Issue 02 (score 2) in Row 2, Issue 01 (score 1) in Row 3
     }
 
     const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
@@ -1466,33 +1563,71 @@ export default async function handler(req, res) {
       isFacebookVideoReel(apifyFacebook.items[i], item)
     );
 
-    // Sort: Row 1 = Issue 02 ("The Meat Grinder Needs More Meat..."), Row 2 = Issue 01 ("Observations by Moth1 is a new story...")
+    // Sort: Row 1 = Issue 03 ("The War No One Was Supposed to Win..."), Row 2 = Issue 02 ("The Meat Grinder Needs More Meat..."), Row 3 = Issue 01 ("Observations by Moth1 is a new story...")
     const facebookItems = sortFacebookReelsForDisplay(filteredFacebookItems);
+
+    const fbIssue03Item =
+      facebookItems.find((i) => {
+        const t = `${i.text || ''} ${i.caption || ''}`.toLowerCase();
+        return (
+          t.includes('war on drugs') ||
+          t.includes('war-on-drugs') ||
+          t.includes('the war no one was supposed to win') ||
+          t.includes('supposed to win') ||
+          t.includes('prohibition') ||
+          t.includes('portugal') ||
+          t.includes('rat park') ||
+          t.includes('issue-03') ||
+          t.includes('issue 03') ||
+          t.includes('issue #03') ||
+          t.includes('issue 3') ||
+          t.includes('issue #3')
+        );
+      }) || (facebookItems.length >= 1 ? facebookItems[0] : null);
 
     const fbIssue02Item =
       facebookItems.find((i) => {
         const t = `${i.text || ''} ${i.caption || ''}`.toLowerCase();
         return (
           t.includes('meat grinder') ||
+          t.includes('the-meat-grinder') ||
           t.includes('billionaires panic') ||
           t.includes('issue-02') ||
-          t.includes('issue 02')
+          t.includes('issue 02') ||
+          t.includes('issue #02') ||
+          t.includes('issue 2') ||
+          t.includes('issue #2')
         );
-      }) || (facebookItems.length >= 1 ? facebookItems[0] : null);
+      }) || (facebookItems.length >= 2 ? facebookItems[1] : null);
 
     const fbIssue01Item =
       facebookItems.find((i) => {
         const t = `${i.text || ''} ${i.caption || ''}`.toLowerCase();
         return (
           t.includes('watering grass') ||
+          t.includes('watering-grass') ||
           t.includes('new story') ||
           t.includes('thunderstorm') ||
           t.includes('issue-01') ||
-          t.includes('issue 01')
+          t.includes('issue 01') ||
+          t.includes('issue #01') ||
+          t.includes('issue 1') ||
+          t.includes('issue #1')
         );
-      }) || (facebookItems.length >= 2 ? facebookItems[1] : null);
+      }) || (facebookItems.length >= 3 ? facebookItems[2] : null);
 
     const facebookReels = [
+      {
+        id: 'fb-reel-03',
+        issueId: '03',
+        title: 'The War No One Was Supposed to Win',
+        views: Number(fbIssue03Item?.views) || 0,
+        likes: Number(fbIssue03Item?.likes) || 0,
+        comments: Number(fbIssue03Item?.comments) || 0,
+        shares: Number(fbIssue03Item?.shares) || 0,
+        status: fbIssue03Item ? 'Published' : 'Ready to Post',
+        url: fbIssue03Item?.url || 'https://www.facebook.com/observationsbymoth1',
+      },
       {
         id: 'fb-reel-02',
         issueId: '02',

@@ -73,6 +73,33 @@ ISSUE_MAP = {
             "Explore the full interactive essay with live demographic collapse simulators & empirical ledgers:\n"
             "👉 https://observations.moth1.xyz/the-meat-grinder?utm_source=youtube&utm_medium=shorts_comment&utm_campaign=issue-02"
         )
+    },
+    "03": {
+        "slug": "war-on-drugs",
+        "dir": "dist-packages/issue-03-war-on-drugs/youtube",
+        "video": "dist-packages/issue-03-war-on-drugs/youtube/video/the-war-no-one-was-supposed-to-win-shorts-1080x1920.mp4",
+        "title": "Issue 03: The War No One Was Supposed to Win",
+        "tags": [
+            "war on drugs", "prohibition", "harm reduction", "fentanyl", "cartels",
+            "criminal justice", "inequality", "psychiatry", "visual essay", "scrollytelling",
+            "observations by moth1", "economics", "portugal drug decriminalization"
+        ],
+        "description": (
+            "Billionaires microdose in high-rise tech boardrooms to unlock creative clarity.\n\n"
+            "Working-class kids rot in solitary cages for self-medicating systemic isolation.\n\n"
+            "Meanwhile, fifty years of prohibition incinerated over a trillion dollars, yet illicit narcotics are 81% cheaper, 190% more potent, and more accessible than at any point in modern history. The deadliest drug of all sits taxed, subsidized, and celebrated on the top shelf.\n\n"
+            "This was never a public health crusade. It is a class contradiction and an enforcement economy designed to never end.\n\n"
+            "👉 Experience the full interactive visual essay:\n"
+            "https://observations.moth1.xyz/war-on-drugs?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-03\n\n"
+            "Subscribe to Observations by Moth1 on Substack for monthly long-form visual essays:\n"
+            "https://observationsbymoth1.substack.com/\n\n"
+            "#WarOnDrugs #Prohibition #ClassContradiction #Economics #CriminalJustice #ObservationsByMoth1 #Shorts #Animation #Art"
+        ),
+        "pinned_comment": (
+            "“A fifty-year war with zero ground won, a trillion dollars incinerated, and the product cheaper and stronger than the day the war began. In any other domain, that is institutional malpractice. Here, it is just annual budget justification.”\n\n"
+            "Read the complete interactive scrollytelling essay with live audio & animated sumi-e loops:\n"
+            "👉 https://observations.moth1.xyz/war-on-drugs?utm_source=youtube&utm_medium=shorts_comment&utm_campaign=issue-03"
+        )
     }
 }
 

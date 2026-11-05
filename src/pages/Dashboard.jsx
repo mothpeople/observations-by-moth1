@@ -240,9 +240,10 @@ function matchesObservationsFilter(item, filterTag = '#observations') {
   if (normalizedTag && haystack.includes(normalizedTag)) return true;
   if (
     Array.isArray(item.hashtags) &&
-    item.hashtags.some(
-      (h) => String(h).toLowerCase().replace(/^#/, '') === tagWithoutHash
-    )
+    item.hashtags.some((h) => {
+      const clean = String(h).toLowerCase().replace(/^#/, '');
+      return clean === tagWithoutHash || clean === 'observationsbymoth1' || clean === 'observations';
+    })
   ) {
     return true;
   }
@@ -251,13 +252,53 @@ function matchesObservationsFilter(item, filterTag = '#observations') {
     haystack.includes('#observationsbymoth1') ||
     haystack.includes('observationsbymoth1') ||
     haystack.includes('#observations') ||
+    haystack.includes('observations') ||
+    haystack.includes('moth1') ||
+    haystack.includes('moth 1') ||
     haystack.includes('observations.moth1.xyz') ||
     haystack.includes('observations by moth1') ||
+    // Issue 03 keywords
+    haystack.includes('war-on-drugs') ||
+    haystack.includes('war on drugs') ||
+    haystack.includes('the war no one was supposed to win') ||
+    haystack.includes('the-war-no-one-was-supposed-to-win') ||
+    haystack.includes('supposed to win') ||
+    haystack.includes('prohibition') ||
+    haystack.includes('portugal') ||
+    haystack.includes('rat park') ||
+    haystack.includes('microdose') ||
+    haystack.includes('trillion-dollar') ||
+    haystack.includes('trillion dollar') ||
+    haystack.includes('phantom') ||
+    haystack.includes('law 30/2000') ||
+    haystack.includes('issue-03') ||
+    haystack.includes('issue 03') ||
+    haystack.includes('issue 3') ||
+    haystack.includes('issue #03') ||
+    haystack.includes('issue #3') ||
+    // Issue 02 keywords
     haystack.includes('the-meat-grinder') ||
     haystack.includes('meat grinder') ||
+    haystack.includes('billionaires panic') ||
+    haystack.includes('venn diagram') ||
+    haystack.includes('issue-02') ||
+    haystack.includes('issue 02') ||
+    haystack.includes('issue 2') ||
+    haystack.includes('issue #02') ||
+    haystack.includes('issue #2') ||
+    // Issue 01 keywords
     haystack.includes('watering-grass-in-a-thunderstorm') ||
     haystack.includes('watering grass') ||
-    haystack.includes('bread and circus')
+    haystack.includes('watering-grass') ||
+    haystack.includes('thunderstorm') ||
+    haystack.includes('bread and circus') ||
+    haystack.includes('sidequest') ||
+    haystack.includes('geriatric') ||
+    haystack.includes('issue-01') ||
+    haystack.includes('issue 01') ||
+    haystack.includes('issue 1') ||
+    haystack.includes('issue #01') ||
+    haystack.includes('issue #1')
   );
 }
 
@@ -529,6 +570,21 @@ function normalizeFacebookItem(item, idx = 0) {
   let text = caption;
   if (!text || /^Facebook Post #\d+/i.test(text)) {
     if (
+      lowerCaption.includes('war on drugs') ||
+      lowerCaption.includes('war-on-drugs') ||
+      lowerCaption.includes('the war no one was supposed to win') ||
+      lowerCaption.includes('supposed to win') ||
+      lowerCaption.includes('prohibition') ||
+      lowerCaption.includes('portugal') ||
+      lowerCaption.includes('rat park') ||
+      lowerCaption.includes('issue-03') ||
+      lowerCaption.includes('issue 03') ||
+      lowerCaption.includes('issue #03') ||
+      lowerCaption.includes('issue 3') ||
+      lowerCaption.includes('issue #3')
+    ) {
+      text = 'The War No One Was Supposed to Win...';
+    } else if (
       lowerCaption.includes('meat grinder') ||
       item.url?.includes('/reel') ||
       item.type === 'video'
@@ -931,6 +987,18 @@ function isFacebookVideoReel(rawItem, item) {
 
   // Known reel keyword match is ALWAYS accepted
   const matchesKnownReelCaption =
+    lowerText.includes('war on drugs') ||
+    lowerText.includes('war-on-drugs') ||
+    lowerText.includes('the war no one was supposed to win') ||
+    lowerText.includes('supposed to win') ||
+    lowerText.includes('prohibition') ||
+    lowerText.includes('portugal') ||
+    lowerText.includes('rat park') ||
+    lowerText.includes('issue-03') ||
+    lowerText.includes('issue 03') ||
+    lowerText.includes('issue #03') ||
+    lowerText.includes('issue 3') ||
+    lowerText.includes('issue #3') ||
     lowerText.includes('meat grinder') ||
     lowerText.includes('watering grass') ||
     lowerText.includes('observations by moth1') ||
@@ -939,9 +1007,13 @@ function isFacebookVideoReel(rawItem, item) {
     lowerText.includes('issue-02') ||
     lowerText.includes('issue 02') ||
     lowerText.includes('issue #02') ||
+    lowerText.includes('issue 2') ||
+    lowerText.includes('issue #2') ||
     lowerText.includes('issue-01') ||
     lowerText.includes('issue 01') ||
-    lowerText.includes('issue #01');
+    lowerText.includes('issue #01') ||
+    lowerText.includes('issue 1') ||
+    lowerText.includes('issue #1');
 
   if (matchesKnownReelCaption) {
     return true;
@@ -2461,14 +2533,32 @@ export default function Dashboard() {
             );
 
             const updatedFbReels = next.facebook.reels.map((reel) => {
-              // Priority 1: Case-insensitive keyword check in caption / text
+              // Priority 1: Match by issueId helper or case-insensitive keyword check
               const matchedItems = fbCandidates.filter((item) => {
+                if (matchItemToIssueId(item) === reel.issueId) return true;
                 const text = `${item.caption || ''} ${item.text || ''} ${item.title || ''} ${item.url || ''}`.toLowerCase();
                 const tags = Array.isArray(item.hashtags)
                   ? item.hashtags.map((h) => String(h).toLowerCase()).join(' ')
                   : '';
                 const haystack = `${text} ${tags}`;
 
+                if (reel.issueId === '03') {
+                  return (
+                    haystack.includes('war on drugs') ||
+                    haystack.includes('war-on-drugs') ||
+                    haystack.includes('the-war-no-one-was-supposed-to-win') ||
+                    haystack.includes('supposed to win') ||
+                    haystack.includes('prohibition') ||
+                    haystack.includes('portugal') ||
+                    haystack.includes('rat park') ||
+                    haystack.includes('microdose') ||
+                    haystack.includes('issue-03') ||
+                    haystack.includes('issue 03') ||
+                    haystack.includes('issue 3') ||
+                    haystack.includes('issue #03') ||
+                    haystack.includes('issue #3')
+                  );
+                }
                 if (reel.issueId === '02') {
                   return (
                     haystack.includes('meat grinder') ||
@@ -2477,6 +2567,7 @@ export default function Dashboard() {
                     haystack.includes('issue 02') ||
                     haystack.includes('issue 2') ||
                     haystack.includes('issue #02') ||
+                    haystack.includes('issue #2') ||
                     haystack.includes('billionaires panic') ||
                     haystack.includes('venn diagram')
                   );
@@ -2490,6 +2581,7 @@ export default function Dashboard() {
                     haystack.includes('issue 01') ||
                     haystack.includes('issue 1') ||
                     haystack.includes('issue #01') ||
+                    haystack.includes('issue #1') ||
                     haystack.includes('bread and circus') ||
                     haystack.includes('sidequest')
                   );
@@ -2497,14 +2589,15 @@ export default function Dashboard() {
                 return false;
               });
 
-              // Priority 2: Direct chronological mapping
-              // Chronological item 0 (earliest) -> Issue #01, item 1 (subsequent) -> Issue #02
+              // Priority 2: Direct chronological mapping if no keywords matched
               let effectiveMatches = matchedItems;
               if (effectiveMatches.length === 0) {
-                if (reel.issueId === '01' && sortedFbItems.length >= 1) {
-                  effectiveMatches = [sortedFbItems[0]];
+                if (reel.issueId === '03' && sortedFbItems.length >= 3) {
+                  effectiveMatches = [sortedFbItems[2]];
                 } else if (reel.issueId === '02' && sortedFbItems.length >= 2) {
                   effectiveMatches = [sortedFbItems[1]];
+                } else if (reel.issueId === '01' && sortedFbItems.length >= 1) {
+                  effectiveMatches = [sortedFbItems[0]];
                 }
               }
 
@@ -3696,10 +3789,11 @@ export default function Dashboard() {
 
   // X (Twitter) (apidojo/tweet-scraper + thread aggregator + campaign telemetry)
   const allXThreads = aggregateXThreads(xState.items || []);
+  const matchedXThreads = allXThreads.filter((thread) =>
+    matchesObservationsFilter(thread, activeFilterTag)
+  );
   const visibleXItems = filterOnlyObservations
-    ? allXThreads.filter((thread) =>
-        matchesObservationsFilter(thread, activeFilterTag)
-      )
+    ? (matchedXThreads.length > 0 ? matchedXThreads : allXThreads)
     : allXThreads;
 
   const xScrapedViews = visibleXItems.reduce((sum, i) => sum + (i.views || 0), 0);
@@ -5716,8 +5810,113 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Cross-Channel Comparison Grid: Issue #02 vs Issue #01 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Cross-Channel Comparison Grid: Issue #03 vs Issue #02 vs Issue #01 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Issue #03: The War No One Was Supposed to Win Comparison Card */}
+          <div className="p-4 bg-[#0b0d10] border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div>
+                <div className="font-mono text-[10px] text-[#fbbf24] font-bold uppercase tracking-wider">
+                  Issue #03
+                </div>
+                <div className="font-mono text-sm font-bold text-[#e2e8f0]">
+                  The War No One Was Supposed to Win
+                </div>
+              </div>
+              <span className="text-[10px] font-mono text-slate-400">
+                9:16 Video Comparison
+              </span>
+            </div>
+
+            {(() => {
+              const fbItem = visibleFacebookItems.find((i) => matchItemToIssueId(i) === '03');
+              const igItem = visibleInstagramItems.find((i) => matchItemToIssueId(i) === '03');
+              const ytItem = ytVideoList.find((i) => i.issueId === '03') || {
+                videoId: '',
+                views: 0,
+                likes: 0,
+                comments: 0,
+                url: 'https://observations.moth1.xyz/war-on-drugs',
+              };
+
+              const platforms03 = [
+                {
+                  id: 'fb',
+                  name: 'Facebook Reel',
+                  color: '#60a5fa',
+                  views: fbItem?.views || 0,
+                  likes: fbItem?.likes || 0,
+                  comments: fbItem?.comments || 0,
+                  url: fbItem?.url,
+                  linkText: 'Watch on FB ↗',
+                },
+                {
+                  id: 'yt',
+                  name: 'YouTube Short',
+                  color: '#ef4444',
+                  views: Number(ytItem?.views) || 0,
+                  likes: Number(ytItem?.likes) || 0,
+                  comments: Number(ytItem?.comments) || 0,
+                  url: ytItem?.url,
+                  linkText: 'Watch Short ↗',
+                },
+                {
+                  id: 'ig',
+                  name: 'Instagram Reel',
+                  color: '#fda4af',
+                  views: igItem?.views || 0,
+                  likes: igItem?.likes || 0,
+                  comments: igItem?.comments || 0,
+                  url: igItem?.url,
+                  linkText: 'Watch on IG ↗',
+                },
+              ].sort((a, b) => b.views - a.views);
+
+              const maxV = Math.max(1, ...platforms03.map((p) => p.views));
+
+              return (
+                <div className="space-y-3">
+                  {platforms03.map((p, idx) => (
+                    <div
+                      key={p.id}
+                      className={`space-y-1 ${idx > 0 ? 'pt-2 border-t border-slate-800/60' : ''}`}
+                    >
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="font-bold flex items-center gap-1.5" style={{ color: p.color }}>
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
+                          {p.name}
+                        </span>
+                        <span className="text-white font-bold">{p.views.toLocaleString()} views</span>
+                      </div>
+                      <div className="h-2 w-full bg-slate-900 overflow-hidden">
+                        <div
+                          className="h-full transition-all duration-500"
+                          style={{
+                            backgroundColor: p.color,
+                            width: `${Math.min(100, Math.max(2, (p.views / maxV) * 100))}%`,
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                        <span>Likes: {p.likes} • Comments: {p.comments}</span>
+                        {p.url && (
+                          <a
+                            href={p.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: p.color }}
+                            className="hover:underline"
+                          >
+                            {p.linkText}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
           {/* Issue #02: The Meat Grinder Needs More Meat Comparison Card */}
           <div className="p-4 bg-[#0b0d10] border border-slate-800 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -6314,7 +6513,7 @@ export default function Dashboard() {
                         </span>
                       </div>
                       <div className="space-y-2 font-mono text-xs">
-                        {visibleInstagramItems.slice(0, 2).map((item, idx) => {
+                        {visibleInstagramItems.slice(0, 3).map((item, idx) => {
                           const maxViews = Math.max(1, ...visibleInstagramItems.map((i) => i.views || 0));
                           const pct = Math.round(((item.views || 0) / maxViews) * 100);
                           return (
@@ -6456,7 +6655,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="space-y-2 font-mono text-xs">
-                    {visibleFacebookItems.slice(0, 2).map((item, idx) => {
+                    {visibleFacebookItems.slice(0, 3).map((item, idx) => {
                       const maxViews = Math.max(1, ...visibleFacebookItems.map((i) => i.views || 0));
                       const pct = Math.round(((item.views || 0) / maxViews) * 100);
                       return (
@@ -6668,7 +6867,7 @@ export default function Dashboard() {
                     <>
                       <div>
                         Scraped <strong className="text-white">{allXThreads.length}</strong> X tweets/threads from @{targets.xHandle || 'Moth1NFTs'}, but none contain{' '}
-                        <code className="text-[#86efac]">#ObservationsByMoth1</code>.
+                        <code className="text-[#86efac]">{activeFilterTag}</code>.
                       </div>
                       <button
                         type="button"
@@ -6692,64 +6891,80 @@ export default function Dashboard() {
                   )}
                 </div>
               ) : (
-                <div className="overflow-x-auto mb-4 max-h-[240px] -mx-1 sm:mx-0">
-                  <table className="w-full text-left border-collapse min-w-[480px]">
-                    <thead>
-                      <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
-                        <th className="py-2 pr-3">Post / Thread</th>
-                        <th className="py-2 px-2">Impressions</th>
-                        <th className="py-2 px-2">Likes</th>
-                        <th className="py-2 px-2">Reposts</th>
-                        <th className="py-2 px-2">Replies</th>
-                        <th className="py-2 pl-2 text-right">Link</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/70 text-xs">
-                      {visibleXItems.slice(0, 15).map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-900/40">
-                          <td className="py-2.5 pr-3 max-w-[240px] truncate text-[#e2e8f0]">
-                            <div className="flex items-center gap-1.5">
-                              {item.isThread && (
-                                <span
-                                  className="px-1.5 py-0.5 border border-white/40 bg-white/10 text-[9px] font-mono text-white font-bold shrink-0"
-                                  title={`${item.tweetCount} tweets in this thread`}
-                                >
-                                  Thread ({item.tweetCount})
-                                </span>
-                              )}
-                              <span className="truncate" title={item.openingText || item.text}>
-                                {item.openingText || item.text}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="py-2.5 px-2 font-mono font-bold text-white">
-                            {item.views.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#fda4af]">
-                            {item.likes.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#86efac]">
-                            {item.retweets.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
-                            {item.replies.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 pl-2 text-right">
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-[11px] text-[#67e8f9] hover:underline"
-                              title="Open Thread on X"
-                            >
-                              ↗
-                            </a>
-                          </td>
+                <>
+                  {filterOnlyObservations && matchedXThreads.length === 0 && allXThreads.length > 0 && (
+                    <div className="mb-3 px-3 py-2 bg-[#0b0d10] border border-amber-500/40 flex items-center justify-between font-mono text-[11px] text-amber-300">
+                      <span>
+                        Showing all {allXThreads.length} dispatches from @{targets.xHandle || 'Moth1NFTs'} (no dispatches explicitly tagged with {activeFilterTag}).
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setFilterOnlyObservations(false)}
+                        className="underline hover:text-white cursor-pointer"
+                      >
+                        Disable filter
+                      </button>
+                    </div>
+                  )}
+                  <div className="overflow-x-auto mb-4 max-h-[240px] -mx-1 sm:mx-0">
+                    <table className="w-full text-left border-collapse min-w-[480px]">
+                      <thead>
+                        <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
+                          <th className="py-2 pr-3">Post / Thread</th>
+                          <th className="py-2 px-2">Impressions</th>
+                          <th className="py-2 px-2">Likes</th>
+                          <th className="py-2 px-2">Reposts</th>
+                          <th className="py-2 px-2">Replies</th>
+                          <th className="py-2 pl-2 text-right">Link</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/70 text-xs">
+                        {visibleXItems.slice(0, 15).map((item) => (
+                          <tr key={item.id} className="hover:bg-slate-900/40">
+                            <td className="py-2.5 pr-3 max-w-[240px] truncate text-[#e2e8f0]">
+                              <div className="flex items-center gap-1.5">
+                                {item.isThread && (
+                                  <span
+                                    className="px-1.5 py-0.5 border border-white/40 bg-white/10 text-[9px] font-mono text-white font-bold shrink-0"
+                                    title={`${item.tweetCount} tweets in this thread`}
+                                  >
+                                    Thread ({item.tweetCount})
+                                  </span>
+                                )}
+                                <span className="truncate" title={item.openingText || item.text}>
+                                  {item.openingText || item.text}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-2 font-mono font-bold text-white">
+                              {item.views.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#fda4af]">
+                              {item.likes.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#86efac]">
+                              {item.retweets.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
+                              {item.replies.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 pl-2 text-right">
+                              <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-[11px] text-[#67e8f9] hover:underline"
+                                title="Open Thread on X"
+                              >
+                                ↗
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </CyberPanel>
           )}
