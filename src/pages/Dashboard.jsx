@@ -234,6 +234,9 @@ const ACTORS = {
 };
 
 function matchesObservationsFilter(item, filterTag = '#ObservationsByMoth1') {
+  if (!item) return false;
+  if (matchItemToIssueId(item)) return true;
+
   const rawText = `${item.caption || ''} ${item.text || ''} ${item.combinedText || ''}`.toLowerCase();
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
   const rawHashtags = (hashtags.map((h) => String(h).toLowerCase()).join(' ')).toLowerCase();
@@ -310,6 +313,9 @@ function matchItemToIssueId(item) {
     haystack.includes('law 30/2000') ||
     haystack.includes('microdose') ||
     haystack.includes('overdose') ||
+    haystack.includes('trial reel') ||
+    haystack.includes('trial-reel') ||
+    haystack.includes('trial') ||
     haystack.includes('issue-03') ||
     haystack.includes('issue 03') ||
     haystack.includes('issue 3') ||
@@ -1258,6 +1264,7 @@ async function fetchDirectActorDataset(actorIdOrList, token) {
     // 3. Fallback: If no items found via actor endpoint, query account-wide actor-runs & actor-tasks (captures task runs or alternative actor runs configured on Apify)
     const isFb = targetIds.some((id) => id.includes('facebook'));
     const isX = targetIds.some((id) => id.includes('twitter') || id.includes('tweet') || id.includes('x'));
+    const isIg = targetIds.some((id) => id.includes('instagram') || id.includes('insta'));
     try {
       const allRunsRes = await fetch(
         `https://api.apify.com/v2/actor-runs?desc=true&limit=40&token=${encodeURIComponent(token)}`
@@ -1268,26 +1275,36 @@ async function fetchDirectActorDataset(actorIdOrList, token) {
         const matchingRuns = runsList.filter((r) => {
           if (r.status !== 'SUCCEEDED' || !r.defaultDatasetId) return false;
           const runAct = String(r.actId || r.options?.actId || '').toLowerCase();
+          const runName = String(r.name || r.title || '').toLowerCase();
+          const target = `${runAct} ${runName}`;
+
           if (isFb) {
-            if (actorId.includes('page')) {
-              return runAct.includes('pages-scraper') || runAct.includes('page');
-            }
-            return (runAct.includes('posts-scraper') || runAct.includes('reels')) ||
-              (runAct.includes('facebook') && !runAct.includes('pages-scraper'));
+            return (
+              target.includes('facebook') ||
+              target.includes('posts-scraper') ||
+              target.includes('pages-scraper') ||
+              target.includes('reels')
+            );
           }
           if (isX) {
-            if (actorId.includes('user') || actorId.includes('profile')) {
-              return runAct.includes('user') || runAct.includes('profile');
-            }
             return (
-              runAct.includes('twitter') ||
-              runAct.includes('tweet') ||
-              runAct.includes('x.com') ||
-              runAct.includes('apidojo') ||
+              target.includes('twitter') ||
+              target.includes('tweet') ||
+              target.includes('x.com') ||
+              target.includes('apidojo') ||
               r.actId === '61RPP7neBeUPaP525'
             );
           }
-          return runAct.includes(actorId.replace('~', '/').toLowerCase()) || runAct.includes(actorId.toLowerCase());
+          if (isIg) {
+            return (
+              target.includes('instagram') ||
+              target.includes('insta') ||
+              target.includes('reel') ||
+              r.actId === 'shu8hvrXbJbY3Eb9W' ||
+              r.actId === 'dSCLg0C3YEZ83HzYX'
+            );
+          }
+          return targetIds.some((id) => target.includes(id.replace('~', '/').toLowerCase()) || target.includes(id.toLowerCase()));
         });
 
         for (const r of matchingRuns) {
@@ -2120,11 +2137,32 @@ export default function Dashboard() {
     posts: [],
     subscribers: 0,
   });
-  const [instagramState, setInstagramState] = useState({
-    connected: false,
-    runInfo: null,
-    items: [],
-    followers: 0,
+  const [instagramState, setInstagramState] = useState(() => {
+    const initialLedger = loadChannelLedger();
+    const cleanIgHandle = (DEFAULT_TARGETS.instagramHandle || 'moth1.siv').replace(/^@+/, '');
+    const initialItems = (initialLedger.instagram?.reels || []).map((r) => {
+      const issueId = r.issueId || matchItemToIssueId(r);
+      const baselineViews = issueId === '01' ? 282 : issueId === '02' ? 243 : 0;
+      const baselineLikes = issueId === '01' ? 4 : issueId === '02' ? 8 : 0;
+      return {
+        id: r.id || `ig-reel-${issueId}`,
+        issueId,
+        type: 'Reel / Video',
+        caption: r.caption || r.title || (issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+        title: r.title || (issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+        url: r.url || `https://www.instagram.com/${cleanIgHandle}/reels/`,
+        views: Math.max(baselineViews, Number(r.views) || 0),
+        likes: Math.max(baselineLikes, Number(r.likes) || 0),
+        comments: Number(r.comments) || 0,
+        publishedAt: r.publishedAt || new Date().toISOString(),
+      };
+    });
+    return {
+      connected: false,
+      runInfo: null,
+      items: sortReelsForDisplay(initialItems),
+      followers: initialLedger.instagram?.followers || 0,
+    };
   });
   const [threadsState, setThreadsState] = useState({
     connected: false,
@@ -2380,16 +2418,62 @@ export default function Dashboard() {
         });
 
         // 2. Instagram Items (apify/instagram-scraper)
-        const igItems =
+        const rawScrapedIg =
           directInstagram?.items?.length > 0
-            ? directInstagram.items.map((item, i) =>
-                normalizeInstagramItem(item, i)
-              )
-            : serverJson?.instagram?.items || [];
+            ? directInstagram.items.map((item, i) => normalizeInstagramItem(item, i))
+            : (serverJson?.instagram?.items || []).map((item, i) => normalizeInstagramItem(item, i));
+
+        const cleanIgHandle = (targets.instagramHandle || 'moth1.siv').replace(/^@+/, '');
+        const mergedIgMap = new Map();
+
+        // 1. Seed baseline ledger reels (Issue 03, 02, 01)
+        for (const r of (ledger.instagram?.reels || [])) {
+          const matched = matchItemToIssueId(r);
+          const issueId = (r.issueId && ['01', '02', '03'].includes(r.issueId)) ? r.issueId : matched;
+          if (!issueId) continue;
+          const baselineViews = issueId === '01' ? 282 : issueId === '02' ? 243 : 0;
+          const baselineLikes = issueId === '01' ? 4 : issueId === '02' ? 8 : 0;
+          mergedIgMap.set(issueId, {
+            id: r.id || `ig-reel-${issueId}`,
+            issueId,
+            type: 'Reel / Video',
+            caption: r.caption || r.title || (issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+            title: r.title || (issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+            url: r.url || `https://www.instagram.com/${cleanIgHandle}/reels/`,
+            views: Math.max(baselineViews, Number(r.views) || 0),
+            likes: Math.max(baselineLikes, Number(r.likes) || 0),
+            comments: Number(r.comments) || 0,
+            publishedAt: r.publishedAt || new Date().toISOString(),
+          });
+        }
+
+        // 2. Overlay live scraped Instagram items
+        for (const item of rawScrapedIg) {
+          const issueId = matchItemToIssueId(item);
+          if (issueId) {
+            const existing = mergedIgMap.get(issueId);
+            mergedIgMap.set(issueId, {
+              ...existing,
+              ...item,
+              id: item.id || existing?.id || `ig-reel-${issueId}`,
+              issueId,
+              caption: item.caption || existing?.caption,
+              title: item.title || existing?.title,
+              views: Math.max(existing?.views || 0, item.views || 0),
+              likes: Math.max(existing?.likes || 0, item.likes || 0),
+              comments: Math.max(existing?.comments || 0, item.comments || 0),
+              url: item.url || existing?.url,
+            });
+          } else if (matchesObservationsFilter(item, activeFilterTag)) {
+            mergedIgMap.set(item.id, item);
+          }
+        }
+
+        const igItems = sortReelsForDisplay(Array.from(mergedIgMap.values()));
 
         const igScrapedFollowers = Math.max(
           serverJson?.instagram?.followers || 0,
-          ...igItems.map((i) => i.followers || 0),
+          ...rawScrapedIg.map((i) => i.followers || 0),
           ...(directInstagram?.items || []).map((i) => Number(i.followersCount ?? i.followers ?? 0) || 0)
         );
 
@@ -2400,6 +2484,29 @@ export default function Dashboard() {
               : prev.followers > 0
                 ? prev.followers
                 : ledger.instagram?.followers || 0;
+
+          // Merge with prev.items so higher view counts or transient scrapes are never erased
+          const finalMap = new Map();
+          for (const item of igItems) {
+            const iId = matchItemToIssueId(item) || item.id;
+            finalMap.set(iId, item);
+          }
+          for (const prevItem of (prev.items || [])) {
+            const iId = matchItemToIssueId(prevItem) || prevItem.id;
+            const existing = finalMap.get(iId);
+            if (existing) {
+              finalMap.set(iId, {
+                ...prevItem,
+                ...existing,
+                views: Math.max(existing.views || 0, prevItem.views || 0),
+                likes: Math.max(existing.likes || 0, prevItem.likes || 0),
+                comments: Math.max(existing.comments || 0, prevItem.comments || 0),
+              });
+            } else {
+              finalMap.set(iId, prevItem);
+            }
+          }
+
           return {
             connected:
               Boolean(directInstagram?.connected) ||
@@ -2407,7 +2514,7 @@ export default function Dashboard() {
               prev.connected,
             runInfo:
               directInstagram?.runInfo || serverJson?.instagram?.runInfo || prev.runInfo,
-            items: igItems.length > 0 ? igItems : (prev.items || []),
+            items: sortReelsForDisplay(Array.from(finalMap.values())),
             followers: effectiveFollowers,
           };
         });
@@ -3203,8 +3310,14 @@ export default function Dashboard() {
     }
 
     if (actorKey === 'instagram') {
+      const cleanUrl = igUrl.replace(/\/+$/, '');
       return {
-        directUrls: [igUrl],
+        directUrls: [
+          cleanUrl,
+          `${cleanUrl}/`,
+          `${cleanUrl}/reels/`,
+        ],
+        username: [cleanIgHandle],
         usernames: [cleanIgHandle],
         resultsType: 'posts',
         resultsLimit: 30,
@@ -3212,8 +3325,10 @@ export default function Dashboard() {
     }
 
     if (actorKey === 'instagramProfile') {
+      const cleanUrl = igUrl.replace(/\/+$/, '');
       return {
-        directUrls: [igUrl],
+        directUrls: [cleanUrl, `${cleanUrl}/`],
+        username: [cleanIgHandle],
         usernames: [cleanIgHandle],
         resultsType: 'details',
       };
@@ -3370,6 +3485,42 @@ export default function Dashboard() {
                       );
                       if (f > 0) {
                         setXState((prev) => ({
+                          ...prev,
+                          followers: f,
+                        }));
+                      }
+                    } else if (actorKey === 'instagram' && Array.isArray(parsed) && parsed.length > 0) {
+                      const normItems = parsed.map((item, i) => normalizeInstagramItem(item, i));
+                      setInstagramState((prev) => {
+                        const newMap = new Map();
+                        for (const item of prev.items || []) {
+                          const iId = matchItemToIssueId(item) || item.id;
+                          newMap.set(iId, item);
+                        }
+                        for (const item of normItems) {
+                          const iId = matchItemToIssueId(item) || item.id;
+                          const existing = newMap.get(iId);
+                          newMap.set(iId, {
+                            ...existing,
+                            ...item,
+                            views: Math.max(existing?.views || 0, item.views || 0),
+                            likes: Math.max(existing?.likes || 0, item.likes || 0),
+                            comments: Math.max(existing?.comments || 0, item.comments || 0),
+                          });
+                        }
+                        return {
+                          ...prev,
+                          connected: true,
+                          items: sortReelsForDisplay(Array.from(newMap.values())),
+                          runInfo: statusJson?.data,
+                        };
+                      });
+                    } else if (actorKey === 'instagramProfile' && Array.isArray(parsed) && parsed.length > 0) {
+                      const f = Math.max(
+                        ...parsed.map((i) => Number(i.followersCount ?? i.ownerFollowersCount ?? i.followers ?? 0) || 0)
+                      );
+                      if (f > 0) {
+                        setInstagramState((prev) => ({
                           ...prev,
                           followers: f,
                         }));
@@ -3662,7 +3813,7 @@ export default function Dashboard() {
   const visibleInstagramItems = sortReelsForDisplay(
     filterOnlyObservations
       ? instagramState.items.filter((item) =>
-          matchesObservationsFilter(item, activeFilterTag)
+          matchesObservationsFilter(item, activeFilterTag) || Boolean(matchItemToIssueId(item))
         )
       : instagramState.items
   );
@@ -6909,7 +7060,22 @@ export default function Dashboard() {
               {visibleInstagramItems.length === 0 ? (
                 <div className="py-6 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 mb-4 space-y-2">
                   <div>
-                    No Instagram Reels loaded yet. Click &ldquo;Run Instagram Scraper&rdquo; above.
+                    {instagramState.items.length > 0 ? (
+                      <div className="space-y-2">
+                        <p>
+                          Scraped {instagramState.items.length} items from @{targets.instagramHandle}, but none matched the filter &ldquo;{activeFilterTag}&rdquo;.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setFilterOnlyObservations(false)}
+                          className="px-3 py-1 border border-[#fda4af]/60 bg-[#fda4af]/10 text-[#fda4af] hover:bg-[#fda4af]/20 transition-colors cursor-pointer"
+                        >
+                          Show all {instagramState.items.length} scraped posts
+                        </button>
+                      </div>
+                    ) : (
+                      'No Instagram Reels loaded yet. Click “Run Reels Scraper” above.'
+                    )}
                   </div>
                 </div>
               ) : (

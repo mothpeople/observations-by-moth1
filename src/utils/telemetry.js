@@ -64,20 +64,20 @@ const DEFAULT_CHANNEL_LEDGER = {
         id: 'ig-reel-02',
         issueId: '02',
         title: 'The Meat Grinder Needs More Meat (9:16 Reel • 42s)',
-        views: 0,
-        likes: 0,
+        views: 243,
+        likes: 8,
         comments: 0,
         shares: 0,
         saves: 0,
         avgWatchTimeSec: 0,
-        status: 'Ready to Post',
+        status: 'Published',
       },
       {
         id: 'ig-reel-01',
         issueId: '01',
         title: 'Watering Grass in a Thunderstorm (9:16 Reel • 35s)',
-        views: 0,
-        likes: 0,
+        views: 282,
+        likes: 4,
         comments: 0,
         shares: 0,
         saves: 0,
@@ -611,6 +611,9 @@ export function loadChannelLedger() {
       const savedVal = typeof window !== 'undefined' ? window.localStorage.getItem(savedKey) : null;
       return {
         ...base,
+        views: Math.max(Number(defReel.views) || 0, Number(found?.views) || 0),
+        likes: Math.max(Number(defReel.likes) || 0, Number(found?.likes) || 0),
+        comments: Math.max(Number(defReel.comments) || 0, Number(found?.comments) || 0),
         saves: savedVal !== null ? (Number(savedVal) || 0) : (Number(base.saves) || 0),
       };
     });
