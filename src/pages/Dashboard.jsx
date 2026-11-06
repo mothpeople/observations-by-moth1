@@ -348,16 +348,18 @@ function matchItemToIssueId(item) {
     haystack.includes('watering-grass') ||
     haystack.includes('watering grass in a thunderstorm') ||
     haystack.includes('watering-grass-in-a-thunderstorm') ||
-    haystack.includes('thunderstorm') ||
-    haystack.includes('bread and circus') ||
-    haystack.includes('geriatric') ||
-    haystack.includes('sidequest') ||
-    haystack.includes('combine writing') ||
-    haystack.includes('issue-01') ||
-    haystack.includes('issue 01') ||
-    haystack.includes('issue 1') ||
-    haystack.includes('issue #01') ||
-    haystack.includes('issue #1')
+    haystack.includes('watering_grass') ||
+    ((haystack.includes('observations') || haystack.includes('moth1')) &&
+      (haystack.includes('issue-01') ||
+        haystack.includes('issue 01') ||
+        haystack.includes('issue #01') ||
+        haystack.includes('issue #1') ||
+        haystack.includes('issue 1') ||
+        haystack.includes('thunderstorm') ||
+        haystack.includes('bread and circus') ||
+        haystack.includes('geriatric') ||
+        haystack.includes('sidequest') ||
+        haystack.includes('combine writing')))
   ) {
     return '01';
   }
@@ -2142,6 +2144,10 @@ export default function Dashboard() {
     const cleanIgHandle = (DEFAULT_TARGETS.instagramHandle || 'moth1.siv').replace(/^@+/, '');
     const initialItems = (initialLedger.instagram?.reels || []).map((r) => {
       const issueId = r.issueId || matchItemToIssueId(r);
+      const isContaminated =
+        Number(r.views) === 35091 ||
+        Number(r.views) === 35683 ||
+        (issueId === '01' && Number(r.views) > 1000);
       const baselineViews = issueId === '01' ? 282 : issueId === '02' ? 243 : 0;
       const baselineLikes = issueId === '01' ? 4 : issueId === '02' ? 8 : 0;
       return {
@@ -2151,9 +2157,9 @@ export default function Dashboard() {
         caption: r.caption || r.title || (issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
         title: r.title || (issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
         url: r.url || `https://www.instagram.com/${cleanIgHandle}/reels/`,
-        views: Math.max(baselineViews, Number(r.views) || 0),
-        likes: Math.max(baselineLikes, Number(r.likes) || 0),
-        comments: Number(r.comments) || 0,
+        views: isContaminated ? baselineViews : Math.max(baselineViews, Number(r.views) || 0),
+        likes: isContaminated ? baselineLikes : Math.max(baselineLikes, Number(r.likes) || 0),
+        comments: isContaminated ? 0 : Number(r.comments) || 0,
         publishedAt: r.publishedAt || new Date().toISOString(),
       };
     });
@@ -2451,6 +2457,10 @@ export default function Dashboard() {
         for (const item of rawScrapedIg) {
           const issueId = matchItemToIssueId(item);
           if (issueId) {
+            // Guard against contaminated un-related post with 35,091 views mapping to Issue 01
+            if (issueId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) {
+              continue;
+            }
             const existing = mergedIgMap.get(issueId);
             mergedIgMap.set(issueId, {
               ...existing,
@@ -2493,6 +2503,10 @@ export default function Dashboard() {
           }
           for (const prevItem of (prev.items || [])) {
             const iId = matchItemToIssueId(prevItem) || prevItem.id;
+            // Purge contaminated 35,091 views on Issue 01
+            if (iId === '01' && (prevItem.views === 35091 || prevItem.views === 35683 || prevItem.views > 1000)) {
+              continue;
+            }
             const existing = finalMap.get(iId);
             if (existing) {
               finalMap.set(iId, {
@@ -2793,14 +2807,21 @@ export default function Dashboard() {
           // 2. Auto-populate Instagram Issue Reels from scraped items
           if (igItems.length > 0 && Array.isArray(next.instagram?.reels)) {
             const updatedIgReels = next.instagram.reels.map((reel) => {
-              if (Number(reel.views) === 35683) {
-                reel.views = 0;
-                reel.likes = 0;
+              if (
+                Number(reel.views) === 35683 ||
+                Number(reel.views) === 35091 ||
+                (reel.issueId === '01' && Number(reel.views) > 1000)
+              ) {
+                reel.views = reel.issueId === '01' ? 282 : 0;
+                reel.likes = reel.issueId === '01' ? 4 : 0;
                 reel.comments = 0;
                 changed = true;
               }
               const matchedItems = igItems.filter(
                 (item) =>
+                  item.views !== 35091 &&
+                  item.views !== 35683 &&
+                  !(reel.issueId === '01' && item.views > 1000) &&
                   matchesObservationsFilter(item, targets.filterTag || '#ObservationsByMoth1') &&
                   matchItemToIssueId(item) === reel.issueId
               );
@@ -3495,10 +3516,12 @@ export default function Dashboard() {
                         const newMap = new Map();
                         for (const item of prev.items || []) {
                           const iId = matchItemToIssueId(item) || item.id;
+                          if (iId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) continue;
                           newMap.set(iId, item);
                         }
                         for (const item of normItems) {
                           const iId = matchItemToIssueId(item) || item.id;
+                          if (iId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) continue;
                           const existing = newMap.get(iId);
                           newMap.set(iId, {
                             ...existing,
@@ -4258,7 +4281,9 @@ export default function Dashboard() {
     0
   );
   const cleanIgManualReels = (ledger.instagram?.reels || []).map((r) =>
-    Number(r.views) === 35683 ? { ...r, views: 0, likes: 0, comments: 0 } : r
+    Number(r.views) === 35683 || Number(r.views) === 35091 || (r.issueId === '01' && Number(r.views) > 1000)
+      ? { ...r, views: r.issueId === '01' ? 282 : 0, likes: r.issueId === '01' ? 4 : 0, comments: 0 }
+      : r
   );
   const igManualViews = cleanIgManualReels.reduce(
     (sum, r) => sum + (Number(r.views) || 0),

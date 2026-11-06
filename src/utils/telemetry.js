@@ -600,20 +600,25 @@ export function loadChannelLedger() {
       const found = (parsed.instagram?.reels || []).find(
         (r) => r.id === defReel.id || r.issueId === defReel.issueId
       );
-      const base = found ? { ...defReel, ...found } : defReel;
-      if (Number(base.views) === 35683) {
-        base.views = 0;
-        base.likes = 0;
-        base.comments = 0;
+      const isContaminated =
+        Number(found?.views) === 35091 ||
+        Number(found?.views) === 35683 ||
+        (defReel.issueId === '01' && Number(found?.views) > 1000);
+
+      const base = found && !isContaminated ? { ...defReel, ...found } : defReel;
+      if (Number(base.views) === 35683 || Number(base.views) === 35091) {
+        base.views = defReel.views;
+        base.likes = defReel.likes;
+        base.comments = defReel.comments;
       }
       const cleanIssue = String(base.issueId || '01').padStart(2, '0');
       const savedKey = `saves_ig_issue_${cleanIssue}`;
       const savedVal = typeof window !== 'undefined' ? window.localStorage.getItem(savedKey) : null;
       return {
         ...base,
-        views: Math.max(Number(defReel.views) || 0, Number(found?.views) || 0),
-        likes: Math.max(Number(defReel.likes) || 0, Number(found?.likes) || 0),
-        comments: Math.max(Number(defReel.comments) || 0, Number(found?.comments) || 0),
+        views: isContaminated ? defReel.views : Math.max(Number(defReel.views) || 0, Number(found?.views) || 0),
+        likes: isContaminated ? defReel.likes : Math.max(Number(defReel.likes) || 0, Number(found?.likes) || 0),
+        comments: isContaminated ? defReel.comments : Math.max(Number(defReel.comments) || 0, Number(found?.comments) || 0),
         saves: savedVal !== null ? (Number(savedVal) || 0) : (Number(base.saves) || 0),
       };
     });
