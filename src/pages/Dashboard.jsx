@@ -1418,32 +1418,6 @@ const PRECONFIGURED_UTM_LINKS = [
     description: 'Facebook 9:16 Reel pinned comment or story link pointing to Issue #03',
   },
   {
-    id: '03-x-thread',
-    issueId: '03',
-    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
-    slug: 'war-on-drugs',
-    platform: 'x',
-    platformLabel: 'X (Twitter) Thread',
-    medium: 'thread',
-    campaign: 'issue-03',
-    badge: '𝕏 Thread',
-    color: '#e2e8f0',
-    description: 'Final call-to-action link in the X thread on @Moth1NFTs for Issue #03',
-  },
-  {
-    id: '03-x-video',
-    issueId: '03',
-    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
-    slug: 'war-on-drugs',
-    platform: 'x',
-    platformLabel: 'X Video / Reel',
-    medium: 'video',
-    campaign: 'issue-03',
-    badge: '𝕏 Video',
-    color: '#67e8f9',
-    description: 'Direct tweet accompanying 9:16 vertical video reel pointing to Issue #03',
-  },
-  {
     id: '03-threads-post',
     issueId: '03',
     issueTitle: 'Issue #03: The War No One Was Supposed to Win',
@@ -1561,32 +1535,6 @@ const PRECONFIGURED_UTM_LINKS = [
     badge: 'FB Story',
     color: '#60a5fa',
     description: 'Facebook 9:16 Reel pinned comment or story sticker link to Issue #02',
-  },
-  {
-    id: '02-x-thread',
-    issueId: '02',
-    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
-    slug: 'the-meat-grinder',
-    platform: 'x',
-    platformLabel: 'X (Twitter) Thread',
-    medium: 'thread',
-    campaign: 'issue-02',
-    badge: '𝕏 Thread',
-    color: '#e2e8f0',
-    description: 'Final call-to-action link in the 10-tweet summary thread on @Moth1NFTs for Issue #02',
-  },
-  {
-    id: '02-x-video',
-    issueId: '02',
-    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
-    slug: 'the-meat-grinder',
-    platform: 'x',
-    platformLabel: 'X Video / Reel',
-    medium: 'video',
-    campaign: 'issue-02',
-    badge: '𝕏 Video',
-    color: '#67e8f9',
-    description: 'Direct tweet accompanying 9:16 vertical video reel pointing to Issue #02',
   },
   {
     id: '02-threads-post',
@@ -1708,32 +1656,6 @@ const PRECONFIGURED_UTM_LINKS = [
     description: 'Facebook 9:16 Reel pinned comment or story sticker link to Issue #01',
   },
   {
-    id: '01-x-thread',
-    issueId: '01',
-    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
-    slug: 'watering-grass-in-a-thunderstorm',
-    platform: 'x',
-    platformLabel: 'X (Twitter) Thread',
-    medium: 'thread',
-    campaign: 'issue-01',
-    badge: '𝕏 Thread',
-    color: '#e2e8f0',
-    description: 'Final call-to-action link in the summary thread on @Moth1NFTs to Issue #01',
-  },
-  {
-    id: '01-x-video',
-    issueId: '01',
-    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
-    slug: 'watering-grass-in-a-thunderstorm',
-    platform: 'x',
-    platformLabel: 'X Video / Reel',
-    medium: 'video',
-    campaign: 'issue-01',
-    badge: '𝕏 Video',
-    color: '#67e8f9',
-    description: 'Direct tweet accompanying 9:16 vertical video reel pointing to Issue #01',
-  },
-  {
     id: '01-threads-post',
     issueId: '01',
     issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
@@ -1851,19 +1773,6 @@ const PRECONFIGURED_UTM_LINKS = [
     badge: 'YT Bio',
     color: '#ef4444',
     description: 'Primary link in YouTube channel about/bio pointing to publication root',
-  },
-  {
-    id: 'home-x-bio',
-    issueId: 'home',
-    issueTitle: 'Main Publication Landing Page',
-    slug: '',
-    platform: 'x',
-    platformLabel: 'X (Twitter) Bio Link',
-    medium: 'bio',
-    campaign: 'profile',
-    badge: '𝕏 Bio',
-    color: '#e2e8f0',
-    description: 'Primary link in @Moth1NFTs X profile bio pointing to publication root',
   },
   {
     id: 'home-threads-bio',
@@ -4217,9 +4126,9 @@ export default function Dashboard() {
   const totalSubstackEmailSubscribers = substackStorySubscribers + emailStorySubscribers;
 
   // Combined Totals
-  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances + xStoryEntrances + ytStoryEntrances + pinStoryEntrances + totalSubstackVisitors;
-  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75 + xStoryScroll75 + ytStoryScroll75 + pinStoryScroll75 + totalSubstackEmailScroll75;
-  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers + xStorySubscribers + ytStorySubscribers + pinStorySubscribers + totalSubstackEmailSubscribers;
+  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances + ytStoryEntrances + pinStoryEntrances + totalSubstackVisitors;
+  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75 + ytStoryScroll75 + pinStoryScroll75 + totalSubstackEmailScroll75;
+  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers + ytStorySubscribers + pinStorySubscribers + totalSubstackEmailSubscribers;
   const totalStoryRetentionPct =
     totalStoryEntrances > 0
       ? Math.min(100, (totalStoryScroll75 / totalStoryEntrances) * 100).toFixed(1)
@@ -4889,64 +4798,6 @@ export default function Dashboard() {
                     className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-[#86efac]"
                   />
                 </div>
-
-                <div className="space-y-1">
-                  <label className="block font-mono text-[11px] text-[#e2e8f0] font-bold uppercase">
-                    X (Twitter) Handle
-                  </label>
-                  <input
-                    type="text"
-                    value={targets.xHandle || ''}
-                    onChange={(e) =>
-                      setTargets((prev) => ({
-                        ...prev,
-                        xHandle: e.target.value,
-                      }))
-                    }
-                    placeholder="Moth1NFTs"
-                    className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-white"
-                  />
-                </div>
-              </div>
-
-              {/* Optional X Session Cookie Input */}
-              <div className="pt-2 border-t border-slate-800/80">
-                <div className="space-y-1 max-w-2xl">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <label className="block font-mono text-[11px] text-[#e2e8f0] font-bold uppercase">
-                        X (Twitter) Session Cookie (Optional • Bypasses Login Wall)
-                      </label>
-                      {xCookie.trim() ? (
-                        <span className="px-1.5 py-0.5 bg-[#86efac]/20 border border-[#86efac]/40 text-[#86efac] text-[9px] font-mono font-bold">
-                          ● Authenticated Mode
-                        </span>
-                      ) : (
-                        <span className="px-1.5 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-mono">
-                          Guest Mode
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowXCookie((prev) => !prev)}
-                      className="text-slate-400 hover:text-white cursor-pointer"
-                      title={showXCookie ? 'Hide cookie' : 'Show cookie'}
-                    >
-                      {showXCookie ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-                  <input
-                    type={showXCookie ? 'text' : 'password'}
-                    value={xCookie}
-                    onChange={(e) => setXCookie(e.target.value)}
-                    placeholder="auth_token=...; ct0=..."
-                    className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-white"
-                  />
-                  <p className="text-[10px] text-slate-400">
-                    Paste your Twitter browser cookie (containing <code>auth_token</code> and <code>ct0</code>) to allow Apify (<code>automation-lab/twitter-scraper</code>) to scrape <code>@Moth1NFTs</code> as an authenticated session, completely bypassing Twitter&apos;s guest blocks.
-                  </p>
-                </div>
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
@@ -4973,12 +4824,6 @@ export default function Dashboard() {
                     Facebook:{' '}
                     <strong className="text-[#86efac]">
                       {facebookState.runInfo?.status || 'IDLE'}
-                    </strong>
-                  </span>
-                  <span>
-                    X:{' '}
-                    <strong className={xCookie.trim() ? 'text-[#86efac]' : 'text-white'}>
-                      {xState.runInfo?.status || 'IDLE'} {xCookie.trim() ? '(Auth Cookie Active)' : '(Guest Mode)'}
                     </strong>
                   </span>
                 </div>
@@ -5427,99 +5272,6 @@ export default function Dashboard() {
                 ),
               },
               {
-                id: 'x',
-                views: totalXViews,
-                render: () => (
-                  <CyberPanel
-                    key="x"
-                    theme={theme}
-                    label={`X • @${targets.xHandle || 'Moth1NFTs'}`}
-                    accent="#e2e8f0"
-                    className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
-                      analyticsTab === 'social' && socialPlatformTab === 'x' ? 'ring-1 ring-white' : ''
-                    }`}
-                    onClick={() => {
-                      setAnalyticsTab('social');
-                      setSocialPlatformTab('x');
-                    }}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-mono text-[11px] text-slate-400 truncate">
-                          @{targets.xHandle || 'Moth1NFTs'}
-                        </span>
-                        <span className="font-mono font-black text-sm text-white shrink-0">𝕏</span>
-                      </div>
-                      <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
-                        {totalXViews.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-slate-400 mt-0.5">
-                        Views • {totalXEngagement.toLocaleString()} Engagements (
-                        {visibleXItems.length} Posts)
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
-                      <span className="text-slate-400">Followers:</span>
-                      {editingPlatform === 'x' ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            min="0"
-                            autoFocus
-                            value={tempEditVal}
-                            onChange={(e) => setTempEditVal(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveEditFollower('x');
-                              if (e.key === 'Escape') setEditingPlatform(null);
-                            }}
-                            className="w-16 bg-[#0b0d10] border border-[#e2e8f0] px-1.5 py-0.5 text-[11px] font-mono text-[#e2e8f0] font-bold text-right outline-none"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleSaveEditFollower('x')}
-                            className="p-1 hover:bg-white/20 text-[#e2e8f0] rounded-none cursor-pointer"
-                            title="Save"
-                          >
-                            <Check className="w-3 h-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingPlatform(null)}
-                            className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-none cursor-pointer"
-                            title="Cancel"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-[12px] font-bold text-[#e2e8f0] tabular-nums">
-                            {(xState.followers || ledger.x?.followers || 0).toLocaleString()}
-                          </span>
-                          <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-white/40 bg-white/10 text-white rounded-none">
-                            {xState.followers > 0 ? 'Scraped' : 'Live'}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleStartEditFollower(
-                                'x',
-                                xState.followers || ledger.x?.followers || 0
-                              )
-                            }
-                            className="p-0.5 text-slate-500 hover:text-[#e2e8f0] transition-colors cursor-pointer"
-                            title="Edit Baseline Followers"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </CyberPanel>
-                ),
-              },
-              {
                 id: 'threads',
                 views: visibleThreadsItems.length,
                 render: () => (
@@ -5764,13 +5516,6 @@ export default function Dashboard() {
                     dotColor: '#ef4444',
                     entrances: ytStoryEntrances,
                     retention: ytStoryRetentionPct,
-                  },
-                  {
-                    id: 'x',
-                    name: '𝕏 Campaigns:',
-                    color: '#e2e8f0',
-                    entrances: xStoryEntrances,
-                    retention: xStoryRetentionPct,
                   },
                   {
                     id: 'pin',
@@ -6201,12 +5946,6 @@ export default function Dashboard() {
                       tag: 'utm_source=youtube',
                       clicks: ytStoryEntrances,
                       color: '#ef4444',
-                    },
-                    {
-                      name: '𝕏 (Twitter)',
-                      tag: 'utm_source=x',
-                      clicks: xStoryEntrances,
-                      color: '#ffffff',
                     },
                     {
                       name: 'Pinterest',
@@ -6969,7 +6708,7 @@ export default function Dashboard() {
                       : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
                   }`}
                 >
-                  All Channels ({visibleInstagramItems.length + visibleFacebookItems.length + visibleThreadsItems.length + visibleXItems.length + (ledger.youtube?.videos?.length || 2) + pinList.length})
+                  All Channels ({visibleInstagramItems.length + visibleFacebookItems.length + visibleThreadsItems.length + (ledger.youtube?.videos?.length || 2) + pinList.length})
                 </button>
                 <button
                   type="button"
@@ -7003,17 +6742,6 @@ export default function Dashboard() {
                   }`}
                 >
                   Threads ({visibleThreadsItems.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSocialPlatformTab('x')}
-                  className={`whitespace-nowrap shrink-0 px-2.5 py-1 transition-all cursor-pointer ${
-                    socialPlatformTab === 'x'
-                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-white text-black font-bold shadow')
-                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-300 hover:bg-white/10')
-                  }`}
-                >
-                  𝕏 (Twitter) ({visibleXItems.length})
                 </button>
                 <button
                   type="button"
@@ -7445,183 +7173,6 @@ export default function Dashboard() {
               )}
             </CyberPanel>
           )}
-          {(socialPlatformTab === 'all' || socialPlatformTab === 'x') && (
-            <CyberPanel
-              theme={theme}
-              label={`X Dispatches • @${targets.xHandle || 'Moth1NFTs'}`}
-              accent="#e2e8f0"
-              className="p-4 sm:p-6"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
-                      X Dispatches (@{targets.xHandle || 'Moth1NFTs'})
-                    </h2>
-                    {activeXActor.isAuthenticated ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] text-[10px] font-mono uppercase font-bold">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#86efac] animate-pulse" />
-                        Authenticated Session
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 border border-slate-700 bg-slate-900 text-slate-400 text-[10px] font-mono uppercase">
-                        Guest Mode
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Verified impressions, reposts, likes, and campaign telemetry.
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={() => triggerActorRun('x')}
-                    disabled={runningActor !== null}
-                    className="inline-flex items-center justify-center gap-1.5 border border-white/60 bg-white/10 hover:bg-white/20 px-3.5 py-1.5 font-mono text-xs text-white font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
-                  >
-                    <Play className="w-3.5 h-3.5" />
-                    <span>
-                      {runningActor === 'x'
-                        ? 'Scraping X...'
-                        : 'Run X Scraper'}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => triggerActorRun('xProfile')}
-                    disabled={runningActor !== null}
-                    className="inline-flex items-center justify-center gap-1.5 border border-slate-700 bg-slate-900/80 hover:border-white/60 hover:text-white px-3.5 py-1.5 font-mono text-xs text-slate-300 font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
-                    title="Scrapes X user profile to capture followers count"
-                  >
-                    <User className="w-3.5 h-3.5" />
-                    <span>
-                      {runningActor === 'xProfile'
-                        ? 'Scraping Profile...'
-                        : 'Scrape Followers'}
-                    </span>
-                  </button>
-                  <a
-                    href={`https://x.com/${targets.xHandle || 'Moth1NFTs'}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 border border-slate-700 bg-slate-900/80 hover:border-white/60 hover:text-white px-3.5 py-1.5 font-mono text-xs text-slate-300 font-bold transition-colors cursor-pointer w-full sm:w-auto shrink-0"
-                  >
-                    <span className="font-mono font-bold text-xs">𝕏</span>
-                    <span>View Profile ↗</span>
-                  </a>
-                </div>
-              </div>
-
-              {/* Inline Run Status & Feedback */}
-              {(runningActor === 'x' || runningActor === 'xProfile' || (statusMessage && (statusMessage.toLowerCase().includes('x') || statusMessage.toLowerCase().includes('apidojo') || statusMessage.toLowerCase().includes('apify')))) && (
-                <div className="mb-3 px-3 py-2 bg-[#0b0d10] border border-white/30 flex items-center justify-between font-mono text-xs text-white">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                    <span>
-                      {runningActor === 'x'
-                        ? `Scraping tweets from @${targets.xHandle || 'Moth1NFTs'} on Apify...`
-                        : runningActor === 'xProfile'
-                          ? `Scraping @${targets.xHandle || 'Moth1NFTs'} profile on Apify...`
-                          : statusMessage}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {visibleXItems.length === 0 ? (
-                <div className="py-5 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 mb-4 space-y-2">
-                  {allXThreads.length > 0 && filterOnlyObservations ? (
-                    <>
-                      <div>
-                        Scraped <strong className="text-white">{allXThreads.length}</strong> X tweets/threads from @{targets.xHandle || 'Moth1NFTs'}, but none contain{' '}
-                        <code className="text-[#86efac]">{activeFilterTag}</code>.
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setFilterOnlyObservations(false)}
-                        className="border border-slate-700 bg-[#121316] px-3 py-1 text-[11px] text-white hover:border-white cursor-pointer"
-                      >
-                        Show all {allXThreads.length} scraped X dispatches
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        No Apify dataset items loaded yet for{' '}
-                        <code className="text-white">@{targets.xHandle || 'Moth1NFTs'}</code>.
-                        Click &ldquo;Run X Scraper&rdquo; above.
-                      </div>
-                      <div className="text-[11px] text-slate-500">
-                        Campaign clicks from X are automatically tracked via UTM parameters in the Campaign Funnel below.
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <div className="overflow-x-auto mb-4 max-h-[280px] -mx-1 sm:mx-0">
-                    <table className="w-full text-left border-collapse min-w-[520px]">
-                      <thead>
-                        <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
-                          <th className="py-2 pr-3">Post / Thread</th>
-                          <th className="py-2 px-2">Impressions</th>
-                          <th className="py-2 px-2">Likes</th>
-                          <th className="py-2 px-2">Reposts</th>
-                          <th className="py-2 px-2">Replies</th>
-                          <th className="py-2 pl-2 text-right">Link</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-800/70 text-xs">
-                        {visibleXItems.slice(0, 15).map((item) => (
-                          <tr key={item.id} className="hover:bg-slate-900/40">
-                            <td className="py-2.5 pr-3 max-w-[240px] truncate text-[#e2e8f0]">
-                              <div className="flex items-center gap-1.5">
-                                {item.isThread && item.tweetCount > 1 && (
-                                  <span
-                                    className="px-1.5 py-0.5 border border-white/40 bg-white/10 text-[9px] font-mono text-white font-bold shrink-0"
-                                    title={`${item.tweetCount} tweets in this thread`}
-                                  >
-                                    Thread ({item.tweetCount})
-                                  </span>
-                                )}
-                                <span className="truncate" title={item.openingText || item.text}>
-                                  {item.openingText || item.text}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="py-2.5 px-2 font-mono font-bold text-white">
-                              {item.views.toLocaleString()}
-                            </td>
-                            <td className="py-2.5 px-2 font-mono text-[#fda4af]">
-                              {item.likes.toLocaleString()}
-                            </td>
-                            <td className="py-2.5 px-2 font-mono text-[#86efac]">
-                              {item.retweets.toLocaleString()}
-                            </td>
-                            <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
-                              {item.replies.toLocaleString()}
-                            </td>
-                            <td className="py-2.5 pl-2 text-right">
-                              <a
-                                href={item.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-mono text-[11px] text-[#67e8f9] hover:underline"
-                                title="Open Thread on X"
-                              >
-                                ↗
-                              </a>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
-            </CyberPanel>
-          )}
           {(socialPlatformTab === 'all' || socialPlatformTab === 'youtube') && (
             <CyberPanel
               theme={theme}
@@ -8049,7 +7600,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-1 font-mono text-xs w-full">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-1 font-mono text-xs w-full">
         {(() => {
           const funnelBadges = [
             {
@@ -8081,16 +7632,6 @@ export default function Dashboard() {
               bg: 'bg-[#ef4444]/10',
               border: 'border-[#ef4444]/30',
               text: 'text-[#f87171]',
-            },
-            {
-              id: 'x',
-              label: 'X (Twitter)',
-              clicks: xStoryEntrances,
-              retention: xStoryRetentionPct,
-              subs: xStorySubscribers,
-              bg: 'bg-white/10',
-              border: 'border-neutral-600',
-              text: 'text-white',
             },
             {
               id: 'sub',
@@ -8247,17 +7788,6 @@ export default function Dashboard() {
               }`}
             >
               FB
-            </button>
-            <button
-              type="button"
-              onClick={() => setUtmLinksFilterPlatform('x')}
-              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
-                utmLinksFilterPlatform === 'x'
-                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-white text-black font-bold shadow')
-                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-300 hover:bg-white/10')
-              }`}
-            >
-              𝕏
             </button>
             <button
               type="button"
@@ -8551,28 +8081,6 @@ export default function Dashboard() {
               const fbConvPct =
                 fbEntrances > 0
                   ? ((fbSubs / fbEntrances) * 100).toFixed(1)
-                  : '0.0';
-
-              // Metric calculations for X (Twitter) Campaigns
-              const xEntrances = Math.max(
-                Number(issueStats.x?.clicks || 0),
-                Number(dispatch.x?.entrances ?? dispatch.x?.clicks ?? 0)
-              );
-              const xScroll75 = Math.max(
-                Number(issueStats.x?.scroll75 || 0),
-                Number(dispatch.x?.scroll75 ?? 0)
-              );
-              const xSubs = Math.max(
-                Number(issueStats.x?.subscribers || 0),
-                Number(dispatch.x?.subscribers ?? 0)
-              );
-              const xRetentionPct =
-                xEntrances > 0
-                  ? Math.min(100, (xScroll75 / xEntrances) * 100).toFixed(1)
-                  : (xScroll75 > 0 ? '100.0' : '0.0');
-              const xConvPct =
-                xEntrances > 0
-                  ? ((xSubs / xEntrances) * 100).toFixed(1)
                   : '0.0';
 
               // Metric calculations for YouTube Channel & Shorts
@@ -8886,144 +8394,6 @@ export default function Dashboard() {
                             className="h-full bg-[#86efac] transition-all duration-500"
                             style={{
                               width: `${Math.min(100, Math.max(0, Number(fbConvPct) || 0))}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  id: 'x',
-                  entrances: xEntrances,
-                  scroll75: xScroll75,
-                  card: (
-                    <div key="x" className="p-3 sm:p-4 bg-[#121316] border border-neutral-700/60 rounded-none space-y-3">
-                      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-white shrink-0" />
-                          <span className="font-mono text-xs font-bold uppercase tracking-wider text-white">
-                            𝕏 Campaigns
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <button
-                            type="button"
-                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'x', 'thread')}
-                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-neutral-700 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-white hover:text-white transition-colors cursor-pointer"
-                            title="Copy Thread Link with utm_source=x&utm_medium=thread"
-                          >
-                            {copiedLink === `${issueTag}-x-thread` ? (
-                              <span className="text-[#86efac]">Copied Thread!</span>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3 text-[#d97706]" />
-                                <span>Thread</span>
-                              </>
-                            )}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'x', 'video')}
-                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-neutral-700 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-white hover:text-white transition-colors cursor-pointer"
-                            title="Copy Video Link with utm_source=x&utm_medium=video"
-                          >
-                            {copiedLink === `${issueTag}-x-video` ? (
-                              <span className="text-[#86efac]">Copied Video!</span>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3 text-[#67e8f9]" />
-                                <span>Video</span>
-                              </>
-                            )}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => copyUtmLink(dispatch.slug, issueTag, 'x', 'teaser')}
-                            className="inline-flex items-center justify-center gap-1 px-2 py-1 border border-neutral-700 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-white hover:text-white transition-colors cursor-pointer"
-                            title="Copy Teaser Link with utm_source=x&utm_medium=teaser"
-                          >
-                            {copiedLink === `${issueTag}-x-teaser` ? (
-                              <span className="text-[#86efac]">Copied Teaser!</span>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3 text-slate-400" />
-                                <span>Teaser</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 3 Automated Telemetry Metrics for X */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
-                          <div className="flex items-center justify-between text-[9px] uppercase font-mono tracking-wider text-slate-400">
-                            <span>Campaign Clicks</span>
-                            <span className="text-[8px] font-bold text-white bg-white/10 px-1 py-0.5 border border-white/30">
-                              {xEntrances} Clicks
-                            </span>
-                          </div>
-                          <div className="font-mono text-xl sm:text-2xl font-black text-white tabular-nums mt-1">
-                            {xEntrances.toLocaleString()}
-                          </div>
-                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                            utm_source=x • Verified Clicks
-                          </div>
-                        </div>
-
-                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
-                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
-                            Scroll Retention
-                          </div>
-                          <div className="font-mono text-xl sm:text-2xl font-black text-[#fbbf24] tabular-nums mt-1">
-                            {xRetentionPct}%
-                          </div>
-                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                            {xScroll75} read past 75% depth
-                          </div>
-                        </div>
-
-                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
-                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
-                            Subscriber Conv.
-                          </div>
-                          <div className="font-mono text-xl sm:text-2xl font-black text-[#86efac] tabular-nums mt-1">
-                            {xSubs}{' '}
-                            <span className="text-xs font-normal text-slate-400">
-                              ({xConvPct}%)
-                            </span>
-                          </div>
-                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                            Substack subscriptions
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Visual Funnel Bar */}
-                      <div className="space-y-1 pt-1">
-                        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono">
-                          <span className="text-slate-400">
-                            75% Retention: <strong className="text-[#fbbf24]">{xRetentionPct}%</strong>
-                          </span>
-                          <span className="text-slate-400">
-                            Substack Conv: <strong className="text-[#86efac]">{xConvPct}%</strong>
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
-                          <div
-                            className="h-full bg-[#fbbf24] transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, Math.max(0, Number(xRetentionPct) || 0))}%`,
-                            }}
-                          />
-                          <div
-                            className="h-full bg-[#86efac] transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, Math.max(0, Number(xConvPct) || 0))}%`,
                             }}
                           />
                         </div>
