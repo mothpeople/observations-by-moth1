@@ -60,7 +60,7 @@ export default function Issue04() {
       {/* Full-Screen Animated Portal Transition: Attention Slot Machine -> 5x Outrage Engine */}
       <BeatTransitionPortal
         fromImage="/issues/issue-04/attention-slot-machine.webp"
-        toImage="/issues/issue-04/rage-multiplier-5x.webp"
+        toImage="/issues/issue-04/neurobiology-flaw.webp"
         eyebrow="Why Contentment Closes the App"
         headline="The Math of Division: Selling Rage at 5x"
         accent="#ef4444"
@@ -71,7 +71,7 @@ export default function Issue04() {
 
       {/* Full-Screen Animated Portal Transition: Divided Forum -> Silent Apartments */}
       <BeatTransitionPortal
-        fromImage="/issues/issue-04/rage-multiplier-5x.webp"
+        fromImage="/issues/issue-04/quarterly-rage-earnings.webp"
         toImage="/issues/issue-04/forgotten-elders.webp"
         eyebrow="Silent Apartments & The 65+ Algorithm Trap"
         headline="The Forgotten Casualties"
