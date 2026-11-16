@@ -313,9 +313,8 @@ function matchItemToIssueId(item) {
     haystack.includes('law 30/2000') ||
     haystack.includes('microdose') ||
     haystack.includes('overdose') ||
-    haystack.includes('trial reel') ||
-    haystack.includes('trial-reel') ||
-    haystack.includes('trial') ||
+    ((haystack.includes('observations') || haystack.includes('moth1')) &&
+      (haystack.includes('trial reel') || haystack.includes('trial-reel'))) ||
     haystack.includes('issue-03') ||
     haystack.includes('issue 03') ||
     haystack.includes('issue 3') ||
@@ -2383,8 +2382,6 @@ export default function Dashboard() {
               comments: Math.max(existing?.comments || 0, item.comments || 0),
               url: item.url || existing?.url,
             });
-          } else if (matchesObservationsFilter(item, activeFilterTag)) {
-            mergedIgMap.set(item.id, item);
           }
         }
 
@@ -2411,7 +2408,8 @@ export default function Dashboard() {
             finalMap.set(iId, item);
           }
           for (const prevItem of (prev.items || [])) {
-            const iId = matchItemToIssueId(prevItem) || prevItem.id;
+            const iId = matchItemToIssueId(prevItem);
+            if (!iId) continue;
             // Purge contaminated 35,091 views on Issue 01
             if (iId === '01' && (prevItem.views === 35091 || prevItem.views === 35683 || prevItem.views > 1000)) {
               continue;
@@ -2425,8 +2423,6 @@ export default function Dashboard() {
                 likes: Math.max(existing.likes || 0, prevItem.likes || 0),
                 comments: Math.max(existing.comments || 0, prevItem.comments || 0),
               });
-            } else {
-              finalMap.set(iId, prevItem);
             }
           }
 
@@ -3431,17 +3427,20 @@ export default function Dashboard() {
                       setInstagramState((prev) => {
                         const newMap = new Map();
                         for (const item of prev.items || []) {
-                          const iId = matchItemToIssueId(item) || item.id;
+                          const iId = matchItemToIssueId(item);
+                          if (!iId) continue;
                           if (iId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) continue;
                           newMap.set(iId, item);
                         }
                         for (const item of normItems) {
-                          const iId = matchItemToIssueId(item) || item.id;
+                          const iId = matchItemToIssueId(item);
+                          if (!iId) continue;
                           if (iId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) continue;
                           const existing = newMap.get(iId);
                           newMap.set(iId, {
                             ...existing,
                             ...item,
+                            issueId: iId,
                             views: Math.max(existing?.views || 0, item.views || 0),
                             likes: Math.max(existing?.likes || 0, item.likes || 0),
                             comments: Math.max(existing?.comments || 0, item.comments || 0),
@@ -3751,9 +3750,7 @@ export default function Dashboard() {
 
   const visibleInstagramItems = sortReelsForDisplay(
     filterOnlyObservations
-      ? instagramState.items.filter((item) =>
-          matchesObservationsFilter(item, activeFilterTag) || Boolean(matchItemToIssueId(item))
-        )
+      ? instagramState.items.filter((item) => Boolean(matchItemToIssueId(item)))
       : instagramState.items
   );
 
