@@ -46,8 +46,6 @@ const routes = [
       'century-of-self-inflicted-humiliation',
       'self-inflicted-humiliation',
       'the-century-of-self-inflicted-humiliation',
-      'issue-04',
-      'issue/04',
     ],
     title:
       'Issue #04: The Century of Self-Inflicted Humiliation | Observations by Moth1',

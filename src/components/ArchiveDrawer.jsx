@@ -85,13 +85,13 @@ export default function ArchiveDrawer({
               </button>
             </div>
 
-            {/* Dispatches List */}
+            {/* Dispatches List (Newest First) */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               <div className="font-mono text-[11px] uppercase tracking-widest text-[#e6e4dd]/50 mb-2">
                 PUBLISHED DISPATCHES ({dispatches.length})
               </div>
 
-              {dispatches.map((issue) => {
+              {[...dispatches].reverse().map((issue) => {
                 const isActive = activeDispatch?.id === issue.id;
                 return (
                   <button

@@ -51,7 +51,6 @@ export const dispatches = [
       'century-of-self-inflicted-humiliation',
       'self-inflicted-humiliation',
       'the-century-of-self-inflicted-humiliation',
-      'issue-04',
     ],
     title: 'The Century of Self-Inflicted Humiliation',
     subtitle:

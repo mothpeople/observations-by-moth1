@@ -30,10 +30,8 @@
     { "source": "/issue-02", "destination": "/issue-02.html" },
     { "source": "/war-on-drugs", "destination": "/war-on-drugs.html" },
     { "source": "/the-war-no-one-was-supposed-to-win", "destination": "/the-war-no-one-was-supposed-to-win.html" },
-    { "source": "/issue-03", "destination": "/issue-03.html" },
     { "source": "/century-of-self-inflicted-humiliation", "destination": "/century-of-self-inflicted-humiliation.html" },
     { "source": "/self-inflicted-humiliation", "destination": "/century-of-self-inflicted-humiliation.html" },
-    { "source": "/issue-04", "destination": "/issue-04.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

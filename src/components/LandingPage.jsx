@@ -6,6 +6,13 @@ import { recordSiteEvent } from '../utils/telemetry';
 
 const BACKGROUND_SCENES = [
   {
+    id: 'scene-04-hero',
+    issueId: '04',
+    image: '/issues/issue-04/hero-humen-2am.webp',
+    label: 'Issue #04 • The Century of Self-Inflicted Humiliation',
+    accent: '#ef4444',
+  },
+  {
     id: 'scene-03-hero',
     issueId: '03',
     image: '/issues/issue-03/hero-dossier.webp',
@@ -25,6 +32,13 @@ const BACKGROUND_SCENES = [
     image: '/issues/issue-01/hero-storm.webp',
     label: 'Issue #01 • Watering Grass in a Thunderstorm',
     accent: '#d97706',
+  },
+  {
+    id: 'scene-04-mirror',
+    issueId: '04',
+    image: '/issues/issue-04/mirror-of-history.webp',
+    label: 'Issue #04 • The Mirror of History',
+    accent: '#eab308',
   },
   {
     id: 'scene-03-mirror',
@@ -163,14 +177,16 @@ export default function LandingPage({ dispatches = [] }) {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {orderedDispatches.map((issue, idx) => {
               const accent =
-                issue.id === '03'
-                  ? '#eab308'
-                  : issue.id === '02'
-                    ? '#86efac'
-                    : '#d97706';
+                issue.id === '04'
+                  ? '#ef4444'
+                  : issue.id === '03'
+                    ? '#eab308'
+                    : issue.id === '02'
+                      ? '#86efac'
+                      : '#d97706';
 
               return (
                 <Link
