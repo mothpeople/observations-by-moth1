@@ -1539,14 +1539,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const headerToken = req.headers['x-apify-token'];
-    const queryToken = req.query?.apifyToken;
-    const apifyToken =
-      headerToken ||
-      queryToken ||
+    const envApifyToken = (
       process.env.APIFY_TOKEN ||
       process.env.APIFY_API_TOKEN ||
-      '';
+      process.env.APIFY_KEY ||
+      process.env.APIFY_API_KEY ||
+      ''
+    ).trim();
+    const clientToken = (
+      req.headers['x-apify-token'] ||
+      req.query?.apifyToken ||
+      ''
+    ).trim();
+    // Prioritize server environment variable configured on Vercel; fallback to client token if env is not set
+    const apifyToken = envApifyToken || clientToken;
 
     const vercelToken =
       req.headers['x-vercel-token'] ||

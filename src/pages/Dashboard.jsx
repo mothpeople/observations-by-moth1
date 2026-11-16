@@ -3452,12 +3452,19 @@ export default function Dashboard() {
         }
       );
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setStatusMessage(
-          data?.error?.message ||
-            `Apify returned HTTP ${res.status} for ${actorMeta.label}`
-        );
+        if (res.status === 401) {
+          setShowApifyConfig(true);
+          setStatusMessage(
+            'Apify API token rejected (HTTP 401 Unauthorized). Please update your rotated token in the configuration drawer below.'
+          );
+        } else {
+          setStatusMessage(
+            data?.error?.message ||
+              `Apify returned HTTP ${res.status} for ${actorMeta.label}`
+          );
+        }
         setRunningActor(null);
         return;
       }
