@@ -1,6 +1,7 @@
 import Issue01 from '../issues/Issue01';
 import Issue02Component from '../issues/Issue02';
 import Issue03Component from '../issues/Issue03';
+import Issue04Component from '../issues/Issue04';
 
 export const dispatches = [
   {
@@ -42,6 +43,23 @@ export const dispatches = [
     readTime: '8 MIN',
     cover: '/issues/issue-03/hero-dossier.webp',
     component: Issue03Component,
+  },
+  {
+    id: '04',
+    slug: 'century-of-self-inflicted-humiliation',
+    aliases: [
+      'century-of-self-inflicted-humiliation',
+      'self-inflicted-humiliation',
+      'the-century-of-self-inflicted-humiliation',
+      'issue-04',
+    ],
+    title: 'The Century of Self-Inflicted Humiliation',
+    subtitle:
+      'How algorithmic feeds became the modern opium trade, hollowing out our attention spans, fracturing society, and engineering a crisis we willingly consume.',
+    date: 'NOV 2026',
+    readTime: '8 MIN',
+    cover: '/issues/issue-04/hero-humen-2am.webp',
+    component: Issue04Component,
   },
 ];
 

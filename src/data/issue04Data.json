@@ -1,0 +1,464 @@
+{
+  "meta": {
+    "issue": "ISSUE 04",
+    "date": "NOVEMBER 2026",
+    "publication": "Observations by Moth1",
+    "slug": "century-of-self-inflicted-humiliation"
+  },
+  "hero": {
+    "title": "The Century of Self-Inflicted Humiliation",
+    "subtitle": "How algorithmic feeds became the modern opium trade, hollowing out our attention spans, fracturing society, and engineering a crisis we willingly consume.",
+    "image": "/issues/issue-04/hero-humen-2am.webp",
+    "secondImage": "/issues/issue-04/humen-trenches-1839.webp",
+    "thirdImage": "/issues/issue-04/gunboats-to-dopamine.webp",
+    "fourthImage": "/issues/issue-04/bedroom-optic-nerve.webp",
+    "citation": "Ref: Imperial Maritime Customs Archives (1839) & DataReportal Global Attention Telemetry (2025)",
+    "cards": [
+      {
+        "id": "humen-1839",
+        "start": 0.26,
+        "end": 0.44,
+        "stamp": "JUNE 1839 • HUMEN BEACH",
+        "accent": "#eab308",
+        "image": "/issues/issue-04/humen-trenches-1839.webp",
+        "headline": "2.6 Million Pounds of Opium Flushed into the Sea",
+        "body": "In June 1839, Imperial Commissioner Lin Zexu stood on the shores of Humen in southern China and ordered the destruction of 2.6 million pounds of British opium. Mixed with salt and lime in massive trenches, the narcotic was flushed into the Pearl River.",
+        "metricLabel": "British Opium Destroyed at Humen (1839)",
+        "metricValue": "2,600,000 lbs",
+        "barPercent": 88
+      },
+      {
+        "id": "pacified-within",
+        "start": 0.44,
+        "end": 0.62,
+        "stamp": "THE IMPERIAL DOCTRINE",
+        "accent": "#eab308",
+        "image": "/issues/issue-04/gunboats-to-dopamine.webp",
+        "headline": "Pacifying an Empire Without Cannons",
+        "body": "Lin understood an existential truth that the Qing court had ignored for decades: an empire does not need to be invaded with cannons if its citizens can be chemically pacified from within.",
+        "metricLabel": "Qing Citizens Addicted by Late 19th Century",
+        "metricValue": "40,000,000+ Citizens",
+        "barPercent": 92
+      },
+      {
+        "id": "first-century",
+        "start": 0.62,
+        "end": 0.80,
+        "stamp": "1839–1949 • THE SILVER DRAIN",
+        "accent": "#ef4444",
+        "image": "/issues/issue-04/canton-silver-ledger.webp",
+        "headline": "When Gunboats Enforced Addiction",
+        "body": "Britain went to war to defend its right to sell that addiction. Over the next century, tens of millions of citizens were hollowed out, state treasuries were drained of silver, and a civilisation suffered what historians call the Century of Humiliation.",
+        "metricLabel": "State Treasury Silver Outflow",
+        "metricValue": "Sovereign Deficit",
+        "barPercent": 94
+      },
+      {
+        "id": "second-opium-war",
+        "start": 0.80,
+        "end": 1.00,
+        "stamp": "02:00 AM • VOLUNTARY OPTIC FEED",
+        "accent": "#ef4444",
+        "image": "/issues/issue-04/bedroom-optic-nerve.webp",
+        "headline": "The Second Opium War Is Voluntary",
+        "body": "Fast forward to today. There are no foreign gunboats anchored off the coast, and no imperial merchants forcing a pipe into anyone’s mouth. Instead, billions of people lie awake in darkened bedrooms at two in the morning, voluntarily injecting algorithmic dopamine directly into their optic nerves, swipe after endless swipe.",
+        "punchline": "We are living through a second Opium War. Only this time, the humiliation is entirely self-inflicted.",
+        "metricLabel": "Global Waking Hours Surrendered to Feeds",
+        "metricValue": "35+ Full Days / Year",
+        "barPercent": 97
+      }
+    ]
+  },
+  "silverAndAttention": {
+    "title": "From Bengal Poppies to Variable-Reward Loops",
+    "cantonImage": "/issues/issue-04/canton-silver-ledger.webp",
+    "slotImage": "/issues/issue-04/attention-slot-machine.webp",
+    "citation": "Ref: East India Company Canton Trade Ledgers & DataReportal Global Screen Time Report (2025)",
+    "cards": [
+      {
+        "id": "canton-deficit",
+        "start": 0.04,
+        "end": 0.28,
+        "metric": "1839 • SILVER DEFICIT REVERSAL",
+        "accent": "#eab308",
+        "image": "/issues/issue-04/canton-silver-ledger.webp",
+        "headline": "Born Out of an Accounting Problem",
+        "body": "The 19th-century opium trade was born out of an accounting problem. British merchants wanted Chinese tea, silk, and porcelain, but China had zero interest in British goods. Silver was bleeding out of London.",
+        "citation": "Ref: Greenberg, British Trade and the Opening of China"
+      },
+      {
+        "id": "bengal-monopoly",
+        "start": 0.28,
+        "end": 0.52,
+        "metric": "BENGAL TO CANTON SMUGGLING",
+        "accent": "#eab308",
+        "image": "/issues/issue-04/humen-trenches-1839.webp",
+        "headline": "Weaponising Dependency into Revenue",
+        "body": "The East India Company solved its balance sheet by cultivating high-grade opium in Bengal and smuggling it into Canton, turning human dependency into a predictable revenue stream. Modern technology conglomerates operate on the exact same extraction model, except the currency is no longer silver. It is human attention.",
+        "citation": "Ref: Imperial Maritime Customs Archives"
+      },
+      {
+        "id": "thirty-five-days",
+        "start": 0.52,
+        "end": 0.76,
+        "metric": "35+ FULL WAKING DAYS / YEAR",
+        "accent": "#ef4444",
+        "image": "/issues/issue-04/bedroom-optic-nerve.webp",
+        "headline": "Seven Hours a Day Inside the Glass",
+        "body": "Today, the global average screen time sits at nearly seven hours a day, with roughly two and a half hours spent purely inside social feeds. Over a single year, the average person surrenders more than thirty-five full waking days to an infinite scroll.",
+        "citation": "Ref: DataReportal Global Digital Overview (2025)"
+      },
+      {
+        "id": "slot-machine-refinery",
+        "start": 0.76,
+        "end": 1.00,
+        "metric": "VARIABLE-REWARD CASINO LOOP",
+        "accent": "#ef4444",
+        "image": "/issues/issue-04/attention-slot-machine.webp",
+        "headline": "You Are the Raw Material Being Refined",
+        "body": "Just like the opium dens of Canton, these platforms are engineered around variable-reward schedules, the same psychological mechanism that powers casino slot machines. Every pull-to-refresh is a lever pull; every notification badge is a micro-dose of anticipation. You are not the customer using a free communication tool; you are the raw material being refined into advertising revenue.",
+        "citation": "Ref: Natasha Dow Schüll, Addiction by Design (MIT Press)"
+      }
+    ]
+  },
+  "mathOfDivision": {
+    "title": "Selling Rage at 5x Weight",
+    "image": "/issues/issue-04/rage-multiplier-5x.webp",
+    "shieldImage": "/issues/issue-04/zk-kyc-shield.webp",
+    "citation": "Ref: Internal Platform Ranking Disclosures (2021) & Brady et al., PNAS Moral Contagion Study",
+    "cards": [
+      {
+        "id": "contentment-flaw",
+        "start": 0.04,
+        "end": 0.28,
+        "metric": "CONTENTMENT CLOSES THE APP",
+        "accent": "#eab308",
+        "image": "/issues/issue-04/neurobiology-flaw.webp",
+        "headline": "The Lucrative Flaw in Human Neurobiology",
+        "body": "If social media merely wasted time, it would be a benign vice. The true toxicity lies in what the algorithm chooses to amplify. By the late 2010s, engineers discovered a lucrative flaw in human neurobiology: contentment makes people close the app, whereas moral outrage, tribal fear, and humiliation keep them locked to the screen.",
+        "citation": "Ref: Brady et al., PNAS (Moral-emotional words boost diffusion by 20%)"
+      },
+      {
+        "id": "five-times-angry",
+        "start": 0.28,
+        "end": 0.52,
+        "metric": "ANGRY REACTION = 5X WEIGHT",
+        "accent": "#ef4444",
+        "image": "/issues/issue-04/rage-multiplier-5x.webp",
+        "headline": "Peace Is Unprofitable; Nuance Does Not Scale",
+        "body": "Internal corporate disclosures revealed that ranking algorithms weighted posts triggering \"Angry\" reactions five times higher than standard likes. Peace is unprofitable. Nuance does not scale.",
+        "citation": "Ref: Internal Algorithmic Ranking Weights Disclosure (5 pts Angry vs. 1 pt Like)"
+      },
+      {
+        "id": "echo-chambers",
+        "start": 0.52,
+        "end": 0.76,
+        "metric": "AIRTIGHT IDEOLOGICAL SILOS",
+        "accent": "#ef4444",
+        "image": "/issues/issue-04/echo-chamber-silos.webp",
+        "headline": "Flattening Reality into Rage-Bait Slogans",
+        "body": "By mathematically subsidising hostility, platforms transformed public discourse into an industrial divide-and-conquer engine. Neighbours are sorted into airtight ideological echo chambers, and complex geopolitical and social realities are flattened into rage-bait slogans.",
+        "citation": "Ref: Rathje et al., Out-Group Animosity Drives Engagement (PNAS)"
+      },
+      {
+        "id": "quarterly-earnings",
+        "start": 0.76,
+        "end": 1.00,
+        "metric": "ENGINEERED POLARISATION",
+        "accent": "#22c55e",
+        "image": "/issues/issue-04/quarterly-rage-earnings.webp",
+        "headline": "Engineered to Despise One Another for Quarterly Calls",
+        "body": "Societies are not merely experiencing organic polarisation; they are being actively engineered to despise one another so that engagement metrics tick upward for quarterly earnings calls.",
+        "citation": "Ref: Vosoughi, Roy & Aral, MIT False News Diffusion Study (Science)"
+      }
+    ]
+  },
+  "forgottenCasualties": {
+    "title": "The Forgotten Casualties",
+    "subtitle": "While public panic focuses on teenagers, a quieter, faster-moving tragedy is unfolding among the elderly.",
+    "citation": "Ref: Guess et al., Science Advances (65+ Disinformation Sharing) & Lancet Commission on Dementia",
+    "slides": [
+      {
+        "id": "erased-spaces",
+        "badge": "URBAN ISOLATION • SILENT APARTMENTS",
+        "stat": "+30% to +50%",
+        "statLabel": "SURGE IN DEMENTIA RISK",
+        "accent": "#eab308",
+        "image": "/issues/issue-04/forgotten-elders.webp",
+        "headline": "Hypercapitalist Cities Erased the Gathering Places",
+        "body": "The public panic around screen addiction focuses almost exclusively on teenagers, ignoring a quieter, faster-moving tragedy among the elderly. Across modern cities, hypercapitalist urban design has steadily erased affordable community gathering spaces.",
+        "citation": "Ref: Lancet Commission on Dementia Prevention & Intervention"
+      },
+      {
+        "id": "fragmented-kin",
+        "badge": "CHRONIC LONELINESS VACUUM",
+        "stat": "65+ COHORT",
+        "statLabel": "FASTEST-GROWING SHORT-VIDEO DEMOGRAPHIC",
+        "accent": "#eab308",
+        "image": "/issues/issue-04/bedroom-optic-nerve.webp",
+        "headline": "Left Behind in Silent Apartments",
+        "body": "Extended families are fragmented across time zones. Left behind in silent apartments, millions of older adults face chronic social isolation, a condition that clinical research links to a 30% to 50% surge in dementia risk. Into that vacuum steps the smartphone.",
+        "citation": "Ref: National Academies of Sciences Social Isolation Report"
+      },
+      {
+        "id": "seven-times-fake-news",
+        "badge": "ALGORITHMIC RADICALISATION",
+        "stat": "7x Higher",
+        "statLabel": "FABRICATED POLITICAL CONTENT SHARED",
+        "accent": "#ef4444",
+        "image": "/issues/issue-04/senior-conspiracy-loop.webp",
+        "headline": "Sharing 7x More Fabricated Political Content",
+        "body": "Today, adults over sixty-five represent one of the fastest-growing demographics on short-form video feeds, and empirical studies show they share up to seven times more fabricated, polarising political content than younger cohorts.",
+        "citation": "Ref: Guess, Nagler & Tucker, Science Advances (2019)"
+      },
+      {
+        "id": "foot-soldiers",
+        "badge": "COGNITIVE & CIVIC EROSION",
+        "stat": "24/7 Loops",
+        "statLabel": "SYNTHETIC PANIC & CONSPIRACY FEEDS",
+        "accent": "#ef4444",
+        "image": "/issues/issue-04/rage-multiplier-5x.webp",
+        "headline": "Turning Our Elders into Unwitting Foot Soldiers",
+        "body": "Deprived of real human conversation, vulnerable seniors are swept into endless loops of manufactured panic, conspiracy theories, and synthetic outrage. Passive, high-stimulation scrolling displaces deep sleep, physical movement, and genuine social friction, accelerating cognitive decline while turning our elders into unwitting foot soldiers in algorithmic culture wars.",
+        "citation": "Ref: WHO Social Isolation and Loneliness Among Older People Report"
+      }
+    ]
+  },
+  "dealersSupply": {
+    "title": "Dealers Don’t Smoke Their Own Supply",
+    "image": "/issues/issue-04/palo-alto-woodblock.webp",
+    "rightImage": "/issues/issue-04/working-class-subway.webp",
+    "citation": "Ref: Waldorf Peninsula School Enrollments & Common Sense Media Socioeconomic Screen Disparity Report",
+    "leftTier": {
+      "badge": "ARCHITECT BLOODLINE • PALO ALTO",
+      "headline": "Chalkboards, Wooden Blocks & Zero Screens",
+      "framing": "Tech executives send their children to screen-free private schools and enforce strict no-smartphone rules at home.",
+      "sentence": "LUXURY STATUS: DIGITAL MINIMALISM"
+    },
+    "rightTier": {
+      "badge": "GLOBAL WORKING CLASS • MASS MARKET",
+      "headline": "Unthrottled Algorithmic Sedation",
+      "framing": "Public schools and working-class households are saturated with free, ad-supported infinite-scroll feeds.",
+      "sentence": "EXPORTED PRODUCT: ALGORITHMIC PACIFICATION"
+    },
+    "cards": [
+      {
+        "id": "directors-in-london",
+        "start": 0.04,
+        "end": 0.28,
+        "metric": "THE DEALER’S FIRST RULE",
+        "accent": "#eab308",
+        "headline": "Never Let Your Own Bloodline Consume the Product",
+        "body": "There is an unspoken rule among the architects of this digital economy: never let your own bloodline consume the product. During the height of the Canton opium trade, the British directors of the East India Company sitting in London did not spend their afternoons smoking Bengal opium. They understood it was an instrument of extraction, not a lifestyle.",
+        "citation": "Ref: East India Company Court of Directors Historical Records (London)"
+      },
+      {
+        "id": "silicon-valley-ban",
+        "start": 0.28,
+        "end": 0.52,
+        "metric": "SILICON VALLEY CLASS ASYMMETRY",
+        "accent": "#eab308",
+        "headline": "Founders Ban the Apps They Build",
+        "body": "Today, the exact same class asymmetry defines Silicon Valley. Tech founders who design infinite-scroll feeds strictly prohibit their own children from owning smartphones or using social apps.",
+        "citation": "Ref: Silicon Valley Executive Parenting Dossiers"
+      },
+      {
+        "id": "palo-alto-schools",
+        "start": 0.52,
+        "end": 0.76,
+        "metric": "0 SCREENS UNTIL HIGH SCHOOL",
+        "accent": "#22c55e",
+        "headline": "Wooden Toys and Face-to-Face Debate for the Elite",
+        "body": "Elite private schools in Palo Alto, attended by the children of software executives, ban screens entirely until high school, relying instead on wooden toys, chalkboards, and face-to-face debate.",
+        "citation": "Ref: Waldorf School of the Peninsula Curriculum"
+      },
+      {
+        "id": "working-class-sedation",
+        "start": 0.76,
+        "end": 1.00,
+        "metric": "2X WORKING-CLASS SCREEN EXPOSURE",
+        "accent": "#ef4444",
+        "headline": "Digital Minimalism for the Rich; Sedation for the Rest",
+        "body": "Meanwhile, those exact executives export unthrottled, hyper-addictive algorithmic feeds to the global working class. Digital minimalism has become a luxury status symbol for the wealthy, while algorithmic sedation is mass-marketed to everyone else.",
+        "citation": "Ref: Common Sense Media Census: Screen Use by Household Income Bracket"
+      }
+    ]
+  },
+  "stateComplicity": {
+    "title": "The State’s Quiet Complicity",
+    "image": "/issues/issue-04/state-complicity-customs.webp",
+    "secondImage": "/issues/issue-04/electoral-outrage-radar.webp",
+    "thirdImage": "/issues/issue-04/canton-silver-ledger.webp",
+    "citation": "Ref: Freedom House Freedom on the Net Report & Oxford Internet Institute Computational Propaganda Project",
+    "pillars": [
+      {
+        "id": "surveillance",
+        "code": "UTILITY 01",
+        "title": "Voluntary Mass Surveillance",
+        "stat": "$0 STATE CAPEX",
+        "accent": "#eab308",
+        "detail": "Centralised social networks serve as the most comprehensive, self-updating surveillance apparatus in human history, funded voluntarily by citizens."
+      },
+      {
+        "id": "electoral-outrage",
+        "code": "UTILITY 02",
+        "title": "Electoral Outrage Mobilisation",
+        "stat": "MICRO-TARGETED RAGE",
+        "accent": "#ef4444",
+        "detail": "Political parties rely heavily on micro-targeted algorithmic outrage to mobilise electoral bases and suppress opponents."
+      },
+      {
+        "id": "geopolitical-ai",
+        "code": "UTILITY 03",
+        "title": "Data & AI Supremacy Race",
+        "stat": "SOVEREIGN DATA FEEDSTOCK",
+        "accent": "#22c55e",
+        "detail": "Governments fear crippling domestic tech champions in an escalating geopolitical race for behavioural data and artificial intelligence supremacy."
+      }
+    ],
+    "cards": [
+      {
+        "id": "televised-theatre",
+        "start": 0.04,
+        "end": 0.28,
+        "metric": "PARLIAMENTARY THEATRE",
+        "accent": "#eab308",
+        "headline": "Televised Tongue-Lashings, Zero Structural Law",
+        "body": "If the neurological, social, and geopolitical damage is documented beyond dispute, why do governments fail to intervene? Politicians routinely haul tech executives before parliamentary committees for televised tongue-lashings, yet meaningful structural legislation rarely materialises.",
+        "citation": "Ref: Parliamentary & Congressional Tech Oversight Hearing Records"
+      },
+      {
+        "id": "voluntary-panopticon",
+        "start": 0.28,
+        "end": 0.52,
+        "metric": "SELF-FUNDED SURVEILLANCE",
+        "accent": "#eab308",
+        "headline": "A Panopticon Funded Voluntarily by Citizens",
+        "body": "The hesitation is not accidental. Modern states have become quietly dependent on the very platforms they claim to critique. First, centralised social networks serve as the most comprehensive, self-updating surveillance apparatus in human history, one that citizens fund voluntarily without requiring state budgets.",
+        "citation": "Ref: Freedom House, Freedom on the Net Surveillance Index"
+      },
+      {
+        "id": "electoral-and-ai",
+        "start": 0.52,
+        "end": 0.76,
+        "metric": "OUTRAGE & AI SUPREMACY",
+        "accent": "#ef4444",
+        "headline": "Electoral Rage and the Geopolitical AI Race",
+        "body": "Second, political parties rely heavily on micro-targeted algorithmic outrage to mobilise electoral bases and suppress opponents. Third, governments fear crippling their domestic tech champions in an escalating geopolitical race for data and artificial intelligence supremacy.",
+        "citation": "Ref: Oxford Internet Institute Global Inventory of Social Media Manipulation"
+      },
+      {
+        "id": "corrupt-customs",
+        "start": 0.76,
+        "end": 1.00,
+        "metric": "1830 CANTON CUSTOMS PARALLEL",
+        "accent": "#22c55e",
+        "headline": "Waving the Opium Clippers Past Customs",
+        "body": "Like the corrupt port officials who took bribes to wave British opium clippers past customs in 1830, modern states tolerate the poisoning of their public sphere because the infrastructure serves their own political utility.",
+        "citation": "Ref: Lovell, The Opium War & Zuboff, The Age of Surveillance Capitalism"
+      }
+    ]
+  },
+  "multifoldAntidote": {
+    "title": "The Multifold Antidote",
+    "leadParagraph": "Telling an individual to solve systemic algorithmic capture with \"digital detoxes\" is like telling a resident of 19th-century Canton to cure an empire-wide opium crisis with herbal tea. Willpower cannot out-muscle supercomputers optimised by thousands of behavioural psychologists. Breaking this cycle requires structural intervention across four fronts:",
+    "citation": "Ref: IEEE Zero-Knowledge Proof Standards, EU Digital Services Act & Ray Oldenburg, The Great Good Place",
+    "fronts": [
+      {
+        "code": "01",
+        "shortLabel": "01 • ZK-KYC PERSONHOOD",
+        "title": "Mandatory Proof-of-Personhood (Killing the Bot & Troll Farms)",
+        "stat": "1:1 HUMAN ACCOUNTABILITY",
+        "accent": "#22c55e",
+        "image": "/issues/issue-04/zk-kyc-shield.webp",
+        "body": "Public discourse cannot survive when anonymous bot networks and state-sponsored troll farms manufacture fake consensus and harass citizens with impunity. Platforms must enforce Cryptographic Proof-of-Personhood (Zero-Knowledge KYC). Users verify their unique human identity through trusted national or banking rails to generate an encrypted credential, preserving everyday pseudonymity if desired, while ensuring every account maps 1:1 to a real, legally accountable human being. Overnight, astroturfing armies vanish and coordinated cyberbullying carries real-world consequences."
+      },
+      {
+        "code": "02",
+        "shortLabel": "02 • BAN RAGE ALGORITHMS",
+        "title": "Outlawing Algorithmic Outrage Amplification",
+        "stat": "1X CHRONOLOGICAL DEFAULT",
+        "accent": "#eab308",
+        "image": "/issues/issue-04/rage-multiplier-5x.webp",
+        "body": "Regulators must prohibit engagement-based ranking by default. Feeds must return to strict chronological streams displaying content exclusively from accounts a user intentionally follows, stripping platforms of the power to inject unverified rage-bait into passive scroll loops."
+      },
+      {
+        "code": "03",
+        "shortLabel": "03 • END SLOT MECHANICS",
+        "title": "Dismantling Slot-Machine Mechanics & Walled Gardens",
+        "stat": "OPEN PROTOCOL PORTABILITY",
+        "accent": "#ef4444",
+        "image": "/issues/issue-04/attention-slot-machine.webp",
+        "body": "Ban manipulative UI traps such as infinite auto-play and pull-to-refresh delays while mandating protocol interoperability so users can port their social connections onto clean, ad-free, user-controlled clients."
+      },
+      {
+        "code": "04",
+        "shortLabel": "04 • PHYSICAL THIRD PLACES",
+        "title": "Rebuilding Physical \"Third Places\"",
+        "stat": "CIVIC INFRASTRUCTURE LEVY",
+        "accent": "#22c55e",
+        "image": "/issues/issue-04/third-places-renewal.webp",
+        "body": "No digital regulation works if cities remain hostile to human gathering. Governments must tax digital ad-extraction revenues to fund unmonetised physical infrastructure like public libraries, community halls, parks, and senior social hubs that pull both the young and the elderly out of lonely rooms and back into real human contact."
+      }
+    ]
+  },
+  "conclusion": {
+    "title": "The Mirror of History",
+    "backgroundImage": "/issues/issue-04/mirror-of-history.webp",
+    "lead": "Empires rarely collapse because an external army kicks down the front gate. They collapse when their internal cohesion dissolves. When citizens lose the capacity to focus, to trust their neighbours, or to distinguish reality from engineered spectacle.",
+    "parallels": [
+      {
+        "era": "1839 • FIRST OPIUM WAR",
+        "metric": "FOREIGN GUNBOATS & SILVER DRAIN",
+        "detail": "Foreign gunboats forced addiction onto a reluctant nation to balance an imperial trade ledger.",
+        "color": "#eab308"
+      },
+      {
+        "era": "2026 • SECOND OPIUM WAR",
+        "metric": "POCKET OPIUM DEN & SELF-FUNDED FEED",
+        "detail": "Today, we carry the opium den in our pockets, pay for the data connection ourselves, and thank the dealer for the distraction.",
+        "color": "#ef4444"
+      },
+      {
+        "era": "THE CIVIC CHOICE",
+        "metric": "STRUCTURAL REFORM OR ATROPHY",
+        "detail": "Outlaw algorithmic rage, enforce 1:1 proof-of-personhood, and rebuild physical community infrastructure.",
+        "color": "#22c55e"
+      }
+    ],
+    "body": "Two hundred years ago, foreign gunboats forced addiction onto a reluctant nation to balance a ledger. Today, we carry the opium den in our pockets, pay for the data connection ourselves, and thank the dealer for the distraction. History will not judge our era kindly if we surrender our collective attention span, our elders’ cognitive health, and our civic unity to an advertising slot machine.",
+    "punchline": "Either we dismantle the architecture of algorithmic extraction, or we accept our place in a new century of self-inflicted humiliation."
+  },
+  "sources": [
+    {
+      "id": "01",
+      "title": "Imperial Maritime Customs Archives & Julia Lovell, The Opium War (2011)",
+      "detail": "Historical records of Commissioner Lin Zexu’s June 1839 destruction of 2.6 million pounds (20,283 chests) of British opium at Humen, the East India Company’s Bengal-to-Canton silver arbitrage, and late-Qing addiction prevalence."
+    },
+    {
+      "id": "02",
+      "title": "DataReportal Global Digital Overview (2025) & Natasha Dow Schüll, Addiction by Design (MIT Press)",
+      "detail": "Global average daily screen time (~6 hours 40 minutes) and social feed duration (~2 hours 23 minutes, totalling 35+ full waking days per year), alongside variable-ratio reinforcement schedules in slot-machine and infinite-scroll UI architectures."
+    },
+    {
+      "id": "03",
+      "title": "Internal Platform Ranking Disclosures (2021) & Brady et al., PNAS (2017)",
+      "detail": "Internal engagement weighting formulas assigning 5 points to 'Angry' reactions versus 1 point for standard 'Likes', and empirical findings that moral-emotional language increases social media diffusion by ~20% per word."
+    },
+    {
+      "id": "04",
+      "title": "Guess, Nagler & Tucker, Science Advances (2019) & The Lancet Commission on Dementia (2024)",
+      "detail": "Empirical telemetry showing users aged 65 and older shared nearly seven times more fabricated political articles than younger age groups, paired with longitudinal clinical evidence linking social isolation to a 30%–50% increase in dementia risk."
+    },
+    {
+      "id": "05",
+      "title": "Common Sense Media Socioeconomic Census & Silicon Valley Screen-Free School Curricula",
+      "detail": "Socioeconomic disparities in adolescent screen exposure (working-class youth exposed to nearly double the daily passive screen time of affluent peers) contrasted with screen-free private education in Palo Alto."
+    },
+    {
+      "id": "06",
+      "title": "Oxford Internet Institute Computational Propaganda Project & Ray Oldenburg, The Great Good Place",
+      "detail": "Documentation of state-aligned bot networks, electoral micro-targeting, Zero-Knowledge Proof-of-Personhood (ZK-KYC) cryptographic standards, and the civic role of unmonetised physical 'third places'."
+    }
+  ]
+}

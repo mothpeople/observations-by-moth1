@@ -67,3 +67,30 @@ export function getCardEnvelope(
   // Static reading plateau: full opacity, zero translation
   return { opacity: 1, y: 0 };
 }
+
+/**
+ * Computes a stepped horizontal slide position (0 .. totalSlides - 1)
+ * with static reading plateaus on each slide before smoothly gliding to the next.
+ */
+export function getSteppedSlideIndex(
+  progress,
+  totalSlides = 4,
+  plateauRatio = 0.65
+) {
+  if (totalSlides <= 1) return 0;
+  const p = clamp(progress, 0, 1);
+  if (p >= 1) return totalSlides - 1;
+
+  const seg = 1 / totalSlides;
+  const idx = Math.min(totalSlides - 1, Math.floor(p / seg));
+  if (idx === totalSlides - 1) return totalSlides - 1;
+
+  const localP = (p - idx * seg) / seg;
+  if (localP <= plateauRatio) {
+    return idx;
+  }
+  const t = clamp((localP - plateauRatio) / (1 - plateauRatio), 0, 1);
+  // Smoothstep easing for horizontal glide
+  const smoothT = t * t * (3 - 2 * t);
+  return idx + smoothT;
+}

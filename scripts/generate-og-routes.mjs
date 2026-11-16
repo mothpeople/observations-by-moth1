@@ -42,6 +42,21 @@ const routes = [
     url: 'https://observations.moth1.xyz/war-on-drugs',
   },
   {
+    paths: [
+      'century-of-self-inflicted-humiliation',
+      'self-inflicted-humiliation',
+      'the-century-of-self-inflicted-humiliation',
+      'issue-04',
+      'issue/04',
+    ],
+    title:
+      'Issue #04: The Century of Self-Inflicted Humiliation | Observations by Moth1',
+    description:
+      'How algorithmic feeds became the modern opium trade, hollowing out our attention spans, fracturing society, and engineering a crisis we willingly consume.',
+    image: 'https://observations.moth1.xyz/og/og-issue-04.jpg',
+    url: 'https://observations.moth1.xyz/century-of-self-inflicted-humiliation',
+  },
+  {
     paths: ['analytics'],
     title: 'Analytics & Telemetry Command | Observations by Moth1',
     description: 'Private telemetry command.',
