@@ -187,11 +187,10 @@ export default function MultifoldAntidoteSection({ data }) {
                         When Bot Farms Vanish and Chronology Returns
                       </h3>
                       <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed mb-3">
-                        Scroll through the reformed 1:1 ZK-KYC chronological
-                        feed on the right: every account maps to a verified,
-                        accountable human being, and local civic infrastructure,
-                        senior clubs, and empirical research reach 100% of
-                        subscribers without synthetic rage amplification.
+                        Every account maps to a verified, accountable human
+                        being, and local civic infrastructure, senior clubs, and
+                        empirical research reach 100% of subscribers without
+                        synthetic rage amplification.
                       </p>
                       <div className="font-mono text-[8.5px] sm:text-[10px] text-neutral-400">
                         {data.citation}
