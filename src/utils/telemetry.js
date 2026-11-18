@@ -18,6 +18,14 @@ const DEFAULT_CHANNEL_LEDGER = {
         avgScrollDepth: 0,
       },
       {
+        id: '04',
+        path: '/century-of-self-inflicted-humiliation',
+        title: 'Issue #04: The Century of Self-Inflicted Humiliation',
+        views: 0,
+        shares: 0,
+        avgScrollDepth: 0,
+      },
+      {
         id: '03',
         path: '/war-on-drugs',
         title: 'Issue #03: The War No One Was Supposed to Win',
@@ -48,6 +56,18 @@ const DEFAULT_CHANNEL_LEDGER = {
     platform: 'Instagram Reels',
     followers: 0,
     reels: [
+      {
+        id: 'ig-reel-04',
+        issueId: '04',
+        title: 'The Century of Self-Inflicted Humiliation (9:16 Reel)',
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        saves: 0,
+        avgWatchTimeSec: 0,
+        status: 'Ready to Post',
+      },
       {
         id: 'ig-reel-03',
         issueId: '03',
@@ -91,6 +111,18 @@ const DEFAULT_CHANNEL_LEDGER = {
     platform: 'Facebook Reels & Page',
     followers: 0,
     reels: [
+      {
+        id: 'fb-reel-04',
+        issueId: '04',
+        title: 'The Century of Self-Inflicted Humiliation (9:16 Reel)',
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        saves: 0,
+        linkClicks: 0,
+        status: 'Ready to Post',
+      },
       {
         id: 'fb-reel-03',
         issueId: '03',
@@ -187,6 +219,18 @@ const DEFAULT_CHANNEL_LEDGER = {
     subscribers: 6,
     totalViews: 1816,
     videos: [
+      {
+        id: 'yt-shorts-04',
+        videoId: '',
+        issueId: '04',
+        title: 'Issue 04: The Century of Self-Inflicted Humiliation',
+        views: 0,
+        likes: 0,
+        comments: 0,
+        url: 'https://www.youtube.com/@sivaraj.pragasm/shorts',
+        trackingUrl: 'https://observations.moth1.xyz/century-of-self-inflicted-humiliation?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-04',
+        playlistUrl: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
+      },
       {
         id: 'yt-shorts-03',
         videoId: 'KXwpmCaOMTE',
@@ -346,6 +390,54 @@ const DEFAULT_CHANNEL_LEDGER = {
   storyFunnel: {
     defaultImpressions: 0,
     dispatches: [
+      {
+        id: '04',
+        issueId: '04',
+        slug: 'century-of-self-inflicted-humiliation',
+        title: 'Issue #04: The Century of Self-Inflicted Humiliation',
+        instagram: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        facebook: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        x: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        youtube: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        pinterest: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        substack: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+        email: {
+          entrances: 0,
+          clicks: 0,
+          scroll75: 0,
+          subscribers: 0,
+        },
+      },
       {
         id: '03',
         issueId: '03',

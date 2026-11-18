@@ -40,6 +40,10 @@ export function isObservationsContent(text = '', hashtags = [], filterTag = '#Ob
   return (
     haystack.includes('observations.moth1.xyz') ||
     haystack.includes('observations by moth1') ||
+    haystack.includes('the century of self-inflicted humiliation') ||
+    haystack.includes('century-of-self-inflicted-humiliation') ||
+    haystack.includes('self-inflicted humiliation') ||
+    haystack.includes('self-inflicted-humiliation') ||
     haystack.includes('the war no one was supposed to win') ||
     haystack.includes('the-war-no-one-was-supposed-to-win') ||
     haystack.includes('war on drugs') ||
@@ -276,6 +280,18 @@ export function normalizeFacebookItem(item, idx = 0) {
   let text = caption;
   if (!text || /^Facebook Post #\d+/i.test(text)) {
     if (
+      lowerCaption.includes('self-inflicted humiliation') ||
+      lowerCaption.includes('century-of-self-inflicted-humiliation') ||
+      lowerCaption.includes('century of self-inflicted humiliation') ||
+      lowerCaption.includes('opium trade') ||
+      lowerCaption.includes('issue-04') ||
+      lowerCaption.includes('issue 04') ||
+      lowerCaption.includes('issue #04') ||
+      lowerCaption.includes('issue 4') ||
+      lowerCaption.includes('issue #4')
+    ) {
+      text = 'The Century of Self-Inflicted Humiliation...';
+    } else if (
       lowerCaption.includes('war on drugs') ||
       lowerCaption.includes('war-on-drugs') ||
       lowerCaption.includes('the war no one was supposed to win') ||
@@ -853,10 +869,24 @@ export function sortFacebookReelsForDisplay(items) {
     const textA = `${a.text || ''} ${a.caption || ''} ${a.url || ''}`.toLowerCase();
     const textB = `${b.text || ''} ${b.caption || ''} ${b.url || ''}`.toLowerCase();
 
-    // Row 1: Issue 03 ("The War No One Was Supposed to Win...") -> Score 3
-    // Row 2: Issue 02 ("The Meat Grinder Needs More Meat...") -> Score 2
-    // Row 3: Issue 01 ("Observations by Moth1 is a new story...") -> Score 1
+    // Row 1: Issue 04 ("The Century of Self-Inflicted Humiliation...") -> Score 4
+    // Row 2: Issue 03 ("The War No One Was Supposed to Win...") -> Score 3
+    // Row 3: Issue 02 ("The Meat Grinder Needs More Meat...") -> Score 2
+    // Row 4: Issue 01 ("Observations by Moth1 is a new story...") -> Score 1
     const getScore = (text) => {
+      if (
+        text.includes('self-inflicted humiliation') ||
+        text.includes('century-of-self-inflicted-humiliation') ||
+        text.includes('century of self-inflicted humiliation') ||
+        text.includes('opium trade') ||
+        text.includes('issue-04') ||
+        text.includes('issue 04') ||
+        text.includes('issue #04') ||
+        text.includes('issue 4') ||
+        text.includes('issue #4')
+      ) {
+        return 4;
+      }
       if (
         text.includes('war on drugs') ||
         text.includes('war-on-drugs') ||
@@ -1633,6 +1663,22 @@ export default async function handler(req, res) {
     // Sort: Row 1 = Issue 03 ("The War No One Was Supposed to Win..."), Row 2 = Issue 02 ("The Meat Grinder Needs More Meat..."), Row 3 = Issue 01 ("Observations by Moth1 is a new story...")
     const facebookItems = sortFacebookReelsForDisplay(filteredFacebookItems);
 
+    const fbIssue04Item =
+      facebookItems.find((i) => {
+        const t = `${i.text || ''} ${i.caption || ''}`.toLowerCase();
+        return (
+          t.includes('self-inflicted humiliation') ||
+          t.includes('century-of-self-inflicted-humiliation') ||
+          t.includes('century of self-inflicted humiliation') ||
+          t.includes('opium trade') ||
+          t.includes('issue-04') ||
+          t.includes('issue 04') ||
+          t.includes('issue #04') ||
+          t.includes('issue 4') ||
+          t.includes('issue #4')
+        );
+      }) || null;
+
     const fbIssue03Item =
       facebookItems.find((i) => {
         const t = `${i.text || ''} ${i.caption || ''}`.toLowerCase();
@@ -1684,6 +1730,17 @@ export default async function handler(req, res) {
       }) || (facebookItems.length >= 3 ? facebookItems[2] : facebookItems.length >= 2 ? facebookItems[1] : facebookItems.length >= 1 ? facebookItems[0] : null);
 
     const facebookReels = [
+      {
+        id: 'fb-reel-04',
+        issueId: '04',
+        title: 'The Century of Self-Inflicted Humiliation',
+        views: Number(fbIssue04Item?.views) || 0,
+        likes: Number(fbIssue04Item?.likes) || 0,
+        comments: Number(fbIssue04Item?.comments) || 0,
+        shares: Number(fbIssue04Item?.shares) || 0,
+        status: fbIssue04Item ? 'Published' : 'Ready to Post',
+        url: fbIssue04Item?.url || 'https://www.facebook.com/observationsbymoth1',
+      },
       {
         id: 'fb-reel-03',
         issueId: '03',

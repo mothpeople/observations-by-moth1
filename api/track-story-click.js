@@ -7,6 +7,15 @@ const TMP_FILE = '/tmp/moth1_story_telemetry.json';
 
 const DEFAULT_DATA = {
   issues: {
+    'century-of-self-inflicted-humiliation': {
+      instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
+      facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
+      x: { clicks: 0, scroll75: 0, subscribers: 0 },
+      youtube: { clicks: 0, scroll75: 0, subscribers: 0 },
+      pinterest: { clicks: 0, scroll75: 0, subscribers: 0 },
+      substack: { clicks: 0, scroll75: 0, subscribers: 0 },
+      email: { clicks: 0, scroll75: 0, subscribers: 0 },
+    },
     'war-on-drugs': {
       instagram: { clicks: 0, scroll75: 0, subscribers: 0 },
       facebook: { clicks: 0, scroll75: 0, subscribers: 0 },
@@ -163,8 +172,16 @@ export default async function handler(req, res) {
       ).toLowerCase();
 
       // Normalize issue key
-      let issueKey = 'war-on-drugs';
+      let issueKey = 'century-of-self-inflicted-humiliation';
       if (
+        rawIssue.includes('century') ||
+        rawIssue.includes('humiliation') ||
+        rawIssue.includes('opium') ||
+        rawIssue === 'issue-04' ||
+        rawIssue === '04'
+      ) {
+        issueKey = 'century-of-self-inflicted-humiliation';
+      } else if (
         rawIssue.includes('war') ||
         rawIssue.includes('drug') ||
         rawIssue.includes('phantom') ||

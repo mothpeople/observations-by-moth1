@@ -268,6 +268,10 @@ function matchesObservationsFilter(item, filterTag = '#ObservationsByMoth1') {
 
   // 3. Exact issue title matches
   if (
+    haystack.includes('the century of self-inflicted humiliation') ||
+    haystack.includes('century-of-self-inflicted-humiliation') ||
+    haystack.includes('self-inflicted humiliation') ||
+    haystack.includes('self-inflicted-humiliation') ||
     haystack.includes('the war no one was supposed to win') ||
     haystack.includes('the-war-no-one-was-supposed-to-win') ||
     haystack.includes('war on drugs') ||
@@ -288,6 +292,7 @@ function matchItemToIssueId(item) {
 
   // 1. Check explicit issueId property first
   const cleanIssue = String(item.issueId || '').trim();
+  if (cleanIssue === '04' || cleanIssue === '4') return '04';
   if (cleanIssue === '03' || cleanIssue === '3') return '03';
   if (cleanIssue === '02' || cleanIssue === '2') return '02';
   if (cleanIssue === '01' || cleanIssue === '1') return '01';
@@ -296,6 +301,25 @@ function matchItemToIssueId(item) {
   const text = `${item.caption || ''} ${item.text || ''} ${item.title || ''} ${item.url || ''}`.toLowerCase();
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags.map((h) => String(h).toLowerCase()).join(' ') : '';
   const haystack = `${text} ${hashtags}`;
+
+  if (
+    haystack.includes('the century of self-inflicted humiliation') ||
+    haystack.includes('century of self-inflicted humiliation') ||
+    haystack.includes('century-of-self-inflicted-humiliation') ||
+    haystack.includes('self-inflicted humiliation') ||
+    haystack.includes('self-inflicted-humiliation') ||
+    haystack.includes('opium trade') ||
+    haystack.includes('humen') ||
+    haystack.includes('algorithmic feed') ||
+    haystack.includes('rage multiplier') ||
+    haystack.includes('issue-04') ||
+    haystack.includes('issue 04') ||
+    haystack.includes('issue 4') ||
+    haystack.includes('issue #04') ||
+    haystack.includes('issue #4')
+  ) {
+    return '04';
+  }
 
   if (
     haystack.includes('war on drugs') ||
@@ -365,6 +389,7 @@ function matchItemToIssueId(item) {
 
   // 3. Fallback: check explicit slug strings on custom ID (e.g. "ig-reel-02", "fb-reel-01", "war-on-drugs")
   const idStr = String(item.id || '').toLowerCase();
+  if (idStr.includes('century-of-self-inflicted-humiliation') || /issue-?0?4/i.test(idStr) || idStr.includes('reel-04') || idStr.includes('post-04')) return '04';
   if (idStr.includes('war-on-drugs') || /issue-?0?3/i.test(idStr) || idStr.includes('reel-03') || idStr.includes('post-03')) return '03';
   if (idStr.includes('meat-grinder') || /issue-?0?2/i.test(idStr) || idStr.includes('reel-02') || idStr.includes('post-02')) return '02';
   if (idStr.includes('watering-grass') || /issue-?0?1/i.test(idStr) || idStr.includes('reel-01') || idStr.includes('post-01')) return '01';
@@ -581,6 +606,18 @@ function normalizeFacebookItem(item, idx = 0) {
   let text = caption;
   if (!text || /^Facebook Post #\d+/i.test(text)) {
     if (
+      lowerCaption.includes('self-inflicted humiliation') ||
+      lowerCaption.includes('century-of-self-inflicted-humiliation') ||
+      lowerCaption.includes('century of self-inflicted humiliation') ||
+      lowerCaption.includes('opium trade') ||
+      lowerCaption.includes('issue-04') ||
+      lowerCaption.includes('issue 04') ||
+      lowerCaption.includes('issue #04') ||
+      lowerCaption.includes('issue 4') ||
+      lowerCaption.includes('issue #4')
+    ) {
+      text = 'The Century of Self-Inflicted Humiliation...';
+    } else if (
       lowerCaption.includes('war on drugs') ||
       lowerCaption.includes('war-on-drugs') ||
       lowerCaption.includes('the war no one was supposed to win') ||
@@ -1160,6 +1197,7 @@ function isFacebookVideoReel(rawItem, item) {
 function getReelDisplayTitle(item, fallbackIdx = 0) {
   if (!item) return `Reel #${fallbackIdx + 1}`;
   const issueId = matchItemToIssueId(item);
+  if (issueId === '04') return 'Issue #04: The Century of Self-Inflicted Humiliation';
   if (issueId === '03') return 'Issue #03: The War No One Was Supposed to Win';
   if (issueId === '02') return 'Issue #02: The Meat Grinder Needs More Meat';
   if (issueId === '01') return 'Issue #01: Watering Grass in a Thunderstorm';
@@ -1172,11 +1210,11 @@ function sortReelsForDisplay(items) {
     const issueA = matchItemToIssueId(a);
     const issueB = matchItemToIssueId(b);
 
-    const scoreA = issueA === '03' ? 3 : issueA === '02' ? 2 : issueA === '01' ? 1 : 0;
-    const scoreB = issueB === '03' ? 3 : issueB === '02' ? 2 : issueB === '01' ? 1 : 0;
+    const scoreA = issueA === '04' ? 4 : issueA === '03' ? 3 : issueA === '02' ? 2 : issueA === '01' ? 1 : 0;
+    const scoreB = issueB === '04' ? 4 : issueB === '03' ? 3 : issueB === '02' ? 2 : issueB === '01' ? 1 : 0;
 
     if (scoreA !== scoreB) {
-      return scoreB - scoreA; // Row 1 = Issue 03 (War on Drugs), Row 2 = Issue 02 (Meat Grinder), Row 3 = Issue 01 (Watering Grass)
+      return scoreB - scoreA; // Row 1 = Issue 04, Row 2 = Issue 03, Row 3 = Issue 02, Row 4 = Issue 01
     }
 
     const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
@@ -1389,6 +1427,124 @@ async function fetchDirectActorDataset(actorIdOrList, token) {
 
 // Pre-configured UTM links for Observations by Moth1 distribution campaigns
 const PRECONFIGURED_UTM_LINKS = [
+  // Issue #04: The Century of Self-Inflicted Humiliation
+  {
+    id: '04-instagram-story',
+    issueId: '04',
+    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
+    slug: 'century-of-self-inflicted-humiliation',
+    platform: 'instagram',
+    platformLabel: 'Instagram Story',
+    medium: 'story',
+    campaign: 'issue-04',
+    badge: 'IG Story',
+    color: '#fda4af',
+    description: 'Instagram 9:16 Reel/Story sticker link pointing to Issue #04',
+  },
+  {
+    id: '04-facebook-story',
+    issueId: '04',
+    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
+    slug: 'century-of-self-inflicted-humiliation',
+    platform: 'facebook',
+    platformLabel: 'Facebook Reel / Story',
+    medium: 'story',
+    campaign: 'issue-04',
+    badge: 'FB Story',
+    color: '#60a5fa',
+    description: 'Facebook 9:16 Reel pinned comment or story link pointing to Issue #04',
+  },
+  {
+    id: '04-threads-post',
+    issueId: '04',
+    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
+    slug: 'century-of-self-inflicted-humiliation',
+    platform: 'threads',
+    platformLabel: 'Threads Post',
+    medium: 'post',
+    campaign: 'issue-04',
+    badge: 'Threads Post',
+    color: '#c084fc',
+    description: 'Threads carousel or launch post link for Issue #04 dispatch',
+  },
+  {
+    id: '04-youtube-profile',
+    issueId: '04',
+    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
+    slug: 'century-of-self-inflicted-humiliation',
+    platform: 'youtube',
+    platformLabel: 'YouTube Profile / Bio',
+    medium: 'profile',
+    campaign: 'issue-04',
+    badge: 'YT Profile',
+    color: '#f87171',
+    description: 'YouTube channel bio / link in profile pointing to Issue #04',
+  },
+  {
+    id: '04-youtube-shorts',
+    issueId: '04',
+    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
+    slug: 'century-of-self-inflicted-humiliation',
+    platform: 'youtube',
+    platformLabel: 'YouTube Shorts / Video',
+    medium: 'shorts',
+    campaign: 'issue-04',
+    badge: 'YT Shorts',
+    color: '#ef4444',
+    description: 'Pinned comment or description tracking link for YouTube Short Issue #04',
+  },
+  {
+    id: '04-youtube-community',
+    issueId: '04',
+    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
+    slug: 'century-of-self-inflicted-humiliation',
+    platform: 'youtube',
+    platformLabel: 'YouTube Community Post',
+    medium: 'community',
+    campaign: 'issue-04',
+    badge: 'YT Community',
+    color: '#f87171',
+    description: 'YouTube Community Tab update link pointing to Issue #04',
+  },
+  {
+    id: '04-pinterest-pin',
+    issueId: '04',
+    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
+    slug: 'century-of-self-inflicted-humiliation',
+    platform: 'pinterest',
+    platformLabel: 'Pinterest Pin Plate',
+    medium: 'pin',
+    campaign: 'issue-04',
+    badge: 'Pinterest Pin',
+    color: '#e60023',
+    description: '1000×1500 Retina Infographic or Quote Pin link for Issue #04 on @moth1siv',
+  },
+  {
+    id: '04-substack-post',
+    issueId: '04',
+    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
+    slug: 'century-of-self-inflicted-humiliation',
+    platform: 'substack',
+    platformLabel: 'Substack Note / Post',
+    medium: 'note',
+    campaign: 'issue-04',
+    badge: 'Substack Note',
+    color: '#fbbf24',
+    description: 'Substack Note or post link pointing to Issue #04 interactive essay',
+  },
+  {
+    id: '04-substack-email',
+    issueId: '04',
+    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
+    slug: 'century-of-self-inflicted-humiliation',
+    platform: 'substack',
+    platformLabel: 'Substack Email Broadcast',
+    medium: 'email',
+    campaign: 'issue-04',
+    badge: 'Substack Email',
+    color: '#67e8f9',
+    description: 'Direct email newsletter button link for Issue #04 subscribers',
+  },
   // Issue #03: The War No One Was Supposed to Win
   {
     id: '03-instagram-story',
@@ -1817,14 +1973,14 @@ export default function Dashboard() {
   const [activeMacroSection, setActiveMacroSection] = useState('analytics'); // 'analytics' | 'funnel'
   const [analyticsTab, setAnalyticsTab] = useState('website'); // 'website' | 'reels' | 'substack' | 'social' | 'all'
   const [socialPlatformTab, setSocialPlatformTab] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'threads' | 'x' | 'youtube'
-  const [utmLinksFilterIssue, setUtmLinksFilterIssue] = useState('all'); // 'all' | '03' | '02' | '01' | 'home'
-  const [utmLinksFilterPlatform, setUtmLinksFilterPlatform] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'x' | 'threads' | 'youtube' | 'pinterest' | 'substack'
+  const [utmLinksFilterIssue, setUtmLinksFilterIssue] = useState('all'); // 'all' | '04' | '03' | '02' | '01' | 'home'
+  const [utmLinksFilterPlatform, setUtmLinksFilterPlatform] = useState('all'); // 'all' | 'instagram' | 'facebook' | 'threads' | 'youtube' | 'pinterest' | 'substack'
 
   // Custom UTM Generator Form State
-  const [customUtmIssue, setCustomUtmIssue] = useState('war-on-drugs');
+  const [customUtmIssue, setCustomUtmIssue] = useState('century-of-self-inflicted-humiliation');
   const [customUtmSource, setCustomUtmSource] = useState('instagram');
   const [customUtmMedium, setCustomUtmMedium] = useState('story');
-  const [customUtmCampaign, setCustomUtmCampaign] = useState('issue-03');
+  const [customUtmCampaign, setCustomUtmCampaign] = useState('issue-04');
 
   // Dark / Light Theme State with LocalStorage Persistence
   const [theme, setTheme] = useState(() => {
@@ -2062,8 +2218,8 @@ export default function Dashboard() {
         id: r.id || `ig-reel-${issueId}`,
         issueId,
         type: 'Reel / Video',
-        caption: r.caption || r.title || (issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
-        title: r.title || (issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+        caption: r.caption || r.title || (issueId === '04' ? 'Issue 04: The Century of Self-Inflicted Humiliation' : issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+        title: r.title || (issueId === '04' ? 'Issue 04: The Century of Self-Inflicted Humiliation' : issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
         url: r.url || `https://www.instagram.com/${cleanIgHandle}/reels/`,
         views: isContaminated ? baselineViews : Math.max(baselineViews, Number(r.views) || 0),
         likes: isContaminated ? baselineLikes : Math.max(baselineLikes, Number(r.likes) || 0),
@@ -2340,10 +2496,10 @@ export default function Dashboard() {
         const cleanIgHandle = (targets.instagramHandle || 'moth1.siv').replace(/^@+/, '');
         const mergedIgMap = new Map();
 
-        // 1. Seed baseline ledger reels (Issue 03, 02, 01)
+        // 1. Seed baseline ledger reels (Issue 04, 03, 02, 01)
         for (const r of (ledger.instagram?.reels || [])) {
           const matched = matchItemToIssueId(r);
-          const issueId = (r.issueId && ['01', '02', '03'].includes(r.issueId)) ? r.issueId : matched;
+          const issueId = (r.issueId && ['01', '02', '03', '04'].includes(r.issueId)) ? r.issueId : matched;
           if (!issueId) continue;
           const baselineViews = issueId === '01' ? 282 : issueId === '02' ? 243 : 0;
           const baselineLikes = issueId === '01' ? 4 : issueId === '02' ? 8 : 0;
@@ -2351,8 +2507,8 @@ export default function Dashboard() {
             id: r.id || `ig-reel-${issueId}`,
             issueId,
             type: 'Reel / Video',
-            caption: r.caption || r.title || (issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
-            title: r.title || (issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+            caption: r.caption || r.title || (issueId === '04' ? 'Issue 04: The Century of Self-Inflicted Humiliation' : issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+            title: r.title || (issueId === '04' ? 'Issue 04: The Century of Self-Inflicted Humiliation' : issueId === '03' ? 'Issue 03: The War No One Was Supposed to Win' : issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
             url: r.url || `https://www.instagram.com/${cleanIgHandle}/reels/`,
             views: Math.max(baselineViews, Number(r.views) || 0),
             likes: Math.max(baselineLikes, Number(r.likes) || 0),
@@ -2485,7 +2641,7 @@ export default function Dashboard() {
 
         const serverFbReels = (serverJson?.facebook?.reels || []).map((r, i) => ({
           id: r.id || `fb-reel-${r.issueId || i}`,
-          text: r.text || r.title || (r.issueId === '03' ? 'Issue 03 - The War No One Was Supposed to Win' : r.issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
+          text: r.text || r.title || (r.issueId === '04' ? 'Issue 04 - The Century of Self-Inflicted Humiliation' : r.issueId === '03' ? 'Issue 03 - The War No One Was Supposed to Win' : r.issueId === '02' ? 'Issue 02 - The Meat Grinder Needs More Meat' : 'Issue 01 - Watering Grass in a Thunderstorm'),
           caption: r.caption || r.title || '',
           url: r.url || 'https://www.facebook.com/observationsbymoth1',
           views: Number(r.views) || 0,
@@ -2496,17 +2652,17 @@ export default function Dashboard() {
           publishedAt: r.publishedAt || new Date().toISOString(),
         })).filter((r) => r.views > 0 || r.isReel);
 
-        // Ensure all 3 publication issues (03, 02, 01) are always represented in Facebook reels
+        // Ensure all 4 publication issues (04, 03, 02, 01) are always represented in Facebook reels
         const mergedFbMap = new Map();
         for (const r of (ledger.facebook?.reels || [])) {
           const matched = matchItemToIssueId(r);
-          const issueId = (r.issueId && ['01', '02', '03'].includes(r.issueId)) ? r.issueId : matched;
+          const issueId = (r.issueId && ['01', '02', '03', '04'].includes(r.issueId)) ? r.issueId : matched;
           if (!issueId) continue;
           const baselineViews = issueId === '01' ? 36 : issueId === '02' ? 29 : 0;
           mergedFbMap.set(issueId, {
             id: r.id || `fb-reel-${issueId}`,
             issueId,
-            text: r.text || r.title || (issueId === '03' ? 'The War No One Was Supposed to Win' : issueId === '02' ? 'The Meat Grinder Needs More Meat' : 'Watering Grass in a Thunderstorm'),
+            text: r.text || r.title || (issueId === '04' ? 'The Century of Self-Inflicted Humiliation' : issueId === '03' ? 'The War No One Was Supposed to Win' : issueId === '02' ? 'The Meat Grinder Needs More Meat' : 'Watering Grass in a Thunderstorm'),
             caption: r.caption || r.title || '',
             url: r.url || 'https://www.facebook.com/observationsbymoth1',
             views: Math.max(baselineViews, Number(r.views) || 0),
@@ -2519,7 +2675,7 @@ export default function Dashboard() {
         }
 
         for (const r of serverFbReels) {
-          const issueId = matchItemToIssueId(r) || ((r.issueId && ['01', '02', '03'].includes(r.issueId)) ? r.issueId : null);
+          const issueId = matchItemToIssueId(r) || ((r.issueId && ['01', '02', '03', '04'].includes(r.issueId)) ? r.issueId : null);
           if (!issueId) continue;
           const existing = mergedFbMap.get(issueId) || {};
           mergedFbMap.set(issueId, {
@@ -2541,7 +2697,7 @@ export default function Dashboard() {
               ...item,
               id: item.id || existing?.id || `fb-reel-${issueId}`,
               issueId,
-              text: item.text || existing?.text || item.title || (issueId === '03' ? 'The War No One Was Supposed to Win' : issueId === '02' ? 'The Meat Grinder Needs More Meat' : 'Watering Grass in a Thunderstorm'),
+              text: item.text || existing?.text || item.title || (issueId === '04' ? 'The Century of Self-Inflicted Humiliation' : issueId === '03' ? 'The War No One Was Supposed to Win' : issueId === '02' ? 'The Meat Grinder Needs More Meat' : 'Watering Grass in a Thunderstorm'),
               views: Math.max(existing?.views || 0, item.views || 0),
               likes: Math.max(existing?.likes || 0, item.likes || 0),
               comments: Math.max(existing?.comments || 0, item.comments || 0),
@@ -2792,6 +2948,21 @@ export default function Dashboard() {
                   : '';
                 const haystack = `${text} ${tags}`;
 
+                if (reel.issueId === '04') {
+                  return (
+                    haystack.includes('self-inflicted humiliation') ||
+                    haystack.includes('century-of-self-inflicted-humiliation') ||
+                    haystack.includes('century of self-inflicted humiliation') ||
+                    haystack.includes('opium trade') ||
+                    haystack.includes('humen') ||
+                    haystack.includes('algorithmic feed') ||
+                    haystack.includes('issue-04') ||
+                    haystack.includes('issue 04') ||
+                    haystack.includes('issue 4') ||
+                    haystack.includes('issue #04') ||
+                    haystack.includes('issue #4')
+                  );
+                }
                 if (reel.issueId === '03') {
                   return (
                     haystack.includes('war on drugs') ||
@@ -2842,7 +3013,9 @@ export default function Dashboard() {
               // Priority 2: Direct chronological mapping if no keywords matched
               let effectiveMatches = matchedItems;
               if (effectiveMatches.length === 0) {
-                if (reel.issueId === '03' && sortedFbItems.length >= 3) {
+                if (reel.issueId === '04' && sortedFbItems.length >= 4) {
+                  effectiveMatches = [sortedFbItems[3]];
+                } else if (reel.issueId === '03' && sortedFbItems.length >= 3) {
                   effectiveMatches = [sortedFbItems[2]];
                 } else if (reel.issueId === '02' && sortedFbItems.length >= 2) {
                   effectiveMatches = [sortedFbItems[1]];
@@ -6186,8 +6359,113 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Cross-Channel Comparison Grid: Issue #03 vs Issue #02 vs Issue #01 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Cross-Channel Comparison Grid: Issue #04 vs Issue #03 vs Issue #02 vs Issue #01 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {/* Issue #04: The Century of Self-Inflicted Humiliation Comparison Card */}
+          <div className="p-4 bg-[#0b0d10] border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div>
+                <div className="font-mono text-[10px] text-[#67e8f9] font-bold uppercase tracking-wider">
+                  Issue #04
+                </div>
+                <div className="font-mono text-sm font-bold text-[#e2e8f0]">
+                  The Century of Self-Inflicted Humiliation
+                </div>
+              </div>
+              <span className="text-[10px] font-mono text-slate-400">
+                9:16 Video Comparison
+              </span>
+            </div>
+
+            {(() => {
+              const fbItem = visibleFacebookItems.find((i) => matchItemToIssueId(i) === '04');
+              const igItem = visibleInstagramItems.find((i) => matchItemToIssueId(i) === '04');
+              const ytItem = ytVideoList.find((i) => i.issueId === '04') || {
+                videoId: '',
+                views: 0,
+                likes: 0,
+                comments: 0,
+                url: 'https://observations.moth1.xyz/century-of-self-inflicted-humiliation',
+              };
+
+              const platforms04 = [
+                {
+                  id: 'fb',
+                  name: 'Facebook Reel',
+                  color: '#60a5fa',
+                  views: fbItem?.views || 0,
+                  likes: fbItem?.likes || 0,
+                  comments: fbItem?.comments || 0,
+                  url: fbItem?.url,
+                  linkText: 'Watch on FB ↗',
+                },
+                {
+                  id: 'yt',
+                  name: 'YouTube Short',
+                  color: '#ef4444',
+                  views: Number(ytItem?.views) || 0,
+                  likes: Number(ytItem?.likes) || 0,
+                  comments: Number(ytItem?.comments) || 0,
+                  url: ytItem?.url,
+                  linkText: 'Watch Short ↗',
+                },
+                {
+                  id: 'ig',
+                  name: 'Instagram Reel',
+                  color: '#fda4af',
+                  views: igItem?.views || 0,
+                  likes: igItem?.likes || 0,
+                  comments: igItem?.comments || 0,
+                  url: igItem?.url,
+                  linkText: 'Watch on IG ↗',
+                },
+              ].sort((a, b) => b.views - a.views);
+
+              const maxV = Math.max(1, ...platforms04.map((p) => p.views));
+
+              return (
+                <div className="space-y-3">
+                  {platforms04.map((p, idx) => (
+                    <div
+                      key={p.id}
+                      className={`space-y-1 ${idx > 0 ? 'pt-2 border-t border-slate-800/60' : ''}`}
+                    >
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="font-bold flex items-center gap-1.5" style={{ color: p.color }}>
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
+                          {p.name}
+                        </span>
+                        <span className="text-white font-bold">{p.views.toLocaleString()} views</span>
+                      </div>
+                      <div className="h-2 w-full bg-slate-900 overflow-hidden">
+                        <div
+                          className="h-full transition-all duration-500"
+                          style={{
+                            backgroundColor: p.color,
+                            width: `${Math.min(100, Math.max(2, (p.views / maxV) * 100))}%`,
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                        <span>Likes: {p.likes} • Comments: {p.comments}</span>
+                        {p.url && (
+                          <a
+                            href={p.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: p.color }}
+                            className="hover:underline"
+                          >
+                            {p.linkText}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
           {/* Issue #03: The War No One Was Supposed to Win Comparison Card */}
           <div className="p-4 bg-[#0b0d10] border border-slate-800 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -6893,7 +7171,7 @@ export default function Dashboard() {
                         </span>
                       </div>
                       <div className="space-y-2 font-mono text-xs">
-                        {visibleInstagramItems.slice(0, 3).map((item, idx) => {
+                        {visibleInstagramItems.slice(0, 4).map((item, idx) => {
                           const maxViews = Math.max(1, ...visibleInstagramItems.map((i) => i.views || 0));
                           const pct = Math.round(((item.views || 0) / maxViews) * 100);
                           return (
@@ -7036,7 +7314,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="space-y-2 font-mono text-xs">
-                    {visibleFacebookItems.slice(0, 3).map((item, idx) => {
+                    {visibleFacebookItems.slice(0, 4).map((item, idx) => {
                       const maxViews = Math.max(1, ...visibleFacebookItems.map((i) => i.views || 0));
                       const pct = Math.round(((item.views || 0) / maxViews) * 100);
                       return (
@@ -7292,12 +7570,13 @@ export default function Dashboard() {
                         (a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)
                       );
                       return sortedYtVideos.map((vid) => {
+                        const isIssue04 = vid.issueId === '04';
                         const isIssue03 = vid.issueId === '03';
                         const isIssue02 = vid.issueId === '02';
-                        const slug = isIssue03 ? 'war-on-drugs' : isIssue02 ? 'the-meat-grinder' : 'watering-grass-in-a-thunderstorm';
-                        const medium = isIssue03 ? 'shorts' : isIssue02 ? 'profile' : 'community';
-                        const campaign = isIssue03 ? 'issue-03' : isIssue02 ? 'issue-02' : 'issue-01';
-                        const copyKey = `yt-copy-${vid.issueId || '03'}`;
+                        const slug = isIssue04 ? 'century-of-self-inflicted-humiliation' : isIssue03 ? 'war-on-drugs' : isIssue02 ? 'the-meat-grinder' : 'watering-grass-in-a-thunderstorm';
+                        const medium = (isIssue04 || isIssue03) ? 'shorts' : isIssue02 ? 'profile' : 'community';
+                        const campaign = isIssue04 ? 'issue-04' : isIssue03 ? 'issue-03' : isIssue02 ? 'issue-02' : 'issue-01';
+                        const copyKey = `yt-copy-${vid.issueId || '04'}`;
                         const trackingUrl = `https://observations.moth1.xyz/${slug}?utm_source=youtube&utm_medium=${medium}&utm_campaign=${campaign}`;
                         const clicks = Number(storyClickStats?.issues?.[slug]?.youtube?.clicks || 0);
 
@@ -7483,7 +7762,7 @@ export default function Dashboard() {
                   <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
                     {pinList.map((pin) => {
                       const copyKey = `pin-${pin.id}`;
-                      const issueSlug = pin.issueId === '03' ? 'war-on-drugs' : pin.issueId === '02' ? 'the-meat-grinder' : 'watering-grass-in-a-thunderstorm';
+                      const issueSlug = pin.issueId === '04' ? 'century-of-self-inflicted-humiliation' : pin.issueId === '03' ? 'war-on-drugs' : pin.issueId === '02' ? 'the-meat-grinder' : 'watering-grass-in-a-thunderstorm';
                       const issueClicks = Number(storyClickStats?.issues?.[issueSlug]?.pinterest?.clicks || 0);
 
                       return (
@@ -7701,6 +7980,17 @@ export default function Dashboard() {
               }`}
             >
               All
+            </button>
+            <button
+              type="button"
+              onClick={() => setUtmLinksFilterIssue('04')}
+              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+                utmLinksFilterIssue === '04'
+                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#f472b6] text-black font-bold shadow')
+                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
+              }`}
+            >
+              #04
             </button>
             <button
               type="button"
@@ -7932,7 +8222,9 @@ export default function Dashboard() {
             onChange={(e) => {
               const val = e.target.value;
               setCustomUtmIssue(val);
-              if (val === 'war-on-drugs') {
+              if (val === 'century-of-self-inflicted-humiliation') {
+                setCustomUtmCampaign('issue-04');
+              } else if (val === 'war-on-drugs') {
                 setCustomUtmCampaign('issue-03');
               } else if (val === 'the-meat-grinder') {
                 setCustomUtmCampaign('issue-02');
@@ -7944,6 +8236,7 @@ export default function Dashboard() {
             }}
             className="w-full bg-[#121316] border border-slate-700 px-2.5 py-1.5 text-xs font-mono text-[#e2e8f0] outline-none"
           >
+            <option value="century-of-self-inflicted-humiliation">Issue #04: The Century of Self-Inflicted Humiliation</option>
             <option value="war-on-drugs">Issue #03: The War No One Was Supposed to Win</option>
             <option value="the-meat-grinder">Issue #02: The Meat Grinder Needs More Meat</option>
             <option value="watering-grass-in-a-thunderstorm">Issue #01: Watering Grass in a Thunderstorm</option>
@@ -7957,7 +8250,7 @@ export default function Dashboard() {
             type="text"
             value={customUtmSource}
             onChange={(e) => setCustomUtmSource(e.target.value)}
-            placeholder="instagram, facebook, x, youtube, threads..."
+            placeholder="instagram, facebook, youtube, threads, pinterest..."
             className="w-full bg-[#121316] border border-slate-700 px-2.5 py-1.5 text-xs font-mono text-[#e2e8f0] outline-none"
           />
         </div>
