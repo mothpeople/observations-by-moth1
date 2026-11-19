@@ -211,6 +211,11 @@ const ACTORS = {
     label: 'apify/facebook-reels-scraper',
     accent: '#86efac',
   },
+  facebookPostsFallback: {
+    id: 'apify~facebook-posts-scraper',
+    label: 'apify/facebook-posts-scraper',
+    accent: '#86efac',
+  },
   facebookPage: {
     id: 'apify~facebook-pages-scraper',
     label: 'apify/facebook-pages-scraper',
@@ -3519,10 +3524,25 @@ export default function Dashboard() {
     }
 
     if (actorKey === 'facebook') {
-      const cleanFbUrl = fbDirectUrl.trim() || fbUrl.replace(/\/+$/, '');
+      const baseFbUrl = fbUrl.replace(/\/+$/, '');
+      const targetFbUrl = fbDirectUrl.trim() || `${baseFbUrl}/reels/`;
       return {
-        startUrls: [{ url: cleanFbUrl }],
+        startUrls: [{ url: targetFbUrl }],
         resultsLimit: 30,
+        proxyConfiguration: {
+          useApifyProxy: true,
+        },
+      };
+    }
+
+    if (actorKey === 'facebookPostsFallback') {
+      const baseFbUrl = fbUrl.replace(/\/+$/, '');
+      return {
+        startUrls: [{ url: fbDirectUrl.trim() || baseFbUrl }],
+        resultsLimit: 30,
+        proxyConfiguration: {
+          useApifyProxy: true,
+        },
       };
     }
 
@@ -3716,7 +3736,7 @@ export default function Dashboard() {
                           followers: f,
                         }));
                       }
-                    } else if (actorKey === 'facebook') {
+                    } else if (actorKey === 'facebook' || actorKey === 'facebookPostsFallback') {
                       const normItems = unwrapped.map((item, i) => normalizeFacebookItem(item, i));
                       const validReels = normItems.filter((item, i) =>
                         isFacebookVideoReel(unwrapped[i] || item, item) && Boolean(matchItemToIssueId(item))
@@ -3767,6 +3787,13 @@ export default function Dashboard() {
                       }));
                     }
 
+                    if (actorKey === 'facebook' && scrapedCount === 0) {
+                      setStatusMessage(
+                        `apify/facebook-reels-scraper returned 0 reels; automatically retrying with apify/facebook-posts-scraper...`
+                      );
+                      await triggerActorRun('facebookPostsFallback');
+                      return;
+                    }
                     if (scrapedCount === 0 && errorItem) {
                       setStatusMessage(
                         `${actorMeta.label} returned an Apify notice: ${errorItem.errorDescription || errorItem.error}`
