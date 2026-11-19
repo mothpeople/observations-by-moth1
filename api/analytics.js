@@ -360,58 +360,75 @@ export function normalizeFacebookItem(item, idx = 0) {
     item.link ||
     'https://www.facebook.com/observationsbymoth1';
 
+  const parseMetric = (val) => {
+    if (typeof val === 'number') return Number.isFinite(val) ? Math.max(0, Math.round(val)) : 0;
+    if (val === null || val === undefined) return 0;
+    const str = String(val).trim().replace(/,/g, '');
+    if (!str) return 0;
+    const m = str.match(/([\d.]+)\s*([kmb])?/i);
+    if (!m) return 0;
+    let num = parseFloat(m[1]);
+    if (!Number.isFinite(num)) return 0;
+    const s = (m[2] || '').toLowerCase();
+    if (s === 'k') num *= 1000;
+    else if (s === 'm') num *= 1000000;
+    else if (s === 'b') num *= 1000000000;
+    return Math.max(0, Math.round(num));
+  };
+
   // Fallback parser: Ensure views map from either playCount, videoViewCount, nested media/video, or fallback to views.
   const firstMedia = Array.isArray(item.media) ? item.media[0] : null;
   const firstAttachMedia = Array.isArray(item.attachments) ? item.attachments[0]?.media : null;
-  const views = Math.max(
-    0,
-    Number(
-      item.playCount ??
-        item.viewCount ??
-        item.videoViewCount ??
-        item.video_play_count ??
-        item.video_view_count ??
-        item.play_count ??
-        item.view_count ??
-        item.playsCount ??
-        item.viewsCount ??
-        item.plays ??
-        item.videoPlays ??
-        item.views ??
-        item.videoViews ??
-        item.video_views ??
-        item.video?.playCount ??
-        item.video?.viewCount ??
-        firstMedia?.videoViewCount ??
-        firstMedia?.playCount ??
-        firstAttachMedia?.videoViewCount ??
-        firstAttachMedia?.playCount ??
-        0
-    ) || 0
+  const views = parseMetric(
+    item.playCount ??
+      item.viewCount ??
+      item.videoViewCount ??
+      item.video_play_count ??
+      item.video_view_count ??
+      item.play_count ??
+      item.view_count ??
+      item.playsCount ??
+      item.viewsCount ??
+      item.plays ??
+      item.videoPlays ??
+      item.views ??
+      item.videoViews ??
+      item.video_views ??
+      item.playCountLabel ??
+      item.viewCountLabel ??
+      item.viewsLabel ??
+      item.video?.playCount ??
+      item.video?.viewCount ??
+      item.video?.views ??
+      item.statistics?.views ??
+      item.metrics?.views ??
+      firstMedia?.videoViewCount ??
+      firstMedia?.playCount ??
+      firstAttachMedia?.videoViewCount ??
+      firstAttachMedia?.playCount ??
+      0
   );
 
   const reactionsSum =
     item.reactions && typeof item.reactions === 'object' && !Array.isArray(item.reactions)
-      ? Object.values(item.reactions).reduce((s, v) => s + (Number(v) || 0), 0)
+      ? Object.values(item.reactions).reduce((s, v) => s + parseMetric(v), 0)
       : item.reactions;
 
   // Fallback parser: If only reactions/likes exist, map likesCount/reactionCount to likes.
-  const likes = Math.max(
-    0,
-    Number(
-      item.likes ??
-        item.likesCount ??
-        item.reactionsCount ??
-        item.reactionCount ??
-        reactionsSum ??
-        item.likes_count ??
-        item.likeCount ??
-        0
-    ) || 0
+  const likes = parseMetric(
+    item.likes ??
+      item.likesCount ??
+      item.reactionsCount ??
+      item.reactionCount ??
+      reactionsSum ??
+      item.likes_count ??
+      item.likeCount ??
+      0
   );
 
-  const comments =
-    Number(item.comments ?? item.commentsCount ?? item.commentCount ?? item.comments_count ?? 0) || 0;
+  const comments = parseMetric(
+    item.comments ?? item.commentsCount ?? item.commentCount ?? item.comments_count ?? 0
+  );
   const shares =
     Number(item.shares ?? item.sharesCount ?? item.shareCount ?? item.shares_count ?? 0) || 0;
   const followers =
