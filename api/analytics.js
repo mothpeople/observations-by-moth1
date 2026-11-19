@@ -11,9 +11,9 @@ const SUBSTACK_PUBLICATION_URL = 'https://observationsbymoth1.substack.com';
 
 const ACTORS = {
   substack: 'automation-lab~substack-scraper',
-  instagram: 'apify~instagram-scraper',
+  instagram: 'apify~instagram-reel-scraper',
   threads: 'automation-lab~threads-scraper',
-  facebook: 'apify~facebook-posts-scraper',
+  facebook: 'apify~facebook-reels-scraper',
   x: 'apidojo~tweet-scraper',
 };
 
@@ -1642,9 +1642,9 @@ export default async function handler(req, res) {
     ] = await Promise.all([
       fetchLiveSubstackArchive(),
       fetchPlatformTelemetry('substack', ACTORS.substack, [], apifyToken),
-      fetchPlatformTelemetry('instagram', ACTORS.instagram, ['apify~instagram-profile-scraper'], apifyToken),
+      fetchPlatformTelemetry('instagram', ACTORS.instagram, ['apify~instagram-scraper', 'apify~instagram-profile-scraper'], apifyToken),
       fetchPlatformTelemetry('threads', ACTORS.threads, [], apifyToken),
-      fetchPlatformTelemetry('facebook', ACTORS.facebook, ['apify~facebook-pages-scraper'], apifyToken),
+      fetchPlatformTelemetry('facebook', ACTORS.facebook, ['apify~facebook-posts-scraper', 'apify~facebook-pages-scraper'], apifyToken),
       fetchPlatformTelemetry('x', ACTORS.x, ['apidojo~twitter-user-scraper', 'apify~tweet-scraper', 'quacker~twitter-scraper'], apifyToken),
       fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId),
     ]);

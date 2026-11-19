@@ -192,8 +192,8 @@ const ACTORS = {
     accent: '#67e8f9',
   },
   instagram: {
-    id: 'apify~instagram-scraper',
-    label: 'apify/instagram-scraper',
+    id: 'apify~instagram-reel-scraper',
+    label: 'apify/instagram-reel-scraper',
     accent: '#fda4af',
   },
   instagramProfile: {
@@ -207,8 +207,8 @@ const ACTORS = {
     accent: '#c084fc',
   },
   facebook: {
-    id: 'apify~facebook-posts-scraper',
-    label: 'apify/facebook-posts-scraper',
+    id: 'apify~facebook-reels-scraper',
+    label: 'apify/facebook-reels-scraper',
     accent: '#86efac',
   },
   facebookPage: {
@@ -2459,13 +2459,13 @@ export default function Dashboard() {
             ? fetchDirectActorDataset(ACTORS.substack.id, activeToken)
             : Promise.resolve(null),
           activeToken
-            ? fetchDirectActorDataset(ACTORS.instagram.id, activeToken)
+            ? fetchDirectActorDataset([ACTORS.instagram.id, 'apify~instagram-scraper'], activeToken)
             : Promise.resolve(null),
           activeToken
             ? fetchDirectActorDataset(ACTORS.threads.id, activeToken)
             : Promise.resolve(null),
           activeToken
-            ? fetchDirectActorDataset(ACTORS.facebook.id, activeToken)
+            ? fetchDirectActorDataset([ACTORS.facebook.id, 'apify~facebook-posts-scraper'], activeToken)
             : Promise.resolve(null),
           activeToken
             ? fetchDirectActorDataset([ACTORS.xAuth.id, ACTORS.x.id], activeToken)
@@ -3487,10 +3487,8 @@ export default function Dashboard() {
     }
 
     if (actorKey === 'instagram') {
-      const cleanUrl = igUrl.replace(/\/+$/, '');
       return {
-        directUrls: [`${cleanUrl}/`],
-        resultsType: 'posts',
+        username: [cleanIgHandle],
         resultsLimit: 30,
       };
     }
@@ -3508,9 +3506,6 @@ export default function Dashboard() {
       return {
         startUrls: [{ url: cleanFbUrl }],
         resultsLimit: 30,
-        proxyConfiguration: {
-          useApifyProxy: true,
-        },
       };
     }
 
