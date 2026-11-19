@@ -139,22 +139,34 @@ export function normalizeInstagramItem(item, idx = 0) {
   const caption =
     item.caption ||
     item.text ||
+    item.firstComment ||
     item.alt ||
     `Instagram ${item.type || 'Post'} #${idx + 1}`;
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
-  const views =
+  const views = Math.max(
+    0,
     Number(
       item.videoPlayCount ??
         item.videoViewCount ??
+        item.igPlayCount ??
         item.playCount ??
         item.viewCount ??
+        item.viewsCount ??
+        item.video_play_count ??
+        item.video_view_count ??
+        item.play_count ??
         item.views ??
         0
-    ) || 0;
-  const likes =
-    Number(item.likesCount ?? item.likeCount ?? item.likes ?? 0) || 0;
-  const comments =
-    Number(item.commentsCount ?? item.commentCount ?? item.comments ?? 0) || 0;
+    ) || 0
+  );
+  const likes = Math.max(
+    0,
+    Number(item.likesCount ?? item.likeCount ?? item.likes ?? 0) || 0
+  );
+  const comments = Math.max(
+    0,
+    Number(item.commentsCount ?? item.commentCount ?? item.comments ?? 0) || 0
+  );
   const followers =
     Number(
       item.followersCount ??
@@ -348,31 +360,49 @@ export function normalizeFacebookItem(item, idx = 0) {
     item.link ||
     'https://www.facebook.com/observationsbymoth1';
 
-  // Fallback parser: Ensure views map from either playCount, videoViewCount, or fallback to views.
-  const views =
+  // Fallback parser: Ensure views map from either playCount, videoViewCount, nested media/video, or fallback to views.
+  const firstMedia = Array.isArray(item.media) ? item.media[0] : null;
+  const firstAttachMedia = Array.isArray(item.attachments) ? item.attachments[0]?.media : null;
+  const views = Math.max(
+    0,
     Number(
       item.playCount ??
         item.videoViewCount ??
         item.video_play_count ??
         item.video_view_count ??
+        item.playsCount ??
         item.viewsCount ??
         item.views ??
         item.videoViews ??
+        item.video?.playCount ??
+        item.video?.viewCount ??
+        firstMedia?.videoViewCount ??
+        firstMedia?.playCount ??
+        firstAttachMedia?.videoViewCount ??
+        firstAttachMedia?.playCount ??
         0
-    ) || 0;
+    ) || 0
+  );
+
+  const reactionsSum =
+    item.reactions && typeof item.reactions === 'object' && !Array.isArray(item.reactions)
+      ? Object.values(item.reactions).reduce((s, v) => s + (Number(v) || 0), 0)
+      : item.reactions;
 
   // Fallback parser: If only reactions/likes exist, map likesCount/reactionCount to likes.
-  const likes =
+  const likes = Math.max(
+    0,
     Number(
       item.likes ??
         item.likesCount ??
         item.reactionsCount ??
         item.reactionCount ??
-        item.reactions ??
+        reactionsSum ??
         item.likes_count ??
         item.likeCount ??
         0
-    ) || 0;
+    ) || 0
+  );
 
   const comments =
     Number(item.comments ?? item.commentsCount ?? item.commentCount ?? item.comments_count ?? 0) || 0;

@@ -308,10 +308,18 @@ function matchItemToIssueId(item) {
     haystack.includes('century-of-self-inflicted-humiliation') ||
     haystack.includes('self-inflicted humiliation') ||
     haystack.includes('self-inflicted-humiliation') ||
-    haystack.includes('opium trade') ||
+    haystack.includes('self-inflicted') ||
+    haystack.includes('self inflicted') ||
+    haystack.includes('humiliation') ||
+    haystack.includes('opium') ||
     haystack.includes('humen') ||
+    haystack.includes('lin zexu') ||
     haystack.includes('algorithmic feed') ||
     haystack.includes('rage multiplier') ||
+    haystack.includes('attention span') ||
+    haystack.includes('slot machine') ||
+    haystack.includes('doomscroll') ||
+    haystack.includes('mirror of history') ||
     haystack.includes('issue-04') ||
     haystack.includes('issue 04') ||
     haystack.includes('issue 4') ||
@@ -481,22 +489,34 @@ function normalizeInstagramItem(item, idx = 0) {
   const caption =
     item.caption ||
     item.text ||
+    item.firstComment ||
     item.alt ||
     `Instagram ${item.type || 'Post'} #${idx + 1}`;
   const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
-  const views =
+  const views = Math.max(
+    0,
     Number(
       item.videoPlayCount ??
         item.videoViewCount ??
+        item.igPlayCount ??
         item.playCount ??
         item.viewCount ??
+        item.viewsCount ??
+        item.video_play_count ??
+        item.video_view_count ??
+        item.play_count ??
         item.views ??
         0
-    ) || 0;
-  const likes =
-    Number(item.likesCount ?? item.likeCount ?? item.likes ?? 0) || 0;
-  const comments =
-    Number(item.commentsCount ?? item.commentCount ?? item.comments ?? 0) || 0;
+    ) || 0
+  );
+  const likes = Math.max(
+    0,
+    Number(item.likesCount ?? item.likeCount ?? item.likes ?? 0) || 0
+  );
+  const comments = Math.max(
+    0,
+    Number(item.commentsCount ?? item.commentCount ?? item.comments ?? 0) || 0
+  );
   const followers =
     Number(
       item.followersCount ??
@@ -674,31 +694,49 @@ function normalizeFacebookItem(item, idx = 0) {
     item.link ||
     'https://www.facebook.com/observationsbymoth1';
 
-  // Fallback parser: Ensure views map from either playCount, videoViewCount, or fallback to views.
-  const views =
+  // Fallback parser: Ensure views map from either playCount, videoViewCount, nested media/video, or fallback to views.
+  const firstMedia = Array.isArray(item.media) ? item.media[0] : null;
+  const firstAttachMedia = Array.isArray(item.attachments) ? item.attachments[0]?.media : null;
+  const views = Math.max(
+    0,
     Number(
       item.playCount ??
         item.videoViewCount ??
         item.video_play_count ??
         item.video_view_count ??
+        item.playsCount ??
         item.viewsCount ??
         item.views ??
         item.videoViews ??
+        item.video?.playCount ??
+        item.video?.viewCount ??
+        firstMedia?.videoViewCount ??
+        firstMedia?.playCount ??
+        firstAttachMedia?.videoViewCount ??
+        firstAttachMedia?.playCount ??
         0
-    ) || 0;
+    ) || 0
+  );
 
-  // Fallback parser: If only reactions/likes exist, map likesCount/reactionCount to likes.
-  const likes =
+  // Fallback parser: If reactions is an object (e.g. { Like: 5, Love: 2 }), sum its values; otherwise use numeric field.
+  const reactionsSum =
+    item.reactions && typeof item.reactions === 'object' && !Array.isArray(item.reactions)
+      ? Object.values(item.reactions).reduce((s, v) => s + (Number(v) || 0), 0)
+      : item.reactions;
+
+  const likes = Math.max(
+    0,
     Number(
       item.likes ??
         item.likesCount ??
         item.reactionsCount ??
         item.reactionCount ??
-        item.reactions ??
+        reactionsSum ??
         item.likes_count ??
         item.likeCount ??
         0
-    ) || 0;
+    ) || 0
+  );
 
   const comments =
     Number(item.comments ?? item.commentsCount ?? item.commentCount ?? item.comments_count ?? 0) || 0;
@@ -1126,6 +1164,15 @@ function isFacebookVideoReel(rawItem, item) {
 
   // Known reel keyword match is ALWAYS accepted
   const matchesKnownReelCaption =
+    lowerText.includes('self-inflicted humiliation') ||
+    lowerText.includes('century-of-self-inflicted-humiliation') ||
+    lowerText.includes('humiliation') ||
+    lowerText.includes('opium') ||
+    lowerText.includes('issue-04') ||
+    lowerText.includes('issue 04') ||
+    lowerText.includes('issue #04') ||
+    lowerText.includes('issue 4') ||
+    lowerText.includes('issue #4') ||
     lowerText.includes('war on drugs') ||
     lowerText.includes('war-on-drugs') ||
     lowerText.includes('the war no one was supposed to win') ||
@@ -1225,6 +1272,35 @@ function sortReelsForDisplay(items) {
 
 const sortFacebookReelsForDisplay = sortReelsForDisplay;
 
+function unwrapApifyDatasetItems(parsed, actorId = '') {
+  if (!Array.isArray(parsed)) return [];
+  const valid = parsed.filter((item) => item && !item.error && !item.errorDescription);
+  if (valid.length === 0) return [];
+
+  const isIg = String(actorId).toLowerCase().includes('instagram');
+  if (isIg) {
+    const flattened = [];
+    for (const item of valid) {
+      const hasPostsArray = Array.isArray(item.latestPosts) || Array.isArray(item.latestIgtvVideos);
+      if (hasPostsArray && !item.shortCode && !item.code) {
+        const followers = Number(item.followersCount ?? item.followers ?? 0) || 0;
+        const ownerUsername = item.username || item.ownerUsername || '';
+        for (const p of (item.latestPosts || [])) {
+          flattened.push({ ...p, ownerFollowersCount: followers, ownerUsername });
+        }
+        for (const v of (item.latestIgtvVideos || [])) {
+          flattened.push({ ...v, ownerFollowersCount: followers, ownerUsername });
+        }
+      } else if (item.shortCode || item.code || item.caption || item.videoPlayCount != null || item.videoViewCount != null || item.displayUrl) {
+        flattened.push(item);
+      }
+    }
+    return flattened;
+  }
+
+  return valid;
+}
+
 async function fetchDirectActorDataset(actorIdOrList, token) {
   if (!token) return { connected: false, runInfo: null, items: [] };
   const targetIds = Array.isArray(actorIdOrList) ? actorIdOrList : [actorIdOrList];
@@ -1284,15 +1360,16 @@ async function fetchDirectActorDataset(actorIdOrList, token) {
           );
           if (dsRes.ok) {
             const parsed = await dsRes.json();
-            if (Array.isArray(parsed) && parsed.length > 0) {
+            const unwrapped = unwrapApifyDatasetItems(parsed, actorId);
+            if (unwrapped.length > 0) {
               if (actorId.includes('facebook')) {
                 console.log('[Dashboard] Apify Facebook scraper run dataset found:', {
                   runInfo,
-                  itemCount: parsed.length,
-                  firstItem: parsed[0],
+                  itemCount: unwrapped.length,
+                  firstItem: unwrapped[0],
                 });
               }
-              return { connected: true, runInfo, items: parsed };
+              return { connected: true, runInfo, items: unwrapped };
             }
           }
         }
@@ -1352,7 +1429,8 @@ async function fetchDirectActorDataset(actorIdOrList, token) {
           );
           if (dsRes.ok) {
             const parsed = await dsRes.json();
-            if (Array.isArray(parsed) && parsed.length > 0) {
+            const unwrapped = unwrapApifyDatasetItems(parsed, r.actId || targetIds[0] || '');
+            if (unwrapped.length > 0) {
               const runInfo = {
                 id: r.id,
                 status: r.status,
@@ -1360,7 +1438,7 @@ async function fetchDirectActorDataset(actorIdOrList, token) {
                 finishedAt: r.finishedAt,
                 defaultDatasetId: r.defaultDatasetId,
               };
-              return { connected: true, runInfo, items: parsed };
+              return { connected: true, runInfo, items: unwrapped };
             }
           }
         }
@@ -3411,13 +3489,7 @@ export default function Dashboard() {
     if (actorKey === 'instagram') {
       const cleanUrl = igUrl.replace(/\/+$/, '');
       return {
-        directUrls: [
-          cleanUrl,
-          `${cleanUrl}/`,
-          `${cleanUrl}/reels/`,
-        ],
-        username: [cleanIgHandle],
-        usernames: [cleanIgHandle],
+        directUrls: [`${cleanUrl}/`],
         resultsType: 'posts',
         resultsLimit: 30,
       };
@@ -3426,9 +3498,7 @@ export default function Dashboard() {
     if (actorKey === 'instagramProfile') {
       const cleanUrl = igUrl.replace(/\/+$/, '');
       return {
-        directUrls: [cleanUrl, `${cleanUrl}/`],
-        username: [cleanIgHandle],
-        usernames: [cleanIgHandle],
+        directUrls: [`${cleanUrl}/`],
         resultsType: 'details',
       };
     }
@@ -3436,13 +3506,8 @@ export default function Dashboard() {
     if (actorKey === 'facebook') {
       const cleanFbUrl = fbUrl.replace(/\/+$/, '');
       return {
-        startUrls: [
-          { url: cleanFbUrl },
-          { url: `${cleanFbUrl}/reels/` },
-          { url: `${cleanFbUrl}/videos/` },
-        ],
+        startUrls: [{ url: cleanFbUrl }],
         resultsLimit: 30,
-        maxPosts: 30,
         proxyConfiguration: {
           useApifyProxy: true,
         },
@@ -3574,29 +3639,16 @@ export default function Dashboard() {
                   );
                   if (dsRes.ok) {
                     const parsed = await dsRes.json();
-                    scrapedCount = Array.isArray(parsed) ? parsed.length : 0;
-                    if (actorKey === 'x' && Array.isArray(parsed) && parsed.length > 0) {
-                      const tweetItems = parsed.filter(isTweetItem).map((item, i) => normalizeXItem(item, i));
-                      if (tweetItems.length > 0) {
-                        setXState((prev) => ({
-                          ...prev,
-                          connected: true,
-                          items: tweetItems,
-                          runInfo: statusJson?.data,
-                        }));
-                      }
-                    } else if (actorKey === 'xProfile' && Array.isArray(parsed) && parsed.length > 0) {
-                      const f = Math.max(
-                        ...parsed.map((i) => Number(i.followersCount ?? i.followers_count ?? i.followers ?? 0) || 0)
-                      );
-                      if (f > 0) {
-                        setXState((prev) => ({
-                          ...prev,
-                          followers: f,
-                        }));
-                      }
-                    } else if (actorKey === 'instagram' && Array.isArray(parsed) && parsed.length > 0) {
-                      const normItems = parsed.map((item, i) => normalizeInstagramItem(item, i));
+                    const rawList = Array.isArray(parsed) ? parsed : [];
+                    const errorItem = rawList.find((i) => i && (i.error || i.errorDescription));
+                    const unwrapped = unwrapApifyDatasetItems(rawList, actorMeta.id);
+                    scrapedCount = unwrapped.length;
+                    let matchedCount = 0;
+
+                    if (actorKey === 'instagram' && unwrapped.length > 0) {
+                      const normItems = unwrapped.map((item, i) => normalizeInstagramItem(item, i));
+                      const matched = normItems.filter((item) => Boolean(matchItemToIssueId(item)));
+                      matchedCount = matched.length;
                       setInstagramState((prev) => {
                         const newMap = new Map();
                         for (const item of prev.items || []) {
@@ -3605,7 +3657,7 @@ export default function Dashboard() {
                           if (iId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) continue;
                           newMap.set(iId, item);
                         }
-                        for (const item of normItems) {
+                        for (const item of matched) {
                           const iId = matchItemToIssueId(item);
                           if (!iId) continue;
                           if (iId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) continue;
@@ -3626,9 +3678,9 @@ export default function Dashboard() {
                           runInfo: statusJson?.data,
                         };
                       });
-                    } else if (actorKey === 'instagramProfile' && Array.isArray(parsed) && parsed.length > 0) {
+                    } else if (actorKey === 'instagramProfile' && rawList.length > 0) {
                       const f = Math.max(
-                        ...parsed.map((i) => Number(i.followersCount ?? i.ownerFollowersCount ?? i.followers ?? 0) || 0)
+                        ...rawList.map((i) => Number(i.followersCount ?? i.ownerFollowersCount ?? i.followers ?? 0) || 0)
                       );
                       if (f > 0) {
                         setInstagramState((prev) => ({
@@ -3636,15 +3688,58 @@ export default function Dashboard() {
                           followers: f,
                         }));
                       }
+                    } else if (actorKey === 'facebook' && unwrapped.length > 0) {
+                      const normItems = unwrapped.map((item, i) => normalizeFacebookItem(item, i));
+                      const validReels = normItems.filter((item, i) =>
+                        isFacebookVideoReel(unwrapped[i] || item, item) && Boolean(matchItemToIssueId(item))
+                      );
+                      matchedCount = validReels.length;
+                      setFacebookState((prev) => {
+                        const newMap = new Map();
+                        for (const item of prev.items || []) {
+                          const iId = matchItemToIssueId(item);
+                          if (!iId) continue;
+                          newMap.set(iId, item);
+                        }
+                        for (const item of validReels) {
+                          const iId = matchItemToIssueId(item);
+                          if (!iId) continue;
+                          const existing = newMap.get(iId);
+                          newMap.set(iId, {
+                            ...existing,
+                            ...item,
+                            issueId: iId,
+                            views: Math.max(existing?.views || 0, item.views || 0),
+                            likes: Math.max(existing?.likes || 0, item.likes || 0),
+                            comments: Math.max(existing?.comments || 0, item.comments || 0),
+                            shares: Math.max(existing?.shares || 0, item.shares || 0),
+                          });
+                        }
+                        return {
+                          ...prev,
+                          connected: true,
+                          items: sortFacebookReelsForDisplay(Array.from(newMap.values())),
+                          runInfo: statusJson?.data,
+                        };
+                      });
+                    }
+
+                    if (scrapedCount === 0 && errorItem) {
+                      setStatusMessage(
+                        `${actorMeta.label} returned an Apify notice: ${errorItem.errorDescription || errorItem.error}`
+                      );
+                    } else {
+                      setStatusMessage(
+                        `${actorMeta.label} finished (${scrapedCount} items scraped${matchedCount > 0 ? `, ${matchedCount} matched Observations issues` : ''}).`
+                      );
                     }
                   }
                 } catch {}
+              } else {
+                setStatusMessage(`${actorMeta.label} finished.`);
               }
-              setStatusMessage(
-                `${actorMeta.label} finished (${scrapedCount} items returned from Apify).`
-              );
               await syncAllTelemetry(cleanedToken);
-              setTimeout(() => setStatusMessage(''), 6000);
+              setTimeout(() => setStatusMessage(''), 8000);
               return;
             } else if (
               status === 'FAILED' ||
