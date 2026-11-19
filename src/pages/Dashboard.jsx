@@ -402,6 +402,19 @@ function matchItemToIssueId(item) {
   if (idStr.includes('meat-grinder') || /issue-?0?2/i.test(idStr) || idStr.includes('reel-02') || idStr.includes('post-02')) return '02';
   if (idStr.includes('watering-grass') || /issue-?0?1/i.test(idStr) || idStr.includes('reel-01') || idStr.includes('post-01')) return '01';
 
+  // 4. Brand + Publish-date fallback: any #ObservationsByMoth1 post published on/after Nov 16, 2026 belongs to Issue #04
+  if (
+    haystack.includes('#observationsbymoth1') ||
+    haystack.includes('observationsbymoth1') ||
+    haystack.includes('observations by moth1') ||
+    haystack.includes('observations.moth1.xyz')
+  ) {
+    const pubMs = item.publishedAt ? new Date(item.publishedAt).getTime() : 0;
+    if (pubMs >= Date.UTC(2026, 10, 16)) {
+      return '04';
+    }
+  }
+
   return null;
 }
 
@@ -2026,6 +2039,9 @@ export default function Dashboard() {
   const [ledger, setLedger] = useState(() => loadChannelLedger());
   const [loadingSync, setLoadingSync] = useState(true);
   const [runningActor, setRunningActor] = useState(null); // 'substack' | 'instagram' | 'threads' | 'facebook' | null
+  const [igDirectUrl, setIgDirectUrl] = useState('');
+  const [fbDirectUrl, setFbDirectUrl] = useState('');
+  const [scraperDiagnostics, setScraperDiagnostics] = useState({ instagram: null, facebook: null });
   const [statusMessage, setStatusMessage] = useState('');
   const [showApifyConfig, setShowApifyConfig] = useState(false);
   const [filterOnlyObservations, setFilterOnlyObservations] = useState(true);
@@ -3487,8 +3503,9 @@ export default function Dashboard() {
     }
 
     if (actorKey === 'instagram') {
+      const target = igDirectUrl.trim() || cleanIgHandle;
       return {
-        username: [cleanIgHandle],
+        username: [target],
         resultsLimit: 30,
       };
     }
@@ -3502,7 +3519,7 @@ export default function Dashboard() {
     }
 
     if (actorKey === 'facebook') {
-      const cleanFbUrl = fbUrl.replace(/\/+$/, '');
+      const cleanFbUrl = fbDirectUrl.trim() || fbUrl.replace(/\/+$/, '');
       return {
         startUrls: [{ url: cleanFbUrl }],
         resultsLimit: 30,
@@ -3639,40 +3656,56 @@ export default function Dashboard() {
                     const unwrapped = unwrapApifyDatasetItems(rawList, actorMeta.id);
                     scrapedCount = unwrapped.length;
                     let matchedCount = 0;
+                    let unmatchedItems = [];
 
-                    if (actorKey === 'instagram' && unwrapped.length > 0) {
+                    if (actorKey === 'instagram') {
                       const normItems = unwrapped.map((item, i) => normalizeInstagramItem(item, i));
                       const matched = normItems.filter((item) => Boolean(matchItemToIssueId(item)));
+                      unmatchedItems = normItems.filter((item) => !matchItemToIssueId(item));
                       matchedCount = matched.length;
-                      setInstagramState((prev) => {
-                        const newMap = new Map();
-                        for (const item of prev.items || []) {
-                          const iId = matchItemToIssueId(item);
-                          if (!iId) continue;
-                          if (iId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) continue;
-                          newMap.set(iId, item);
-                        }
-                        for (const item of matched) {
-                          const iId = matchItemToIssueId(item);
-                          if (!iId) continue;
-                          if (iId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) continue;
-                          const existing = newMap.get(iId);
-                          newMap.set(iId, {
-                            ...existing,
-                            ...item,
-                            issueId: iId,
-                            views: Math.max(existing?.views || 0, item.views || 0),
-                            likes: Math.max(existing?.likes || 0, item.likes || 0),
-                            comments: Math.max(existing?.comments || 0, item.comments || 0),
-                          });
-                        }
-                        return {
-                          ...prev,
-                          connected: true,
-                          items: sortReelsForDisplay(Array.from(newMap.values())),
-                          runInfo: statusJson?.data,
-                        };
-                      });
+                      if (matched.length > 0) {
+                        setInstagramState((prev) => {
+                          const newMap = new Map();
+                          for (const item of prev.items || []) {
+                            const iId = matchItemToIssueId(item);
+                            if (!iId) continue;
+                            if (iId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) continue;
+                            newMap.set(iId, item);
+                          }
+                          for (const item of matched) {
+                            const iId = matchItemToIssueId(item);
+                            if (!iId) continue;
+                            if (iId === '01' && (item.views === 35091 || item.views === 35683 || item.views > 1000)) continue;
+                            const existing = newMap.get(iId);
+                            newMap.set(iId, {
+                              ...existing,
+                              ...item,
+                              issueId: iId,
+                              views: Math.max(existing?.views || 0, item.views || 0),
+                              likes: Math.max(existing?.likes || 0, item.likes || 0),
+                              comments: Math.max(existing?.comments || 0, item.comments || 0),
+                            });
+                          }
+                          return {
+                            ...prev,
+                            connected: true,
+                            items: sortReelsForDisplay(Array.from(newMap.values())),
+                            runInfo: statusJson?.data,
+                          };
+                        });
+                      }
+                      setScraperDiagnostics((prev) => ({
+                        ...prev,
+                        instagram: {
+                          actorLabel: actorMeta.label,
+                          rawCount: scrapedCount,
+                          matchedCount,
+                          errorNotice: errorItem ? (errorItem.errorDescription || errorItem.error) : '',
+                          latestUnmatched: unmatchedItems[0] || null,
+                          runId,
+                          timestamp: new Date().toLocaleTimeString(),
+                        },
+                      }));
                     } else if (actorKey === 'instagramProfile' && rawList.length > 0) {
                       const f = Math.max(
                         ...rawList.map((i) => Number(i.followersCount ?? i.ownerFollowersCount ?? i.followers ?? 0) || 0)
@@ -3683,40 +3716,55 @@ export default function Dashboard() {
                           followers: f,
                         }));
                       }
-                    } else if (actorKey === 'facebook' && unwrapped.length > 0) {
+                    } else if (actorKey === 'facebook') {
                       const normItems = unwrapped.map((item, i) => normalizeFacebookItem(item, i));
                       const validReels = normItems.filter((item, i) =>
                         isFacebookVideoReel(unwrapped[i] || item, item) && Boolean(matchItemToIssueId(item))
                       );
+                      unmatchedItems = normItems.filter((item) => !matchItemToIssueId(item));
                       matchedCount = validReels.length;
-                      setFacebookState((prev) => {
-                        const newMap = new Map();
-                        for (const item of prev.items || []) {
-                          const iId = matchItemToIssueId(item);
-                          if (!iId) continue;
-                          newMap.set(iId, item);
-                        }
-                        for (const item of validReels) {
-                          const iId = matchItemToIssueId(item);
-                          if (!iId) continue;
-                          const existing = newMap.get(iId);
-                          newMap.set(iId, {
-                            ...existing,
-                            ...item,
-                            issueId: iId,
-                            views: Math.max(existing?.views || 0, item.views || 0),
-                            likes: Math.max(existing?.likes || 0, item.likes || 0),
-                            comments: Math.max(existing?.comments || 0, item.comments || 0),
-                            shares: Math.max(existing?.shares || 0, item.shares || 0),
-                          });
-                        }
-                        return {
-                          ...prev,
-                          connected: true,
-                          items: sortFacebookReelsForDisplay(Array.from(newMap.values())),
-                          runInfo: statusJson?.data,
-                        };
-                      });
+                      if (validReels.length > 0) {
+                        setFacebookState((prev) => {
+                          const newMap = new Map();
+                          for (const item of prev.items || []) {
+                            const iId = matchItemToIssueId(item);
+                            if (!iId) continue;
+                            newMap.set(iId, item);
+                          }
+                          for (const item of validReels) {
+                            const iId = matchItemToIssueId(item);
+                            if (!iId) continue;
+                            const existing = newMap.get(iId);
+                            newMap.set(iId, {
+                              ...existing,
+                              ...item,
+                              issueId: iId,
+                              views: Math.max(existing?.views || 0, item.views || 0),
+                              likes: Math.max(existing?.likes || 0, item.likes || 0),
+                              comments: Math.max(existing?.comments || 0, item.comments || 0),
+                              shares: Math.max(existing?.shares || 0, item.shares || 0),
+                            });
+                          }
+                          return {
+                            ...prev,
+                            connected: true,
+                            items: sortFacebookReelsForDisplay(Array.from(newMap.values())),
+                            runInfo: statusJson?.data,
+                          };
+                        });
+                      }
+                      setScraperDiagnostics((prev) => ({
+                        ...prev,
+                        facebook: {
+                          actorLabel: actorMeta.label,
+                          rawCount: scrapedCount,
+                          matchedCount,
+                          errorNotice: errorItem ? (errorItem.errorDescription || errorItem.error) : '',
+                          latestUnmatched: unmatchedItems[0] || null,
+                          runId,
+                          timestamp: new Date().toLocaleTimeString(),
+                        },
+                      }));
                     }
 
                     if (scrapedCount === 0 && errorItem) {
@@ -7182,6 +7230,87 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              <div className="mb-4 space-y-2">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={igDirectUrl}
+                    onChange={(e) => setIgDirectUrl(e.target.value)}
+                    placeholder="Optional: paste direct IG Reel URL (e.g. https://www.instagram.com/reel/...)"
+                    className="flex-1 bg-[#0b0d10] border border-slate-800 px-3 py-1.5 text-[11px] font-mono text-[#e2e8f0] placeholder:text-slate-600 focus:outline-none focus:border-[#fda4af]/60"
+                  />
+                  {igDirectUrl.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setIgDirectUrl('')}
+                      className="px-2.5 py-1.5 border border-slate-700 text-[10px] font-mono text-slate-400 hover:text-white cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                {scraperDiagnostics.instagram && (
+                  <div className="p-2.5 bg-[#0b0d10] border border-[#fda4af]/30 text-[11px] font-mono text-slate-300 space-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span>
+                        Last Run ({scraperDiagnostics.instagram.timestamp}):{' '}
+                        <strong className="text-[#fda4af]">
+                          {scraperDiagnostics.instagram.rawCount} scraped
+                        </strong>
+                        {' • '}
+                        <strong className="text-[#86efac]">
+                          {scraperDiagnostics.instagram.matchedCount} matched
+                        </strong>
+                      </span>
+                      {scraperDiagnostics.instagram.runId && (
+                        <a
+                          href={`https://console.apify.com/actors/runs/${scraperDiagnostics.instagram.runId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#67e8f9] hover:underline"
+                        >
+                          Inspect Apify Run ↗
+                        </a>
+                      )}
+                    </div>
+                    {scraperDiagnostics.instagram.errorNotice && (
+                      <div className="text-amber-300">
+                        Apify notice: {scraperDiagnostics.instagram.errorNotice}
+                      </div>
+                    )}
+                    {scraperDiagnostics.instagram.rawCount === 0 && !scraperDiagnostics.instagram.errorNotice && (
+                      <div className="text-slate-400">
+                        0 reels returned from @{targets.instagramHandle}. If this is an unshared Trial Reel, Instagram hides it from public scrapers until shared to everyone—or paste its direct Reel URL above.
+                      </div>
+                    )}
+                    {scraperDiagnostics.instagram.latestUnmatched && (
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
+                        <span className="truncate max-w-[260px] text-slate-400">
+                          Unmatched reel: &ldquo;{scraperDiagnostics.instagram.latestUnmatched.caption}&rdquo; ({scraperDiagnostics.instagram.latestUnmatched.views} views)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const u = scraperDiagnostics.instagram.latestUnmatched;
+                            setInstagramState((prev) => ({
+                              ...prev,
+                              items: sortReelsForDisplay([
+                                ...(prev.items || []).filter((i) => matchItemToIssueId(i) !== '04'),
+                                { ...u, issueId: '04' },
+                              ]),
+                            }));
+                            setScraperDiagnostics((prev) => ({ ...prev, instagram: null }));
+                          }}
+                          className="px-2 py-0.5 border border-[#fda4af]/50 bg-[#fda4af]/10 text-[#fda4af] hover:bg-[#fda4af]/20 text-[10px] cursor-pointer"
+                        >
+                          Assign to Issue #04
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {visibleInstagramItems.length === 0 ? (
                 <div className="py-6 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 mb-4 space-y-2">
                   <div>
@@ -7335,6 +7464,82 @@ export default function Dashboard() {
                     </span>
                   </button>
                 </div>
+              </div>
+
+              <div className="mb-4 space-y-2">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={fbDirectUrl}
+                    onChange={(e) => setFbDirectUrl(e.target.value)}
+                    placeholder="Optional: paste direct FB Reel URL (e.g. https://www.facebook.com/reel/...)"
+                    className="flex-1 bg-[#0b0d10] border border-slate-800 px-3 py-1.5 text-[11px] font-mono text-[#e2e8f0] placeholder:text-slate-600 focus:outline-none focus:border-[#86efac]/60"
+                  />
+                  {fbDirectUrl.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setFbDirectUrl('')}
+                      className="px-2.5 py-1.5 border border-slate-700 text-[10px] font-mono text-slate-400 hover:text-white cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                {scraperDiagnostics.facebook && (
+                  <div className="p-2.5 bg-[#0b0d10] border border-[#86efac]/30 text-[11px] font-mono text-slate-300 space-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span>
+                        Last Run ({scraperDiagnostics.facebook.timestamp}):{' '}
+                        <strong className="text-[#86efac]">
+                          {scraperDiagnostics.facebook.rawCount} scraped
+                        </strong>
+                        {' • '}
+                        <strong className="text-[#67e8f9]">
+                          {scraperDiagnostics.facebook.matchedCount} matched
+                        </strong>
+                      </span>
+                      {scraperDiagnostics.facebook.runId && (
+                        <a
+                          href={`https://console.apify.com/actors/runs/${scraperDiagnostics.facebook.runId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#67e8f9] hover:underline"
+                        >
+                          Inspect Apify Run ↗
+                        </a>
+                      )}
+                    </div>
+                    {scraperDiagnostics.facebook.errorNotice && (
+                      <div className="text-amber-300">
+                        Apify notice: {scraperDiagnostics.facebook.errorNotice}
+                      </div>
+                    )}
+                    {scraperDiagnostics.facebook.latestUnmatched && (
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
+                        <span className="truncate max-w-[260px] text-slate-400">
+                          Unmatched reel: &ldquo;{scraperDiagnostics.facebook.latestUnmatched.text}&rdquo; ({scraperDiagnostics.facebook.latestUnmatched.views} views)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const u = scraperDiagnostics.facebook.latestUnmatched;
+                            setFacebookState((prev) => ({
+                              ...prev,
+                              items: sortFacebookReelsForDisplay([
+                                ...(prev.items || []).filter((i) => matchItemToIssueId(i) !== '04'),
+                                { ...u, issueId: '04', isReel: true },
+                              ]),
+                            }));
+                            setScraperDiagnostics((prev) => ({ ...prev, facebook: null }));
+                          }}
+                          className="px-2 py-0.5 border border-[#86efac]/50 bg-[#86efac]/10 text-[#86efac] hover:bg-[#86efac]/20 text-[10px] cursor-pointer"
+                        >
+                          Assign to Issue #04
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {visibleFacebookItems.length === 0 ? (
