@@ -367,13 +367,19 @@ export function normalizeFacebookItem(item, idx = 0) {
     0,
     Number(
       item.playCount ??
+        item.viewCount ??
         item.videoViewCount ??
         item.video_play_count ??
         item.video_view_count ??
+        item.play_count ??
+        item.view_count ??
         item.playsCount ??
         item.viewsCount ??
+        item.plays ??
+        item.videoPlays ??
         item.views ??
         item.videoViews ??
+        item.video_views ??
         item.video?.playCount ??
         item.video?.viewCount ??
         firstMedia?.videoViewCount ??

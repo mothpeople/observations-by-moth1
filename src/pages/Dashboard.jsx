@@ -719,13 +719,19 @@ function normalizeFacebookItem(item, idx = 0) {
     0,
     Number(
       item.playCount ??
+        item.viewCount ??
         item.videoViewCount ??
         item.video_play_count ??
         item.video_view_count ??
+        item.play_count ??
+        item.view_count ??
         item.playsCount ??
         item.viewsCount ??
+        item.plays ??
+        item.videoPlays ??
         item.views ??
         item.videoViews ??
+        item.video_views ??
         item.video?.playCount ??
         item.video?.viewCount ??
         firstMedia?.videoViewCount ??
@@ -1238,10 +1244,17 @@ function isFacebookVideoReel(rawItem, item) {
 
   const playCount = Number(
     raw.playCount ??
+    raw.viewCount ??
     raw.videoViewCount ??
     raw.video_play_count ??
     raw.video_view_count ??
+    raw.play_count ??
+    raw.view_count ??
+    raw.playsCount ??
     raw.viewsCount ??
+    raw.plays ??
+    raw.videoPlays ??
+    raw.views ??
     raw.videoViews ??
     target.views ??
     0
@@ -2828,12 +2841,29 @@ export default function Dashboard() {
         );
 
         setFacebookState((prev) => {
-          const effectiveItems =
-            fbItems.length > 0
-              ? fbItems
-              : prev.items?.length > 0
-                ? prev.items
-                : serverFbReels;
+          const finalMap = new Map();
+          for (const item of (fbItems.length > 0 ? fbItems : serverFbReels)) {
+            const iId = matchItemToIssueId(item) || item.id;
+            finalMap.set(iId, item);
+          }
+          for (const prevItem of (prev.items || [])) {
+            const iId = matchItemToIssueId(prevItem);
+            if (!iId) continue;
+            const existing = finalMap.get(iId);
+            if (existing) {
+              finalMap.set(iId, {
+                ...prevItem,
+                ...existing,
+                views: Math.max(existing.views || 0, prevItem.views || 0),
+                likes: Math.max(existing.likes || 0, prevItem.likes || 0),
+                comments: Math.max(existing.comments || 0, prevItem.comments || 0),
+                shares: Math.max(existing.shares || 0, prevItem.shares || 0),
+              });
+            } else {
+              finalMap.set(iId, prevItem);
+            }
+          }
+          const effectiveItems = sortFacebookReelsForDisplay(Array.from(finalMap.values()));
           const effectiveFollowers =
             fbScrapedFollowers > 0
               ? fbScrapedFollowers
