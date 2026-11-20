@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   BrowserRouter,
   Routes,
   Route,
   Navigate,
   useParams,
+  useLocation,
 } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
@@ -17,6 +19,63 @@ import { recordSiteEvent } from './utils/telemetry';
 
 function PublicationLayout({ dispatch = null, children }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const location = useLocation();
+  const isAnalyticsRoute = location.pathname.startsWith('/analytics');
+
+  const siteOrigin = 'https://observations.moth1.xyz';
+  const pageTitle = dispatch
+    ? `${dispatch.title} | Observations by Moth1`
+    : isAnalyticsRoute
+      ? 'Observations by Moth1 Performance Hub'
+      : 'Observations by Moth1 | Interactive Visual Essays';
+  const pageDescription = dispatch
+    ? dispatch.subtitle
+    : 'Visual essays on power, generational economics, and street-level reality.';
+  const canonicalUrl = dispatch
+    ? `${siteOrigin}/${dispatch.slug}`
+    : isAnalyticsRoute
+      ? `${siteOrigin}/analytics`
+      : `${siteOrigin}/`;
+  const ogImageUrl = dispatch
+    ? `${siteOrigin}${dispatch.ogImage || `/og/og-issue-${dispatch.id}.jpg`}`
+    : `${siteOrigin}/og/og-home.jpg`;
+  const ogType = dispatch ? 'article' : 'website';
+
+  const jsonLd = dispatch
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: dispatch.title,
+        description: dispatch.subtitle,
+        image: ogImageUrl,
+        datePublished: dispatch.datePublished || '2026-11-01',
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': canonicalUrl,
+        },
+        author: {
+          '@type': 'Person',
+          name: 'Moth1',
+          url: 'https://moth1.xyz',
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'Observations by Moth1',
+          url: siteOrigin,
+        },
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'Observations by Moth1',
+        url: siteOrigin,
+        description: pageDescription,
+        publisher: {
+          '@type': 'Organization',
+          name: 'Observations by Moth1',
+          url: siteOrigin,
+        },
+      };
 
   // Client-Side UTM Listener: Bypass Vercel Web Analytics Plus Paywall
   useEffect(() => {
@@ -69,7 +128,6 @@ function PublicationLayout({ dispatch = null, children }) {
     const utmSource = searchParams ? searchParams.get('utm_source') : null;
 
     if (dispatch) {
-      document.title = `Issue #${dispatch.id}: ${dispatch.title}, Observations by Moth1`;
       recordSiteEvent('page_view', {
         path: `/${dispatch.slug}`,
         issueId: dispatch.id,
@@ -77,7 +135,6 @@ function PublicationLayout({ dispatch = null, children }) {
         utm_source: utmSource,
       });
     } else {
-      document.title = 'Observations by Moth1 | Interactive Visual Essays';
       if (typeof window !== 'undefined' && window.location.pathname === '/') {
         recordSiteEvent('page_view', {
           path: '/',
@@ -158,6 +215,28 @@ function PublicationLayout({ dispatch = null, children }) {
 
   return (
     <div className="relative min-h-screen bg-[#0c0d10] text-[#e6e4dd] selection:bg-[#dc2626] selection:text-[#e6e4dd]">
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        {isAnalyticsRoute && <meta name="robots" content="noindex, nofollow" />}
+
+        <meta property="og:type" content={ogType} />
+        <meta property="og:site_name" content="Observations by Moth1" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:image" content={ogImageUrl} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={ogImageUrl} />
+
+        {!isAnalyticsRoute && (
+          <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+        )}
+      </Helmet>
       {/* Global SVG Filters: Washi Rice Paper Grain (opacity 0.04) & Sumi-e Brush Edge Displacement */}
       <svg
         aria-hidden="true"
@@ -233,7 +312,9 @@ function DispatchShell({ dispatch }) {
   const ActiveIssueComponent = dispatch.component;
   return (
     <PublicationLayout dispatch={dispatch}>
-      <ActiveIssueComponent />
+      <article className="w-full">
+        <ActiveIssueComponent />
+      </article>
     </PublicationLayout>
   );
 }

@@ -12,8 +12,10 @@ export const dispatches = [
     subtitle:
       'Why protests keep exploding, why geriatrics keep lecturing, and why nothing gets solved.',
     date: 'OCT 2026',
+    datePublished: '2026-10-28',
     readTime: '5 MIN',
     cover: '/issues/issue-01/hero-storm.webp',
+    ogImage: '/og/og-issue-01.jpg',
     component: Issue01,
   },
   {
@@ -24,8 +26,10 @@ export const dispatches = [
     subtitle:
       'Why billionaires panic about birth rates, why the Venn diagram collapsed, and why the earth is quietly exhausted.',
     date: 'NOV 2026',
+    datePublished: '2026-11-02',
     readTime: '5 MIN',
     cover: '/issues/issue-02/hero-machine.webp',
+    ogImage: '/og/og-issue-02.jpg',
     component: Issue02Component,
   },
   {
@@ -40,8 +44,10 @@ export const dispatches = [
     subtitle:
       'Why billionaires microdose in boardrooms while working-class kids rot in cells, and why the state’s deadliest drug sits taxed on the top shelf.',
     date: 'NOV 2026',
+    datePublished: '2026-11-05',
     readTime: '8 MIN',
     cover: '/issues/issue-03/hero-dossier.webp',
+    ogImage: '/og/og-issue-03.jpg',
     component: Issue03Component,
   },
   {
@@ -56,8 +62,10 @@ export const dispatches = [
     subtitle:
       'How algorithmic feeds became the modern opium trade, hollowing out our attention spans, fracturing society, and engineering a crisis we willingly consume.',
     date: 'NOV 2026',
+    datePublished: '2026-11-16',
     readTime: '8 MIN',
     cover: '/issues/issue-04/hero-humen-2am.webp',
+    ogImage: '/og/og-issue-04.jpg',
     component: Issue04Component,
   },
 ];

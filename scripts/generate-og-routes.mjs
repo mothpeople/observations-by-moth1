@@ -15,6 +15,8 @@ const routes = [
   {
     paths: ['watering-grass-in-a-thunderstorm', 'watering-grass', 'issue-01', 'issue/01'],
     title: 'Issue #01: Watering Grass in a Thunderstorm | Observations by Moth1',
+    headline: 'Watering Grass in a Thunderstorm',
+    datePublished: '2026-10-28',
     description:
       'Why protests keep exploding, why geriatrics keep lecturing, and why nothing gets solved.',
     image: 'https://observations.moth1.xyz/og/og-issue-01.jpg',
@@ -23,6 +25,8 @@ const routes = [
   {
     paths: ['the-meat-grinder', 'issue-02', 'issue/02'],
     title: 'Issue #02: The Meat Grinder Needs More Meat | Observations by Moth1',
+    headline: 'The Meat Grinder Needs More Meat',
+    datePublished: '2026-11-02',
     description:
       'Why billionaires panic about birth rates, why the Venn diagram collapsed, and why the earth is quietly exhausted.',
     image: 'https://observations.moth1.xyz/og/og-issue-02.jpg',
@@ -36,6 +40,8 @@ const routes = [
       'issue/03',
     ],
     title: 'Issue #03: The War No One Was Supposed to Win | Observations by Moth1',
+    headline: 'The War No One Was Supposed to Win',
+    datePublished: '2026-11-05',
     description:
       'Why billionaires microdose in boardrooms while working-class kids rot in cells, and why the state’s deadliest drug sits taxed on the top shelf.',
     image: 'https://observations.moth1.xyz/og/og-issue-03.jpg',
@@ -49,6 +55,8 @@ const routes = [
     ],
     title:
       'Issue #04: The Century of Self-Inflicted Humiliation | Observations by Moth1',
+    headline: 'The Century of Self-Inflicted Humiliation',
+    datePublished: '2026-11-16',
     description:
       'How algorithmic feeds became the modern opium trade, hollowing out our attention spans, fracturing society, and engineering a crisis we willingly consume.',
     image: 'https://observations.moth1.xyz/og/og-issue-04.jpg',
@@ -65,10 +73,39 @@ const routes = [
 ];
 
 for (const route of routes) {
+  const jsonLdScript = !route.noindex && route.headline
+    ? `\n    <script type="application/ld+json">${JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: route.headline,
+        description: route.description,
+        image: route.image,
+        datePublished: route.datePublished,
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': route.url,
+        },
+        author: {
+          '@type': 'Person',
+          name: 'Moth1',
+          url: 'https://moth1.xyz',
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'Observations by Moth1',
+          url: 'https://observations.moth1.xyz',
+        },
+      })}</script>`
+    : '';
+
   let html = baseHtml
     .replace(
       /<title>.*?<\/title>/s,
-      `<title>${route.title}</title>${route.noindex ? '\n    <meta name="robots" content="noindex, nofollow" />' : ''}`
+      `<title>${route.title}</title>\n    <link rel="canonical" href="${route.url}" />${route.noindex ? '\n    <meta name="robots" content="noindex, nofollow" />' : ''}${jsonLdScript}`
+    )
+    .replace(
+      /<meta\s+property="og:type"\s+content=".*?"\s*\/>/s,
+      `<meta property="og:type" content="${route.noindex ? 'website' : 'article'}" />`
     )
     .replace(
       /<meta\s+name="description"\s+content=".*?"\s*\/>/s,
