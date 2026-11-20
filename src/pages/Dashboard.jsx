@@ -3586,6 +3586,7 @@ export default function Dashboard() {
         resultsLimit: 30,
         proxyConfiguration: {
           useApifyProxy: true,
+          apifyProxyGroups: ['RESIDENTIAL'],
         },
       };
     }
@@ -3597,6 +3598,7 @@ export default function Dashboard() {
         resultsLimit: 30,
         proxyConfiguration: {
           useApifyProxy: true,
+          apifyProxyGroups: ['RESIDENTIAL'],
         },
       };
     }
@@ -3609,6 +3611,7 @@ export default function Dashboard() {
         ],
         proxyConfiguration: {
           useApifyProxy: true,
+          apifyProxyGroups: ['RESIDENTIAL'],
         },
       };
     }
@@ -3673,16 +3676,37 @@ export default function Dashboard() {
     setStatusMessage(`Starting ${actorMeta.label} on Apify...`);
 
     try {
-      const res = await fetch(
+      const payload = buildActorPayload(actorKey);
+      let res = await fetch(
         `https://api.apify.com/v2/acts/${actorMeta.id}/runs?token=${encodeURIComponent(cleanedToken)}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(buildActorPayload(actorKey)),
+          body: JSON.stringify(payload),
         }
       );
 
-      const data = await res.json().catch(() => null);
+      let data = await res.json().catch(() => null);
+      if (
+        !res.ok &&
+        payload?.proxyConfiguration?.apifyProxyGroups &&
+        /proxy|residential/i.test(String(data?.error?.message || ''))
+      ) {
+        const fallbackPayload = {
+          ...payload,
+          proxyConfiguration: { useApifyProxy: true },
+        };
+        res = await fetch(
+          `https://api.apify.com/v2/acts/${actorMeta.id}/runs?token=${encodeURIComponent(cleanedToken)}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(fallbackPayload),
+          }
+        );
+        data = await res.json().catch(() => null);
+      }
+
       if (!res.ok) {
         if (res.status === 401) {
           setShowApifyConfig(true);
