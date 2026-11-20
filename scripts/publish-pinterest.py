@@ -59,6 +59,45 @@ ISSUE_MAP = {
             }
         ]
     },
+    "04": {
+        "slug": "century-of-self-inflicted-humiliation",
+        "dir": "dist-packages/issue-04-self-inflicted-humiliation/pinterest",
+        "pins": [
+            {
+                "file": "dist-packages/issue-04-self-inflicted-humiliation/pinterest/pins/01_infographic_plate.png",
+                "title": "The Attention Ledger: 1839 Canton Opium vs. 2026 Algorithmic Feeds (35+ Days/Yr) | Observations by Moth1",
+                "description": (
+                    "In 1839, Britain waged war to reverse a silver deficit with 2.6M lbs of Bengal opium. Today, tech platforms harvest "
+                    "35+ full waking days per year from every user while weighting 'Angry' reactions 5x higher than Likes. "
+                    "Explore the interactive 1839-vs-2026 ledger at Observations by Moth1."
+                ),
+                "alt_text": "Data infographic plate comparing 1839 Humen opium destruction (2.6M lbs) with 2026 algorithmic screen captivity (35+ days/yr, 5x rage weight).",
+                "link": "https://observations.moth1.xyz/century-of-self-inflicted-humiliation?utm_source=pinterest&utm_medium=pin&utm_campaign=issue-04&utm_content=attention-ledger"
+            },
+            {
+                "file": "dist-packages/issue-04-self-inflicted-humiliation/pinterest/pins/02_thesis_quote_plate.png",
+                "title": "Self-Inflicted Humiliation: Screen-Free Palo Alto Schools vs. 7x Elder Shares | Observations by Moth1",
+                "description": (
+                    "“Two hundred years ago, foreign gunboats forced addiction to balance a ledger. Today, we carry the opium den in our pockets "
+                    "and thank the dealer.” Meanwhile, isolated seniors 65+ face a 30%–50% surge in dementia risk and share 7x more fabricated political content. "
+                    "Read Issue #04 at Observations by Moth1."
+                ),
+                "alt_text": "Atmospheric sumi-e bedroom scroll artwork with quote comparing historical gunboats to pocket opium dens and 7x elder misinformation shares.",
+                "link": "https://observations.moth1.xyz/century-of-self-inflicted-humiliation?utm_source=pinterest&utm_medium=pin&utm_campaign=issue-04&utm_content=mirror-of-history"
+            },
+            {
+                "file": "dist-packages/issue-04-self-inflicted-humiliation/pinterest/pins/03_interactive_mockup_plate.png",
+                "title": "Four Structural Interventions Against Algorithmic Capture (ZK-KYC & Third Places) | Observations by Moth1",
+                "description": (
+                    "Digital detoxes cannot out-muscle behavioural supercomputers. Breaking algorithmic capture requires four structural reforms: "
+                    "1:1 ZK-KYC Proof-of-Personhood, chronological feeds by law, banning slot-machine UI traps, and taxing ad extraction to rebuild physical third places. "
+                    "Explore Issue #04 at Observations by Moth1."
+                ),
+                "alt_text": "Four-front structural reform plate detailing ZK-KYC Proof-of-Personhood, chronological feeds, open protocols, and rebuilding third places.",
+                "link": "https://observations.moth1.xyz/century-of-self-inflicted-humiliation?utm_source=pinterest&utm_medium=pin&utm_campaign=issue-04&utm_content=structural-antidote"
+            }
+        ]
+    },
     "01": {
         "slug": "watering-grass-in-a-thunderstorm",
         "dir": "dist-packages/issue-01-watering-grass/pinterest",
@@ -229,7 +268,7 @@ def publish_pin(token, board_id, pin_info):
 
 def main():
     parser = argparse.ArgumentParser(description="Publish Pinterest Pins for Observations by Moth1")
-    parser.add_argument("--issue", required=True, choices=["01", "02", "1", "2"], help="Issue number (01 or 02)")
+    parser.add_argument("--issue", required=True, choices=["01", "02", "03", "04", "1", "2", "3", "4"], help="Issue number (01, 02, 03, or 04)")
     parser.add_argument("--board-id", help="Pinterest Board ID (optional, defaults to .env.local or interactive select)")
     
     args = parser.parse_args()

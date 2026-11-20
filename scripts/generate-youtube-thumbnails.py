@@ -353,6 +353,77 @@ def render_widescreen_issue03(out_path):
     return out_path
 
 
+def render_widescreen_issue04(out_path):
+    """
+    Issue 04: "The Century of Self-Inflicted Humiliation"
+    Strictly centered inside the 9:16 safe zone (x: 465 to 815).
+    Title fully in frame without side truncations.
+    """
+    w, h = 1280, 720
+    canvas = Image.new("RGBA", (w, h), C_CHARCOAL)
+    draw = ImageDraw.Draw(canvas)
+    
+    for x in range(0, w, 40): draw.line([(x, 0), (x, h)], fill=C_GRID_LINE, width=1)
+    for y in range(0, h, 40): draw.line([(0, y), (w, y)], fill=C_GRID_LINE, width=1)
+    
+    # Background artwork: hero-humen-2am.webp
+    if os.path.exists("public/issues/issue-04/hero-humen-2am.webp"):
+        hero = Image.open("public/issues/issue-04/hero-humen-2am.webp").convert("RGBA")
+        scale = max(w / hero.width, h / hero.height)
+        nw, nh = int(hero.width * scale), int(hero.height * scale)
+        h_scaled = hero.resize((nw, nh), Image.Resampling.LANCZOS)
+        cx_off = (nw - w) // 2
+        cy_off = (nh - h) // 2
+        canvas.alpha_composite(h_scaled.crop((cx_off, cy_off, cx_off + w, cy_off + h)), (0, 0))
+    
+    vig = Image.new("RGBA", (w, h), (8, 9, 10, 195))
+    canvas.alpha_composite(vig, (0, 0))
+    draw = ImageDraw.Draw(canvas)
+    
+    # Middle 9:16 Safe Panel
+    px0, py0, px1, py1 = 465, 90, 815, 630
+    panel = Image.new("RGBA", (px1 - px0, py1 - py0), C_PANEL_BG)
+    canvas.alpha_composite(panel, (px0, py0))
+    draw.rectangle([(px0, py0), (px1, py1)], outline=C_BORDER, width=2)
+    draw_corner_brackets(draw, px0, py0, px1, py1, size=28, stroke=3, accent_color=C_CRIMSON)
+    
+    cx = 640
+    cy = py0 + 55
+    draw_centered_text(draw, cy, "OBSERVATIONS BY MOTH1", get_mono(10, bold=True), fill=C_MUTED, cx=cx)
+    cy += 30
+    draw_centered_text(draw, cy, "ISSUE 04", get_mono(16, bold=True), fill=C_AMBER, cx=cx)
+    cy += 48
+    
+    # Title: THE CENTURY OF SELF-INFLICTED HUMILIATION
+    f_t1 = get_sans(30, bold=True)
+    f_t2 = get_sans(32, bold=True)
+    draw_centered_text(draw, cy, "THE CENTURY OF", f_t1, fill=C_OFFWHITE, cx=cx)
+    cy += 42
+    draw_centered_text(draw, cy, "SELF-INFLICTED", f_t2, fill=C_AMBER, cx=cx)
+    cy += 44
+    draw_centered_text(draw, cy, "HUMILIATION", f_t2, fill=C_OFFWHITE, cx=cx)
+    cy += 55
+    
+    # Accent Line
+    draw.line([(cx - 70, cy), (cx + 70, cy)], fill=C_CRIMSON, width=3)
+    cy += 28
+    
+    # Subtitle / Hook
+    draw_centered_text(draw, cy, "Algorithmic Feeds &", get_sans(16, bold=False), fill=C_MUTED, cx=cx)
+    cy += 24
+    draw_centered_text(draw, cy, "The New Opium War", get_sans(16, bold=False), fill=C_MUTED, cx=cx)
+    
+    # Bottom Seal & URL
+    seal_y = py1 - 70
+    draw_seal(canvas, cx - 110, seal_y, size=46, text="MOTH1")
+    draw.text((cx - 52, seal_y + 14), "observations.moth1.xyz", fill=C_OFFWHITE, font=get_sans(15, bold=True))
+    
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    canvas.save(out_path, "PNG", quality=100)
+    print("Rendered 16:9 Issue 04:", out_path)
+    return out_path
+
+
 # ==============================================================================
 # 2. 9:16 VERTICAL THUMBNAILS (1080 x 1920)
 # ==============================================================================
@@ -597,11 +668,78 @@ def render_vertical_issue03(out_path):
     return out_path
 
 
+def render_vertical_issue04(out_path):
+    w, h = 1080, 1920
+    canvas = Image.new("RGBA", (w, h), C_CHARCOAL)
+    draw = ImageDraw.Draw(canvas)
+    
+    for x in range(0, w, 40): draw.line([(x, 0), (x, h)], fill=C_GRID_LINE, width=1)
+    for y in range(0, h, 40): draw.line([(0, y), (w, y)], fill=C_GRID_LINE, width=1)
+    
+    if os.path.exists("public/issues/issue-04/hero-humen-2am.webp"):
+        hero = Image.open("public/issues/issue-04/hero-humen-2am.webp").convert("RGBA")
+        scale = max(w / hero.width, h / hero.height)
+        nw, nh = int(hero.width * scale), int(hero.height * scale)
+        h_scaled = hero.resize((nw, nh), Image.Resampling.LANCZOS)
+        cx_off = (nw - w) // 2
+        cy_off = (nh - h) // 2
+        canvas.alpha_composite(h_scaled.crop((cx_off, cy_off, cx_off + w, cy_off + h)), (0, 0))
+    
+    vig = Image.new("RGBA", (w, h), (8, 9, 10, 195))
+    canvas.alpha_composite(vig, (0, 0))
+    draw = ImageDraw.Draw(canvas)
+    
+    px0, py0, px1, py1 = 100, 420, 980, 1500
+    panel = Image.new("RGBA", (px1 - px0, py1 - py0), C_PANEL_BG)
+    canvas.alpha_composite(panel, (px0, py0))
+    draw.rectangle([(px0, py0), (px1, py1)], outline=C_BORDER, width=2)
+    draw_corner_brackets(draw, px0, py0, px1, py1, size=36, stroke=4, accent_color=C_CRIMSON)
+    
+    cx = 540
+    cy = py0 + 100
+    draw_centered_text(draw, cy, "OBSERVATIONS BY MOTH1", get_mono(16, bold=True), fill=C_MUTED, cx=cx)
+    cy += 45
+    draw_centered_text(draw, cy, "ISSUE 04", get_mono(24, bold=True), fill=C_AMBER, cx=cx)
+    cy += 80
+    
+    # Title: THE CENTURY OF SELF-INFLICTED HUMILIATION
+    f_t1 = get_sans(56, bold=True)
+    f_t2 = get_sans(60, bold=True)
+    draw_centered_text(draw, cy, "THE CENTURY OF", f_t1, fill=C_OFFWHITE, cx=cx)
+    cy += 74
+    draw_centered_text(draw, cy, "SELF-INFLICTED", f_t2, fill=C_AMBER, cx=cx)
+    cy += 76
+    draw_centered_text(draw, cy, "HUMILIATION", f_t2, fill=C_OFFWHITE, cx=cx)
+    cy += 95
+    
+    draw.line([(cx - 140, cy), (cx + 140, cy)], fill=C_CRIMSON, width=4)
+    cy += 50
+    
+    draw_centered_text(draw, cy, "Algorithmic Feeds &", get_sans(28, bold=False), fill=C_MUTED, cx=cx)
+    cy += 38
+    draw_centered_text(draw, cy, "The New Opium War", get_sans(28, bold=False), fill=C_MUTED, cx=cx)
+    
+    seal_y = py1 - 110
+    draw_seal(canvas, cx - 160, seal_y, size=64, text="MOTH1")
+    draw.text((cx - 80, seal_y + 18), "observations.moth1.xyz", fill=C_OFFWHITE, font=get_sans(24, bold=True))
+    
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    canvas.save(out_path, "PNG", quality=100)
+    print("Rendered 9:16 Issue 04:", out_path)
+    return out_path
+
+
 # ==============================================================================
 # MAIN DRIVER & YOUTUBE API UPLOAD
 # ==============================================================================
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate YouTube Thumbnails for Observations by Moth1")
+    parser.add_argument("--issue", default="all", help="Issue number (01, 02, 03, 04, playlist, or all)")
+    parser.add_argument("--upload", action="store_true", help="Upload thumbnails to existing YouTube videos via API")
+    args = parser.parse_args()
+
     print("=" * 66)
     print("OBSERVATIONS BY MOTH1 — THUMBNAIL SUITE (SAFE-ZONE ENGINE)")
     print("=" * 66)
@@ -614,21 +752,31 @@ def main():
         "issue02_16x9": "dist-packages/issue-02-the-meat-grinder/youtube/thumbnails/issue-02-thumbnail-1280x720.png",
         "issue02_9x16": "dist-packages/issue-02-the-meat-grinder/youtube/thumbnails/issue-02-thumbnail-1080x1920.png",
         "issue03_16x9": "dist-packages/issue-03-war-on-drugs/youtube/thumbnails/issue-03-thumbnail-1280x720.png",
-        "issue03_9x16": "dist-packages/issue-03-war-on-drugs/youtube/thumbnails/issue-03-thumbnail-1080x1920.png"
+        "issue03_9x16": "dist-packages/issue-03-war-on-drugs/youtube/thumbnails/issue-03-thumbnail-1080x1920.png",
+        "issue04_16x9": "dist-packages/issue-04-self-inflicted-humiliation/youtube/thumbnails/issue-04-thumbnail-1280x720.png",
+        "issue04_9x16": "dist-packages/issue-04-self-inflicted-humiliation/youtube/thumbnails/issue-04-thumbnail-1080x1920.png"
     }
 
-    # Render all thumbnails
-    render_widescreen_playlist(paths["playlist_16x9"])
-    render_vertical_playlist(paths["playlist_9x16"])
-    render_widescreen_issue01(paths["issue01_16x9"])
-    render_vertical_issue01(paths["issue01_9x16"])
-    render_widescreen_issue02(paths["issue02_16x9"])
-    render_vertical_issue02(paths["issue02_9x16"])
-    render_widescreen_issue03(paths["issue03_16x9"])
-    render_vertical_issue03(paths["issue03_9x16"])
+    target = args.issue.lower().zfill(2) if args.issue.isdigit() else args.issue.lower()
 
-    # Upload to YouTube via API
-    if os.path.exists(TOKEN_FILE):
+    if target in ("all", "playlist"):
+        render_widescreen_playlist(paths["playlist_16x9"])
+        render_vertical_playlist(paths["playlist_9x16"])
+    if target in ("all", "01"):
+        render_widescreen_issue01(paths["issue01_16x9"])
+        render_vertical_issue01(paths["issue01_9x16"])
+    if target in ("all", "02"):
+        render_widescreen_issue02(paths["issue02_16x9"])
+        render_vertical_issue02(paths["issue02_9x16"])
+    if target in ("all", "03"):
+        render_widescreen_issue03(paths["issue03_16x9"])
+        render_vertical_issue03(paths["issue03_9x16"])
+    if target in ("all", "04"):
+        render_widescreen_issue04(paths["issue04_16x9"])
+        render_vertical_issue04(paths["issue04_9x16"])
+
+    # Upload to YouTube via API only if --upload is passed
+    if args.upload and os.path.exists(TOKEN_FILE):
         try:
             import requests
             token_data = json.load(open(TOKEN_FILE))

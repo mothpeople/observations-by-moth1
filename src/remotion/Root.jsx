@@ -3,6 +3,7 @@ import { Composition } from 'remotion';
 import { WateringGrassReel } from './WateringGrassReel.jsx';
 import { MeatGrinderReel } from './MeatGrinderReel.jsx';
 import { WarOnDrugsReel } from './WarOnDrugsReel.jsx';
+import { SelfInflictedHumiliationReel } from './SelfInflictedHumiliationReel.jsx';
 
 export const RemotionRoot = () => {
   return (
@@ -27,6 +28,14 @@ export const RemotionRoot = () => {
         id="WarOnDrugsReel"
         component={WarOnDrugsReel}
         durationInFrames={1080}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="SelfInflictedHumiliationReel"
+        component={SelfInflictedHumiliationReel}
+        durationInFrames={1050}
         fps={30}
         width={1080}
         height={1920}

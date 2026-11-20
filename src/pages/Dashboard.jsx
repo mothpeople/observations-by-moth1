@@ -41,6 +41,11 @@ import {
 } from 'lucide-react';
 import CyberPanel from '../components/issue02/CyberPanel';
 import { loadChannelLedger, saveChannelLedger } from '../utils/telemetry';
+import {
+  matchItemToIssueId,
+  parseMetricNumber,
+  normalizeInstagramItem,
+} from '../utils/socialParsers';
 
 // Resolves country code or country name to native flag emoji
 function getCountryFlag(countryCode) {
@@ -292,137 +297,6 @@ function matchesObservationsFilter(item, filterTag = '#ObservationsByMoth1') {
   return false;
 }
 
-function matchItemToIssueId(item) {
-  if (!item) return null;
-
-  // 1. Check explicit issueId property first
-  const cleanIssue = String(item.issueId || '').trim();
-  if (cleanIssue === '04' || cleanIssue === '4') return '04';
-  if (cleanIssue === '03' || cleanIssue === '3') return '03';
-  if (cleanIssue === '02' || cleanIssue === '2') return '02';
-  if (cleanIssue === '01' || cleanIssue === '1') return '01';
-
-  // 2. Check title / caption / text content (the true semantic indicator)
-  const text = `${item.caption || ''} ${item.text || ''} ${item.title || ''} ${item.url || ''}`.toLowerCase();
-  const hashtags = Array.isArray(item.hashtags) ? item.hashtags.map((h) => String(h).toLowerCase()).join(' ') : '';
-  const haystack = `${text} ${hashtags}`;
-
-  if (
-    haystack.includes('the century of self-inflicted humiliation') ||
-    haystack.includes('century of self-inflicted humiliation') ||
-    haystack.includes('century-of-self-inflicted-humiliation') ||
-    haystack.includes('self-inflicted humiliation') ||
-    haystack.includes('self-inflicted-humiliation') ||
-    haystack.includes('self-inflicted') ||
-    haystack.includes('self inflicted') ||
-    haystack.includes('humiliation') ||
-    haystack.includes('opium') ||
-    haystack.includes('humen') ||
-    haystack.includes('lin zexu') ||
-    haystack.includes('algorithmic feed') ||
-    haystack.includes('rage multiplier') ||
-    haystack.includes('attention span') ||
-    haystack.includes('slot machine') ||
-    haystack.includes('doomscroll') ||
-    haystack.includes('mirror of history') ||
-    haystack.includes('issue-04') ||
-    haystack.includes('issue 04') ||
-    haystack.includes('issue 4') ||
-    haystack.includes('issue #04') ||
-    haystack.includes('issue #4')
-  ) {
-    return '04';
-  }
-
-  if (
-    haystack.includes('war on drugs') ||
-    haystack.includes('war-on-drugs') ||
-    haystack.includes('warondrugs') ||
-    haystack.includes('the war no one was supposed to win') ||
-    haystack.includes('the-war-no-one-was-supposed-to-win') ||
-    haystack.includes('supposed to win') ||
-    haystack.includes('prohibition') ||
-    haystack.includes('portugal') ||
-    haystack.includes('rat park') ||
-    haystack.includes('ratpark') ||
-    haystack.includes('trillion-dollar') ||
-    haystack.includes('trillion dollar') ||
-    haystack.includes('law 30/2000') ||
-    haystack.includes('microdose') ||
-    haystack.includes('overdose') ||
-    ((haystack.includes('observations') || haystack.includes('moth1')) &&
-      (haystack.includes('trial reel') || haystack.includes('trial-reel'))) ||
-    haystack.includes('issue-03') ||
-    haystack.includes('issue 03') ||
-    haystack.includes('issue 3') ||
-    haystack.includes('issue #03') ||
-    haystack.includes('issue #3')
-  ) {
-    return '03';
-  }
-
-  if (
-    haystack.includes('meat grinder') ||
-    haystack.includes('the meat grinder') ||
-    haystack.includes('the-meat-grinder') ||
-    haystack.includes('meatgrinder') ||
-    haystack.includes('billionaires panic') ||
-    haystack.includes('venn diagram') ||
-    haystack.includes('demographic black hole') ||
-    haystack.includes('birth rate') ||
-    haystack.includes('issue-02') ||
-    haystack.includes('issue 02') ||
-    haystack.includes('issue 2') ||
-    haystack.includes('issue #02') ||
-    haystack.includes('issue #2')
-  ) {
-    return '02';
-  }
-
-  if (
-    haystack.includes('watering grass') ||
-    haystack.includes('watering-grass') ||
-    haystack.includes('watering grass in a thunderstorm') ||
-    haystack.includes('watering-grass-in-a-thunderstorm') ||
-    haystack.includes('watering_grass') ||
-    ((haystack.includes('observations') || haystack.includes('moth1')) &&
-      (haystack.includes('issue-01') ||
-        haystack.includes('issue 01') ||
-        haystack.includes('issue #01') ||
-        haystack.includes('issue #1') ||
-        haystack.includes('issue 1') ||
-        haystack.includes('thunderstorm') ||
-        haystack.includes('bread and circus') ||
-        haystack.includes('geriatric') ||
-        haystack.includes('sidequest') ||
-        haystack.includes('combine writing')))
-  ) {
-    return '01';
-  }
-
-  // 3. Fallback: check explicit slug strings on custom ID (e.g. "ig-reel-02", "fb-reel-01", "war-on-drugs")
-  const idStr = String(item.id || '').toLowerCase();
-  if (idStr.includes('century-of-self-inflicted-humiliation') || /issue-?0?4/i.test(idStr) || idStr.includes('reel-04') || idStr.includes('post-04')) return '04';
-  if (idStr.includes('war-on-drugs') || /issue-?0?3/i.test(idStr) || idStr.includes('reel-03') || idStr.includes('post-03')) return '03';
-  if (idStr.includes('meat-grinder') || /issue-?0?2/i.test(idStr) || idStr.includes('reel-02') || idStr.includes('post-02')) return '02';
-  if (idStr.includes('watering-grass') || /issue-?0?1/i.test(idStr) || idStr.includes('reel-01') || idStr.includes('post-01')) return '01';
-
-  // 4. Brand + Publish-date fallback: any #ObservationsByMoth1 post published on/after Nov 16, 2026 belongs to Issue #04
-  if (
-    haystack.includes('#observationsbymoth1') ||
-    haystack.includes('observationsbymoth1') ||
-    haystack.includes('observations by moth1') ||
-    haystack.includes('observations.moth1.xyz')
-  ) {
-    const pubMs = item.publishedAt ? new Date(item.publishedAt).getTime() : 0;
-    if (pubMs >= Date.UTC(2026, 10, 16)) {
-      return '04';
-    }
-  }
-
-  return null;
-}
-
 function normalizeSubstackItem(
   item,
   idx = 0,
@@ -495,87 +369,6 @@ function normalizeSubstackItem(
           0
       ) || 0,
     source,
-  };
-}
-
-function parseMetricNumber(val) {
-  if (typeof val === 'number') return Number.isFinite(val) ? Math.max(0, Math.round(val)) : 0;
-  if (val === null || val === undefined) return 0;
-  const str = String(val).trim().replace(/,/g, '');
-  if (!str) return 0;
-  const match = str.match(/([\d.]+)\s*([kmb])?/i);
-  if (!match) return 0;
-  let num = parseFloat(match[1]);
-  if (!Number.isFinite(num)) return 0;
-  const suffix = (match[2] || '').toLowerCase();
-  if (suffix === 'k') num *= 1000;
-  else if (suffix === 'm') num *= 1000000;
-  else if (suffix === 'b') num *= 1000000000;
-  return Math.max(0, Math.round(num));
-}
-
-function normalizeInstagramItem(item, idx = 0) {
-  const shortCode = item.shortCode || item.code || '';
-  const url =
-    item.url ||
-    (shortCode ? `https://www.instagram.com/p/${shortCode}/` : '') ||
-    'https://www.instagram.com/';
-  const caption =
-    item.caption ||
-    item.text ||
-    item.firstComment ||
-    item.alt ||
-    `Instagram ${item.type || 'Post'} #${idx + 1}`;
-  const hashtags = Array.isArray(item.hashtags) ? item.hashtags : [];
-  const views = Math.max(
-    0,
-    Number(
-      item.videoPlayCount ??
-        item.videoViewCount ??
-        item.igPlayCount ??
-        item.playCount ??
-        item.viewCount ??
-        item.viewsCount ??
-        item.video_play_count ??
-        item.video_view_count ??
-        item.play_count ??
-        item.views ??
-        0
-    ) || 0
-  );
-  const likes = Math.max(
-    0,
-    Number(item.likesCount ?? item.likeCount ?? item.likes ?? 0) || 0
-  );
-  const comments = Math.max(
-    0,
-    Number(item.commentsCount ?? item.commentCount ?? item.comments ?? 0) || 0
-  );
-  const followers =
-    Number(
-      item.followersCount ??
-        item.ownerFollowersCount ??
-        item.owner?.followersCount ??
-        item.user?.followersCount ??
-        item.followers ??
-        0
-    ) || 0;
-
-  return {
-    id: String(item.id || shortCode || `ig-${idx}`),
-    type:
-      item.productType === 'clips' || item.type === 'Video' || views > 0
-        ? 'Reel / Video'
-        : item.type || 'Post',
-    caption,
-    hashtags,
-    url,
-    publishedAt: item.timestamp || item.takenAt || item.date || null,
-    views,
-    likes,
-    comments,
-    ownerUsername: item.ownerUsername || item.username || item.owner?.username || '',
-    followers,
   };
 }
 
@@ -1576,32 +1369,6 @@ const PRECONFIGURED_UTM_LINKS = [
     description: 'Instagram 9:16 Reel/Story sticker link pointing to Issue #04',
   },
   {
-    id: '04-facebook-story',
-    issueId: '04',
-    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
-    slug: 'century-of-self-inflicted-humiliation',
-    platform: 'facebook',
-    platformLabel: 'Facebook Reel / Story',
-    medium: 'story',
-    campaign: 'issue-04',
-    badge: 'FB Story',
-    color: '#60a5fa',
-    description: 'Facebook 9:16 Reel pinned comment or story link pointing to Issue #04',
-  },
-  {
-    id: '04-threads-post',
-    issueId: '04',
-    issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
-    slug: 'century-of-self-inflicted-humiliation',
-    platform: 'threads',
-    platformLabel: 'Threads Post',
-    medium: 'post',
-    campaign: 'issue-04',
-    badge: 'Threads Post',
-    color: '#c084fc',
-    description: 'Threads carousel or launch post link for Issue #04 dispatch',
-  },
-  {
     id: '04-youtube-profile',
     issueId: '04',
     issueTitle: 'Issue #04: The Century of Self-Inflicted Humiliation',
@@ -1692,32 +1459,6 @@ const PRECONFIGURED_UTM_LINKS = [
     badge: 'IG Story',
     color: '#fda4af',
     description: 'Instagram 9:16 Reel/Story sticker link pointing to Issue #03',
-  },
-  {
-    id: '03-facebook-story',
-    issueId: '03',
-    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
-    slug: 'war-on-drugs',
-    platform: 'facebook',
-    platformLabel: 'Facebook Reel / Story',
-    medium: 'story',
-    campaign: 'issue-03',
-    badge: 'FB Story',
-    color: '#60a5fa',
-    description: 'Facebook 9:16 Reel pinned comment or story link pointing to Issue #03',
-  },
-  {
-    id: '03-threads-post',
-    issueId: '03',
-    issueTitle: 'Issue #03: The War No One Was Supposed to Win',
-    slug: 'war-on-drugs',
-    platform: 'threads',
-    platformLabel: 'Threads Post',
-    medium: 'post',
-    campaign: 'issue-03',
-    badge: 'Threads Post',
-    color: '#c084fc',
-    description: 'Threads carousel or launch post link for Issue #03 dispatch',
   },
   {
     id: '03-youtube-profile',
@@ -1813,32 +1554,6 @@ const PRECONFIGURED_UTM_LINKS = [
     description: 'Instagram 9:16 Reel/Story swipe-up or sticker link to Issue #02',
   },
   {
-    id: '02-facebook-story',
-    issueId: '02',
-    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
-    slug: 'the-meat-grinder',
-    platform: 'facebook',
-    platformLabel: 'Facebook Reel / Story',
-    medium: 'story',
-    campaign: 'issue-02',
-    badge: 'FB Story',
-    color: '#60a5fa',
-    description: 'Facebook 9:16 Reel pinned comment or story sticker link to Issue #02',
-  },
-  {
-    id: '02-threads-post',
-    issueId: '02',
-    issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
-    slug: 'the-meat-grinder',
-    platform: 'threads',
-    platformLabel: 'Threads Post',
-    medium: 'post',
-    campaign: 'issue-02',
-    badge: 'Threads Post',
-    color: '#c084fc',
-    description: 'Threads carousel or launch post link for Issue #02 dispatch',
-  },
-  {
     id: '02-youtube-profile',
     issueId: '02',
     issueTitle: 'Issue #02: The Meat Grinder Needs More Meat',
@@ -1930,32 +1645,6 @@ const PRECONFIGURED_UTM_LINKS = [
     badge: 'IG Story',
     color: '#fda4af',
     description: 'Instagram 9:16 Reel/Story swipe-up or sticker link to Issue #01',
-  },
-  {
-    id: '01-facebook-story',
-    issueId: '01',
-    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
-    slug: 'watering-grass-in-a-thunderstorm',
-    platform: 'facebook',
-    platformLabel: 'Facebook Reel / Story',
-    medium: 'story',
-    campaign: 'issue-01',
-    badge: 'FB Story',
-    color: '#60a5fa',
-    description: 'Facebook 9:16 Reel pinned comment or story sticker link to Issue #01',
-  },
-  {
-    id: '01-threads-post',
-    issueId: '01',
-    issueTitle: 'Issue #01: Watering Grass in a Thunderstorm',
-    slug: 'watering-grass-in-a-thunderstorm',
-    platform: 'threads',
-    platformLabel: 'Threads Post',
-    medium: 'post',
-    campaign: 'issue-01',
-    badge: 'Threads Post',
-    color: '#c084fc',
-    description: 'Threads carousel or launch post link for Issue #01 dispatch',
   },
   {
     id: '01-youtube-community',
@@ -2062,19 +1751,6 @@ const PRECONFIGURED_UTM_LINKS = [
     badge: 'YT Bio',
     color: '#ef4444',
     description: 'Primary link in YouTube channel about/bio pointing to publication root',
-  },
-  {
-    id: 'home-threads-bio',
-    issueId: 'home',
-    issueTitle: 'Main Publication Landing Page',
-    slug: '',
-    platform: 'threads',
-    platformLabel: 'Threads Bio Link',
-    medium: 'bio',
-    campaign: 'profile',
-    badge: 'Threads Bio',
-    color: '#c084fc',
-    description: 'Primary link in @moth1.siv Threads profile pointing to publication root',
   },
 ];
 
@@ -2520,18 +2196,10 @@ export default function Dashboard() {
           activeToken
             ? fetchDirectActorDataset([ACTORS.instagram.id, 'apify~instagram-scraper'], activeToken)
             : Promise.resolve(null),
-          activeToken
-            ? fetchDirectActorDataset(ACTORS.threads.id, activeToken)
-            : Promise.resolve(null),
-          activeToken
-            ? fetchDirectActorDataset([ACTORS.facebook.id, 'apify~facebook-posts-scraper'], activeToken)
-            : Promise.resolve(null),
-          activeToken
-            ? fetchDirectActorDataset([ACTORS.xAuth.id, ACTORS.x.id], activeToken)
-            : Promise.resolve(null),
-          activeToken
-            ? fetchDirectActorDataset(ACTORS.xProfile.id, activeToken)
-            : Promise.resolve(null),
+          Promise.resolve(null),
+          Promise.resolve(null),
+          Promise.resolve(null),
+          Promise.resolve(null),
         ]);
 
         let serverJson = null;
@@ -4540,9 +4208,9 @@ export default function Dashboard() {
   const totalSubstackEmailSubscribers = substackStorySubscribers + emailStorySubscribers;
 
   // Combined Totals
-  const totalStoryEntrances = igStoryEntrances + fbStoryEntrances + ytStoryEntrances + pinStoryEntrances + totalSubstackVisitors;
-  const totalStoryScroll75 = igStoryScroll75 + fbStoryScroll75 + ytStoryScroll75 + pinStoryScroll75 + totalSubstackEmailScroll75;
-  const totalStorySubscribers = igStorySubscribers + fbStorySubscribers + ytStorySubscribers + pinStorySubscribers + totalSubstackEmailSubscribers;
+  const totalStoryEntrances = igStoryEntrances + ytStoryEntrances + pinStoryEntrances + totalSubstackVisitors;
+  const totalStoryScroll75 = igStoryScroll75 + ytStoryScroll75 + pinStoryScroll75 + totalSubstackEmailScroll75;
+  const totalStorySubscribers = igStorySubscribers + ytStorySubscribers + pinStorySubscribers + totalSubstackEmailSubscribers;
   const totalStoryRetentionPct =
     totalStoryEntrances > 0
       ? Math.min(100, (totalStoryScroll75 / totalStoryEntrances) * 100).toFixed(1)
@@ -5177,41 +4845,6 @@ export default function Dashboard() {
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block font-mono text-[11px] text-[#c084fc] font-bold uppercase">
-                    Threads Handle
-                  </label>
-                  <input
-                    type="text"
-                    value={targets.threadsHandle}
-                    onChange={(e) =>
-                      setTargets((prev) => ({
-                        ...prev,
-                        threadsHandle: e.target.value,
-                      }))
-                    }
-                    placeholder="moth1.siv"
-                    className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-[#c084fc]"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block font-mono text-[11px] text-[#86efac] font-bold uppercase">
-                    Facebook Profile/Page
-                  </label>
-                  <input
-                    type="text"
-                    value={targets.facebookUrl}
-                    onChange={(e) =>
-                      setTargets((prev) => ({
-                        ...prev,
-                        facebookUrl: e.target.value,
-                      }))
-                    }
-                    placeholder="https://www.facebook.com/observationsbymoth1"
-                    className="w-full bg-[#0b0d10] border border-slate-700 px-3 py-2 text-xs font-mono text-[#e2e8f0] focus:outline-none focus:border-[#86efac]"
-                  />
-                </div>
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
@@ -5226,18 +4859,6 @@ export default function Dashboard() {
                     Instagram:{' '}
                     <strong className="text-[#fda4af]">
                       {instagramState.runInfo?.status || 'IDLE'}
-                    </strong>
-                  </span>
-                  <span>
-                    Threads:{' '}
-                    <strong className="text-[#c084fc]">
-                      {threadsState.runInfo?.status || 'IDLE'}
-                    </strong>
-                  </span>
-                  <span>
-                    Facebook:{' '}
-                    <strong className="text-[#86efac]">
-                      {facebookState.runInfo?.status || 'IDLE'}
                     </strong>
                   </span>
                 </div>
@@ -5275,7 +4896,7 @@ export default function Dashboard() {
             {/* KPI 1: Website (Vercel Analytics) */}
             <CyberPanel
               theme={theme}
-              label="Website • Vercel"
+              label="Website • Vercel (30d Rolling)"
               accent="#86efac"
               className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
                 analyticsTab === 'website' ? 'ring-1 ring-[#86efac]' : ''
@@ -5294,7 +4915,7 @@ export default function Dashboard() {
               </div>
               <div className="text-xs text-slate-400 mt-0.5">
                 <span>
-                  <strong className="text-[#86efac]">{totalWebVisitors.toLocaleString()}</strong> Visitors
+                  <strong className="text-[#86efac]">{totalWebVisitors.toLocaleString()}</strong> Visitors (30d)
                   {webBounceRate !== null && (
                     <> • <strong className="text-[#67e8f9]">{webBounceRate}%</strong> Bounce Rate</>
                   )}
@@ -5407,99 +5028,6 @@ export default function Dashboard() {
           {/* Dynamic Social KPI Cards (Sorted Highest to Lowest by Views / Engagement) */}
           {(() => {
             const socialCards = [
-              {
-                id: 'facebook',
-                views: totalFbViews,
-                render: () => (
-                  <CyberPanel
-                    key="facebook"
-                    theme={theme}
-                    label="Facebook • Apify"
-                    accent="#86efac"
-                    className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
-                      analyticsTab === 'social' && socialPlatformTab === 'facebook' ? 'ring-1 ring-[#86efac]' : ''
-                    }`}
-                    onClick={() => {
-                      setAnalyticsTab('social');
-                      setSocialPlatformTab('facebook');
-                    }}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-mono text-[11px] text-slate-400 truncate">
-                          observationsbymoth1
-                        </span>
-                        <Share2 className="w-4 h-4 text-[#86efac] shrink-0" />
-                      </div>
-                      <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
-                        {totalFbViews.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-slate-400 mt-0.5">
-                        Views • {totalFbEngagement.toLocaleString()} Engagements (
-                        {visibleFacebookItems.length} Posts)
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 font-mono text-[10px]">
-                      <span className="text-slate-400">Followers:</span>
-                      {editingPlatform === 'facebook' ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            min="0"
-                            autoFocus
-                            value={tempEditVal}
-                            onChange={(e) => setTempEditVal(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveEditFollower('facebook');
-                              if (e.key === 'Escape') setEditingPlatform(null);
-                            }}
-                            className="w-16 bg-[#0b0d10] border border-[#86efac] px-1.5 py-0.5 text-[11px] font-mono text-[#86efac] font-bold text-right outline-none"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleSaveEditFollower('facebook')}
-                            className="p-1 hover:bg-[#86efac]/20 text-[#86efac] rounded-none cursor-pointer"
-                            title="Save"
-                          >
-                            <Check className="w-3 h-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingPlatform(null)}
-                            className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-none cursor-pointer"
-                            title="Cancel"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-[12px] font-bold text-[#86efac] tabular-nums">
-                            {(facebookState.followers || ledger.facebook.followers || 0).toLocaleString()}
-                          </span>
-                          <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#86efac]/40 bg-[#86efac]/10 text-[#86efac] rounded-none">
-                            {facebookState.followers > 0 ? 'Scraped' : 'Live'}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleStartEditFollower(
-                                'facebook',
-                                facebookState.followers || ledger.facebook.followers || 0
-                              )
-                            }
-                            className="p-0.5 text-slate-500 hover:text-[#86efac] transition-colors cursor-pointer"
-                            title="Edit Baseline Followers"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </CyberPanel>
-                ),
-              },
               {
                 id: 'youtube',
                 views: totalYtViews,
@@ -5675,99 +5203,6 @@ export default function Dashboard() {
                               )
                             }
                             className="p-0.5 text-slate-500 hover:text-[#fda4af] transition-colors cursor-pointer"
-                            title="Edit Baseline Followers"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </CyberPanel>
-                ),
-              },
-              {
-                id: 'threads',
-                views: visibleThreadsItems.length,
-                render: () => (
-                  <CyberPanel
-                    key="threads"
-                    theme={theme}
-                    label="Threads • Apify"
-                    accent="#c084fc"
-                    className={`p-4 flex flex-col justify-between cursor-pointer transition-all hover:scale-[1.01] ${
-                      analyticsTab === 'social' && socialPlatformTab === 'threads' ? 'ring-1 ring-[#c084fc]' : ''
-                    }`}
-                    onClick={() => {
-                      setAnalyticsTab('social');
-                      setSocialPlatformTab('threads');
-                    }}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-mono text-[11px] text-slate-400 truncate">
-                          @{targets.threadsHandle}
-                        </span>
-                        <MessageSquare className="w-4 h-4 text-[#c084fc] shrink-0" />
-                      </div>
-                      <div className="font-mono text-2xl font-black text-[#e2e8f0] tabular-nums">
-                        {visibleThreadsItems.length} Threads
-                      </div>
-                      <div className="text-xs text-slate-400 mt-0.5">
-                        {totalThreadsLikes} Likes • {totalThreadsReplies} Replies •{' '}
-                        {totalThreadsReposts} Reposts
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between font-mono text-[10px]">
-                      <span className="text-slate-400">Followers:</span>
-                      {editingPlatform === 'threads' ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            min="0"
-                            autoFocus
-                            value={tempEditVal}
-                            onChange={(e) => setTempEditVal(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveEditFollower('threads');
-                              if (e.key === 'Escape') setEditingPlatform(null);
-                            }}
-                            className="w-16 bg-[#0b0d10] border border-[#c084fc] px-1.5 py-0.5 text-[11px] font-mono text-[#c084fc] font-bold text-right outline-none"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleSaveEditFollower('threads')}
-                            className="p-1 hover:bg-[#c084fc]/20 text-[#c084fc] rounded-none cursor-pointer"
-                            title="Save"
-                          >
-                            <Check className="w-3 h-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingPlatform(null)}
-                            className="p-1 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-none cursor-pointer"
-                            title="Cancel"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-[12px] font-bold text-[#c084fc] tabular-nums">
-                            {(threadsState.followers || 0).toLocaleString()}
-                          </span>
-                          <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 border border-[#c084fc]/40 bg-[#c084fc]/10 text-[#c084fc] rounded-none">
-                            {threadsState.followers > 0 ? 'Scraped' : 'Live'}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleStartEditFollower(
-                                'threads',
-                                threadsState.followers || 0
-                              )
-                            }
-                            className="p-0.5 text-slate-500 hover:text-[#c084fc] transition-colors cursor-pointer"
                             title="Edit Baseline Followers"
                           >
                             <Edit2 className="w-3 h-3" />
@@ -6344,12 +5779,6 @@ export default function Dashboard() {
                 {(() => {
                   const campaignChannels = [
                     {
-                      name: 'Facebook',
-                      tag: 'utm_source=facebook',
-                      clicks: fbStoryEntrances,
-                      color: '#60a5fa',
-                    },
-                    {
                       name: 'Instagram',
                       tag: 'utm_source=instagram',
                       clicks: igStoryEntrances,
@@ -6548,11 +5977,11 @@ export default function Dashboard() {
       </div>
     )}
 
-    {/* Sub-Section 2: Dedicated Comparative Reels Visualizer (Facebook vs Instagram vs YouTube) */}
+    {/* Sub-Section 2: Dedicated Comparative Reels Visualizer (Instagram vs YouTube) */}
     {(analyticsTab === 'reels' || analyticsTab === 'all') && (
       <CyberPanel
         theme={theme}
-        label="Comparative 9:16 Video Visualizer • Facebook vs Instagram vs YouTube Shorts"
+        label="Comparative 9:16 Video Visualizer • Instagram vs YouTube Shorts"
         accent="#67e8f9"
         className="p-4 sm:p-6"
       >
@@ -6565,19 +5994,12 @@ export default function Dashboard() {
               </h2>
             </div>
             <p className="text-xs text-slate-400">
-              Direct comparison of 9:16 video metrics across Facebook (observationsbymoth1), Instagram (@moth1.siv), and YouTube Shorts (@sivaraj.pragasm).
+              Direct comparison of 9:16 video metrics across Instagram (@moth1.siv) and YouTube Shorts (@sivaraj.pragasm).
             </p>
           </div>
           <div className="flex items-center gap-2 font-mono text-xs">
             {(() => {
               const badges = [
-                {
-                  label: 'FB',
-                  views: fbScrapedViews,
-                  bg: 'bg-[#60a5fa]/10',
-                  border: 'border-[#60a5fa]/30',
-                  text: 'text-[#60a5fa]',
-                },
                 {
                   label: 'YT',
                   views: totalYtViews,
@@ -6622,7 +6044,6 @@ export default function Dashboard() {
             </div>
 
             {(() => {
-              const fbItem = visibleFacebookItems.find((i) => matchItemToIssueId(i) === '04');
               const igItem = visibleInstagramItems.find((i) => matchItemToIssueId(i) === '04');
               const ytItem = ytVideoList.find((i) => i.issueId === '04') || {
                 videoId: '',
@@ -6633,16 +6054,6 @@ export default function Dashboard() {
               };
 
               const platforms04 = [
-                {
-                  id: 'fb',
-                  name: 'Facebook Reel',
-                  color: '#60a5fa',
-                  views: fbItem?.views || 0,
-                  likes: fbItem?.likes || 0,
-                  comments: fbItem?.comments || 0,
-                  url: fbItem?.url,
-                  linkText: 'Watch on FB ↗',
-                },
                 {
                   id: 'yt',
                   name: 'YouTube Short',
@@ -6727,7 +6138,6 @@ export default function Dashboard() {
             </div>
 
             {(() => {
-              const fbItem = visibleFacebookItems.find((i) => matchItemToIssueId(i) === '03');
               const igItem = visibleInstagramItems.find((i) => matchItemToIssueId(i) === '03');
               const ytItem = ytVideoList.find((i) => i.issueId === '03') || {
                 videoId: '',
@@ -6738,16 +6148,6 @@ export default function Dashboard() {
               };
 
               const platforms03 = [
-                {
-                  id: 'fb',
-                  name: 'Facebook Reel',
-                  color: '#60a5fa',
-                  views: fbItem?.views || 0,
-                  likes: fbItem?.likes || 0,
-                  comments: fbItem?.comments || 0,
-                  url: fbItem?.url,
-                  linkText: 'Watch on FB ↗',
-                },
                 {
                   id: 'yt',
                   name: 'YouTube Short',
@@ -6832,7 +6232,6 @@ export default function Dashboard() {
             </div>
 
             {(() => {
-              const fbItem = visibleFacebookItems.find((i) => matchItemToIssueId(i) === '02') || visibleFacebookItems[0];
               const igItem = visibleInstagramItems.find((i) => matchItemToIssueId(i) === '02') || visibleInstagramItems[0];
               const ytItem = ytVideoList.find((i) => i.issueId === '02') || {
                 videoId: 'XiAPHfIshfY',
@@ -6843,16 +6242,6 @@ export default function Dashboard() {
               };
 
               const platforms02 = [
-                {
-                  id: 'fb',
-                  name: 'Facebook Reel',
-                  color: '#60a5fa',
-                  views: fbItem?.views || 0,
-                  likes: fbItem?.likes || 0,
-                  comments: fbItem?.comments || 0,
-                  url: fbItem?.url,
-                  linkText: 'Watch on FB ↗',
-                },
                 {
                   id: 'yt',
                   name: 'YouTube Short',
@@ -6938,7 +6327,6 @@ export default function Dashboard() {
             </div>
 
             {(() => {
-              const fbItem = visibleFacebookItems.find((i) => matchItemToIssueId(i) === '01') || visibleFacebookItems[1];
               const igItem = visibleInstagramItems.find((i) => matchItemToIssueId(i) === '01') || visibleInstagramItems[1];
               const ytItem = ytVideoList.find((i) => i.issueId === '01') || {
                 videoId: 'tp6FqVQUO9w',
@@ -6958,16 +6346,6 @@ export default function Dashboard() {
                   comments: Number(ytItem?.comments) || 0,
                   url: ytItem?.url,
                   linkText: 'Watch Short ↗',
-                },
-                {
-                  id: 'fb',
-                  name: 'Facebook Reel',
-                  color: '#60a5fa',
-                  views: fbItem?.views || 0,
-                  likes: fbItem?.likes || 0,
-                  comments: fbItem?.comments || 0,
-                  url: fbItem?.url,
-                  linkText: 'Watch on FB ↗',
                 },
                 {
                   id: 'ig',
@@ -7227,7 +6605,7 @@ export default function Dashboard() {
                       : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-slate-400 hover:text-white')
                   }`}
                 >
-                  All Channels ({visibleInstagramItems.length + visibleFacebookItems.length + visibleThreadsItems.length + (ledger.youtube?.videos?.length || 2) + pinList.length})
+                  All Channels ({visibleInstagramItems.length + (ledger.youtube?.videos?.length || 2) + pinList.length})
                 </button>
                 <button
                   type="button"
@@ -7239,28 +6617,6 @@ export default function Dashboard() {
                   }`}
                 >
                   Instagram ({visibleInstagramItems.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSocialPlatformTab('facebook')}
-                  className={`whitespace-nowrap shrink-0 px-2.5 py-1 transition-all cursor-pointer ${
-                    socialPlatformTab === 'facebook'
-                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#86efac] text-black font-bold shadow')
-                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#86efac] hover:bg-[#86efac]/10')
-                  }`}
-                >
-                  Facebook ({visibleFacebookItems.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSocialPlatformTab('threads')}
-                  className={`whitespace-nowrap shrink-0 px-2.5 py-1 transition-all cursor-pointer ${
-                    socialPlatformTab === 'threads'
-                      ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#c084fc] text-black font-bold shadow')
-                      : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#c084fc] hover:bg-[#c084fc]/10')
-                  }`}
-                >
-                  Threads ({visibleThreadsItems.length})
                 </button>
                 <button
                   type="button"
@@ -7525,330 +6881,6 @@ export default function Dashboard() {
               )}
           </CyberPanel>
         )}
-          {(socialPlatformTab === 'all' || socialPlatformTab === 'facebook') && (
-            <CyberPanel
-              theme={theme}
-              label="Facebook Reels"
-              accent="#86efac"
-              className="p-4 sm:p-6"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
-                    Facebook Reels (@observationsbymoth1)
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Verified video views, reach, and interaction metrics.
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={() => triggerActorRun('facebook')}
-                    disabled={runningActor !== null}
-                    className="inline-flex items-center justify-center gap-1.5 border border-[#86efac]/60 bg-[#86efac]/10 hover:bg-[#86efac]/20 px-3.5 py-1.5 font-mono text-xs text-[#86efac] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
-                  >
-                    <Play className="w-3.5 h-3.5" />
-                    <span>
-                      {runningActor === 'facebook'
-                        ? 'Scraping FB Reels...'
-                        : 'Run Facebook Scraper'}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => triggerActorRun('facebookPage')}
-                    disabled={runningActor !== null}
-                    className="inline-flex items-center justify-center gap-1.5 border border-slate-700 bg-slate-900/80 hover:border-[#86efac]/60 hover:text-[#86efac] px-3.5 py-1.5 font-mono text-xs text-slate-300 font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
-                    title="Scrapes Facebook page metadata to capture followers and likes"
-                  >
-                    <User className="w-3.5 h-3.5" />
-                    <span>
-                      {runningActor === 'facebookPage'
-                        ? 'Scraping Page...'
-                        : 'Scrape Page Followers'}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="mb-4 space-y-2">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="text"
-                    value={fbDirectUrl}
-                    onChange={(e) => setFbDirectUrl(e.target.value)}
-                    placeholder="Optional: paste direct FB Reel URL (e.g. https://www.facebook.com/reel/...)"
-                    className="flex-1 bg-[#0b0d10] border border-slate-800 px-3 py-1.5 text-[11px] font-mono text-[#e2e8f0] placeholder:text-slate-600 focus:outline-none focus:border-[#86efac]/60"
-                  />
-                  {fbDirectUrl.trim() && (
-                    <button
-                      type="button"
-                      onClick={() => setFbDirectUrl('')}
-                      className="px-2.5 py-1.5 border border-slate-700 text-[10px] font-mono text-slate-400 hover:text-white cursor-pointer"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-                {scraperDiagnostics.facebook && (
-                  <div className="p-2.5 bg-[#0b0d10] border border-[#86efac]/30 text-[11px] font-mono text-slate-300 space-y-1.5">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span>
-                        Last Run ({scraperDiagnostics.facebook.timestamp}):{' '}
-                        <strong className="text-[#86efac]">
-                          {scraperDiagnostics.facebook.rawCount} scraped
-                        </strong>
-                        {' • '}
-                        <strong className="text-[#67e8f9]">
-                          {scraperDiagnostics.facebook.matchedCount} matched
-                        </strong>
-                      </span>
-                      {scraperDiagnostics.facebook.runId && (
-                        <a
-                          href={`https://console.apify.com/actors/runs/${scraperDiagnostics.facebook.runId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#67e8f9] hover:underline"
-                        >
-                          Inspect Apify Run ↗
-                        </a>
-                      )}
-                    </div>
-                    {scraperDiagnostics.facebook.errorNotice && (
-                      <div className="text-amber-300">
-                        Apify notice: {scraperDiagnostics.facebook.errorNotice}
-                      </div>
-                    )}
-                    {scraperDiagnostics.facebook.latestUnmatched && (
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
-                        <span className="truncate max-w-[260px] text-slate-400">
-                          Unmatched reel: &ldquo;{scraperDiagnostics.facebook.latestUnmatched.text}&rdquo; ({scraperDiagnostics.facebook.latestUnmatched.views} views)
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const u = scraperDiagnostics.facebook.latestUnmatched;
-                            setFacebookState((prev) => ({
-                              ...prev,
-                              items: sortFacebookReelsForDisplay([
-                                ...(prev.items || []).filter((i) => matchItemToIssueId(i) !== '04'),
-                                { ...u, issueId: '04', isReel: true },
-                              ]),
-                            }));
-                            setScraperDiagnostics((prev) => ({ ...prev, facebook: null }));
-                          }}
-                          className="px-2 py-0.5 border border-[#86efac]/50 bg-[#86efac]/10 text-[#86efac] hover:bg-[#86efac]/20 text-[10px] cursor-pointer"
-                        >
-                          Assign to Issue #04
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {visibleFacebookItems.length === 0 ? (
-                <div className="py-5 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 mb-4 space-y-2">
-                  <div>
-                    No Apify dataset items loaded yet for{' '}
-                    <code className="text-[#86efac]">observationsbymoth1</code>.
-                    Click &ldquo;Run Facebook Scraper&rdquo; above.
-                  </div>
-                </div>
-              ) : (
-                <div className="overflow-x-auto mb-4 max-h-[280px] -mx-1 sm:mx-0">
-                  <table className="w-full text-left border-collapse min-w-[500px]">
-                    <thead>
-                      <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
-                        <th className="py-2 pr-3">Post / Reel</th>
-                        <th className="py-2 px-2">Views</th>
-                        <th className="py-2 px-2">Likes</th>
-                        <th className="py-2 px-2">Comments</th>
-                        <th className="py-2 px-2">Shares</th>
-                        <th className="py-2 pl-2 text-right">Link</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/70 text-xs">
-                      {visibleFacebookItems.slice(0, 15).map((item, idx) => (
-                        <tr key={item.id} className="hover:bg-slate-900/40">
-                          <td className="py-2.5 pr-3 max-w-[200px] truncate text-[#e2e8f0]">
-                            {getReelDisplayTitle(item, idx)}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono font-bold text-[#86efac]">
-                            {item.views.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#e2e8f0]">
-                            {item.likes.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
-                            {item.comments.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#c084fc]">
-                            {item.shares.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 pl-2 text-right">
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-[11px] text-[#86efac] hover:underline"
-                              title="Open Reel on Facebook"
-                            >
-                              ↗
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Reel Views Comparison Visualizer Bar */}
-              {visibleFacebookItems.length >= 2 && (
-                <div className="pt-3 border-t border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 font-bold uppercase">
-                    <span>Reel Views Comparison</span>
-                    <span className="text-[#86efac]">
-                      {visibleFacebookItems.reduce((s, i) => s + (i.views || 0), 0).toLocaleString()} Total Views
-                    </span>
-                  </div>
-                  <div className="space-y-2 font-mono text-xs">
-                    {visibleFacebookItems.slice(0, 4).map((item, idx) => {
-                      const maxViews = Math.max(1, ...visibleFacebookItems.map((i) => i.views || 0));
-                      const pct = Math.round(((item.views || 0) / maxViews) * 100);
-                      return (
-                        <div key={item.id} className="space-y-1">
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="truncate max-w-[220px] text-slate-300">
-                              {getReelDisplayTitle(item, idx)}
-                            </span>
-                            <span className="font-bold text-[#86efac]">
-                              {item.views.toLocaleString()} views
-                            </span>
-                          </div>
-                          <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-[#86efac]/40 to-[#86efac] rounded-full transition-all duration-300"
-                              style={{ width: `${Math.max(6, pct)}%` }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </CyberPanel>
-          )}
-          {(socialPlatformTab === 'all' || socialPlatformTab === 'threads') && (
-            <CyberPanel
-              theme={theme}
-              label="Threads Discussions • @moth1.siv"
-              accent="#c084fc"
-              className="p-4 sm:p-6"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-[#e2e8f0]">
-                    Threads Discussions (@{targets.threadsHandle})
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Short-form dispatches, replies, and discussion metrics.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => triggerActorRun('threads')}
-                  disabled={runningActor !== null}
-                  className="inline-flex items-center justify-center gap-1.5 border border-[#c084fc]/60 bg-[#c084fc]/10 hover:bg-[#c084fc]/20 px-3.5 py-1.5 font-mono text-xs text-[#c084fc] font-bold transition-colors cursor-pointer disabled:opacity-50 w-full sm:w-auto shrink-0"
-                >
-                  <Play className="w-3.5 h-3.5" />
-                  <span>
-                    {runningActor === 'threads'
-                      ? 'Scraping Threads...'
-                      : 'Run Threads Scraper'}
-                  </span>
-                </button>
-              </div>
-
-              {visibleThreadsItems.length === 0 ? (
-                <div className="py-6 px-4 bg-[#0b0d10] border border-slate-800/80 text-center font-mono text-xs text-slate-400 space-y-2">
-                  {threadsState.items.length > 0 && filterOnlyObservations ? (
-                    <>
-                      <div>
-                        Scraped{' '}
-                        <strong className="text-[#c084fc]">
-                          {threadsState.items.length}
-                        </strong>{' '}
-                        threads from @{targets.threadsHandle}, but none contain{' '}
-                        <code className="text-[#86efac]">{activeFilterTag}</code>{' '}
-                        yet.
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setFilterOnlyObservations(false)}
-                        className="border border-slate-700 bg-[#121316] px-3 py-1 text-[11px] text-[#c084fc] hover:border-[#c084fc] cursor-pointer"
-                      >
-                        Show all {threadsState.items.length} scraped Threads
-                      </button>
-                    </>
-                  ) : (
-                    <div>
-                      No Apify dataset items loaded yet for{' '}
-                      <code className="text-[#c084fc]">
-                        @{targets.threadsHandle}
-                      </code>
-                      . Click &ldquo;Run Threads Scraper&rdquo; above.
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="overflow-x-auto max-h-[260px] -mx-1 sm:mx-0">
-                  <table className="w-full text-left border-collapse min-w-[460px]">
-                    <thead>
-                      <tr className="border-b border-slate-800 font-mono text-[10px] text-slate-400 uppercase">
-                        <th className="py-2 pr-3">Thread Post</th>
-                        <th className="py-2 px-2">Likes</th>
-                        <th className="py-2 px-2">Replies</th>
-                        <th className="py-2 px-2">Reposts</th>
-                        <th className="py-2 pl-2 text-right">Link</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/70 text-xs">
-                      {visibleThreadsItems.slice(0, 15).map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-900/40">
-                          <td className="py-2.5 pr-3 max-w-[220px] truncate text-[#e2e8f0]">
-                            {item.text}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono font-bold text-[#86efac]">
-                            {item.likes.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#67e8f9]">
-                            {item.replies.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 px-2 font-mono text-[#c084fc]">
-                            {item.reposts.toLocaleString()}
-                          </td>
-                          <td className="py-2.5 pl-2 text-right">
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-[11px] text-[#c084fc] hover:underline"
-                            >
-                              ↗
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CyberPanel>
-          )}
           {(socialPlatformTab === 'all' || socialPlatformTab === 'youtube') && (
             <CyberPanel
               theme={theme}
@@ -8277,19 +7309,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-1 font-mono text-xs w-full">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1 font-mono text-xs w-full">
         {(() => {
           const funnelBadges = [
-            {
-              id: 'fb',
-              label: 'Facebook',
-              clicks: fbStoryEntrances,
-              retention: fbStoryRetentionPct,
-              subs: fbStorySubscribers,
-              bg: 'bg-[#60a5fa]/10',
-              border: 'border-[#60a5fa]/30',
-              text: 'text-[#60a5fa]',
-            },
             {
               id: 'ig',
               label: 'Instagram',
@@ -8465,28 +7487,6 @@ export default function Dashboard() {
               }`}
             >
               IG
-            </button>
-            <button
-              type="button"
-              onClick={() => setUtmLinksFilterPlatform('facebook')}
-              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
-                utmLinksFilterPlatform === 'facebook'
-                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#60a5fa] text-black font-bold shadow')
-                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#60a5fa] hover:bg-[#60a5fa]/10')
-              }`}
-            >
-              FB
-            </button>
-            <button
-              type="button"
-              onClick={() => setUtmLinksFilterPlatform('threads')}
-              className={`whitespace-nowrap shrink-0 px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
-                utmLinksFilterPlatform === 'threads'
-                  ? (isLight ? 'bg-[#0f172a] text-white font-bold shadow' : 'bg-[#c084fc] text-black font-bold shadow')
-                  : (isLight ? 'text-slate-600 hover:text-[#0f172a] hover:bg-slate-100' : 'text-[#c084fc] hover:bg-[#c084fc]/10')
-              }`}
-            >
-              Threads
             </button>
             <button
               type="button"
@@ -8978,113 +7978,6 @@ export default function Dashboard() {
                             className="h-full bg-[#86efac] transition-all duration-500"
                             style={{
                               width: `${Math.min(100, Math.max(0, Number(igConvPct) || 0))}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  id: 'facebook',
-                  entrances: fbEntrances,
-                  scroll75: fbScroll75,
-                  card: (
-                    <div key="facebook" className="p-3 sm:p-4 bg-[#121316] border border-[#60a5fa]/30 rounded-none space-y-3">
-                      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[#60a5fa] shrink-0" />
-                          <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#60a5fa]">
-                            Facebook Story
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => copyUtmLink(dispatch.slug, issueTag, 'facebook')}
-                          className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 border border-[#60a5fa]/40 bg-[#0b0d10] text-[10px] font-mono text-slate-300 hover:border-[#60a5fa] hover:text-[#60a5fa] transition-colors cursor-pointer shrink-0 w-full xs:w-auto"
-                          title="Copy FB Story Link with utm_source=facebook&utm_medium=story"
-                        >
-                          {copiedLink === `${issueTag}-facebook` || copiedLink === `${issueTag}-facebook-story` ? (
-                            <>
-                              <Check className="w-3 h-3 text-[#86efac]" />
-                              <span className="text-[#86efac]">Copied FB Link!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3 h-3 text-[#60a5fa]" />
-                              <span>Copy FB Story Link</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-
-                      {/* 3 Automated Telemetry Metrics for Facebook */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
-                          <div className="flex items-center justify-between text-[9px] uppercase font-mono tracking-wider text-slate-400">
-                            <span>Story Entrances</span>
-                            <span className="text-[8px] font-bold text-[#60a5fa] bg-[#60a5fa]/10 px-1 py-0.5 border border-[#60a5fa]/30">
-                              {fbEntrances} Clicks
-                            </span>
-                          </div>
-                          <div className="font-mono text-xl sm:text-2xl font-black text-[#60a5fa] tabular-nums mt-1">
-                            {fbEntrances.toLocaleString()}
-                          </div>
-                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                            utm_source=facebook • Verified Clicks
-                          </div>
-                        </div>
-
-                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
-                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
-                            Scroll Retention
-                          </div>
-                          <div className="font-mono text-xl sm:text-2xl font-black text-[#fbbf24] tabular-nums mt-1">
-                            {fbRetentionPct}%
-                          </div>
-                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                            {fbScroll75} read past 75% depth
-                          </div>
-                        </div>
-
-                        <div className="p-2.5 bg-[#0b0d10] border border-slate-800">
-                          <div className="text-[9px] uppercase font-mono tracking-wider text-slate-400">
-                            Subscriber Conv.
-                          </div>
-                          <div className="font-mono text-xl sm:text-2xl font-black text-[#86efac] tabular-nums mt-1">
-                            {fbSubs}{' '}
-                            <span className="text-xs font-normal text-slate-400">
-                              ({fbConvPct}%)
-                            </span>
-                          </div>
-                          <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                            Substack subscriptions
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Visual Funnel Bar */}
-                      <div className="space-y-1 pt-1">
-                        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono">
-                          <span className="text-slate-400">
-                            75% Retention: <strong className="text-[#fbbf24]">{fbRetentionPct}%</strong>
-                          </span>
-                          <span className="text-slate-400">
-                            Substack Conv: <strong className="text-[#86efac]">{fbConvPct}%</strong>
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-900 overflow-hidden flex">
-                          <div
-                            className="h-full bg-[#fbbf24] transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, Math.max(0, Number(fbRetentionPct) || 0))}%`,
-                            }}
-                          />
-                          <div
-                            className="h-full bg-[#86efac] transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, Math.max(0, Number(fbConvPct) || 0))}%`,
                             }}
                           />
                         </div>

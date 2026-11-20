@@ -100,6 +100,36 @@ ISSUE_MAP = {
             "Read the complete interactive scrollytelling essay with live audio & animated sumi-e loops:\n"
             "👉 https://observations.moth1.xyz/war-on-drugs?utm_source=youtube&utm_medium=shorts_comment&utm_campaign=issue-03"
         )
+    },
+    "04": {
+        "slug": "century-of-self-inflicted-humiliation",
+        "dir": "dist-packages/issue-04-self-inflicted-humiliation/youtube",
+        "video": "dist-packages/issue-04-self-inflicted-humiliation/youtube/video/century-of-self-inflicted-humiliation-shorts-1080x1920.mp4",
+        "title": "Issue 04: The Century of Self-Inflicted Humiliation",
+        "tags": [
+            "attention economy", "algorithmic addiction", "social media outrage", "opium war",
+            "lin zexu", "digital minimalism", "palo alto schools", "dementia isolation",
+            "visual essay", "scrollytelling", "observations by moth1", "philosophy", "economics"
+        ],
+        "description": (
+            "In 1839, Britain went to war to force opium onto China to balance a silver ledger.\n\n"
+            "Today, there are no foreign gunboats off the coast. Instead, billions of people lie awake at 2:00 AM, voluntarily injecting algorithmic dopamine into their optic nerves, swipe after endless swipe.\n\n"
+            "• 35+ full waking days surrendered per year to infinite scroll\n"
+            "• Ranking engines weight \"Angry\" reactions 5x higher than Likes\n"
+            "• Adults 65+ face 30%–50% higher dementia risk from isolation & share 7x more fabricated content\n"
+            "• Silicon Valley executives ban screens in Palo Alto private schools while exporting unthrottled feeds to everyone else\n\n"
+            "We are living through a second Opium War. Only this time, the humiliation is entirely self-inflicted.\n\n"
+            "👉 Experience the full interactive visual essay:\n"
+            "https://observations.moth1.xyz/century-of-self-inflicted-humiliation?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-04\n\n"
+            "Subscribe to Observations by Moth1 on Substack for monthly long-form visual essays:\n"
+            "https://observationsbymoth1.substack.com/\n\n"
+            "#AttentionEconomy #Algorithm #SocialMedia #OpiumWar #Philosophy #Economics #ObservationsByMoth1 #Shorts #Animation #SumiE"
+        ),
+        "pinned_comment": (
+            "“Two hundred years ago, foreign gunboats forced addiction onto a reluctant nation to balance a ledger. Today, we carry the opium den in our pockets, pay for the data connection ourselves, and thank the dealer for the distraction.”\n\n"
+            "Explore the complete interactive scrollytelling essay with 1839-vs-2026 extraction ledgers & 5x outrage simulators:\n"
+            "👉 https://observations.moth1.xyz/century-of-self-inflicted-humiliation?utm_source=youtube&utm_medium=shorts_comment&utm_campaign=issue-04"
+        )
     }
 }
 
@@ -281,7 +311,7 @@ def upload_short(issue_key, privacy_status="public"):
 
 def main():
     parser = argparse.ArgumentParser(description="Publish YouTube Shorts for Observations by Moth1")
-    parser.add_argument("--issue", required=True, choices=["01", "02", "03", "1", "2", "3"], help="Issue number (01, 02, or 03)")
+    parser.add_argument("--issue", required=True, choices=["01", "02", "03", "04", "1", "2", "3", "4"], help="Issue number (01, 02, 03, or 04)")
     parser.add_argument("--privacy", default="public", choices=["public", "unlisted", "private"], help="Video privacy status (default: public)")
     
     args = parser.parse_args()

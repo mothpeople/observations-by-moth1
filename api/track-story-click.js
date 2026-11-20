@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { kvGetJson, kvSetJson, isPersistentKvConfigured } from './_kv.js';
 
 // Storage file paths
 const LOCAL_FILE = path.join(process.cwd(), '.story-clicks.json');
@@ -96,33 +97,12 @@ export function persistStoryClickStore(data) {
   }
 }
 
-// Optional Upstash Redis / Vercel KV sync if configured
-const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-
 export async function syncWithKV(action, key = 'moth1_story_clicks', payload = null) {
-  if (!kvUrl || !kvToken) return null;
-  try {
-    if (action === 'get') {
-      const res = await fetch(`${kvUrl}/get/${key}`, {
-        headers: { Authorization: `Bearer ${kvToken}` },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        return json.result ? JSON.parse(json.result) : null;
-      }
-    } else if (action === 'set' && payload) {
-      await fetch(`${kvUrl}/set/${key}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${kvToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(JSON.stringify(payload)),
-      });
-    }
-  } catch {
-    // ignore network errors
+  if (action === 'get') {
+    return await kvGetJson(key);
+  }
+  if (action === 'set' && payload) {
+    await kvSetJson(key, payload);
   }
   return null;
 }
@@ -140,10 +120,18 @@ export default async function handler(req, res) {
     let store = getStoryClickStore();
     const remote = await syncWithKV('get');
     if (remote) {
-      store = remote;
+      store = {
+        issues: { ...DEFAULT_DATA.issues, ...(remote.issues || {}) },
+        total: { ...DEFAULT_DATA.total, ...(remote.total || {}) },
+        recent: Array.isArray(remote.recent) ? remote.recent : [],
+      };
       persistStoryClickStore(store);
     }
-    return res.status(200).json({ success: true, ...store });
+    return res.status(200).json({
+      success: true,
+      persistentKv: isPersistentKvConfigured(),
+      ...store,
+    });
   }
 
   if (req.method === 'POST') {

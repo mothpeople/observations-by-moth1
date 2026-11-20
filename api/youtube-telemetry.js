@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { kvGetJson, kvSetJson } from './_kv.js';
 
 const TMP_CACHE_FILE = '/tmp/moth1_youtube_telemetry.json';
 const LOCAL_SECRETS_FILE = path.join(process.cwd(), '.secrets', 'youtube_token.json');
@@ -20,6 +21,17 @@ const VERIFIED_FALLBACK = {
     url: 'https://www.youtube.com/playlist?list=PLXNcetLtk5xU',
   },
   videos: [
+    {
+      id: 'yt-shorts-04',
+      videoId: '',
+      issueId: '04',
+      title: 'Issue 04: The Century of Self-Inflicted Humiliation',
+      views: 0,
+      likes: 0,
+      comments: 0,
+      url: 'https://www.youtube.com/@sivaraj.pragasm/shorts',
+      trackingUrl: 'https://observations.moth1.xyz/century-of-self-inflicted-humiliation?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-04',
+    },
     {
       id: 'yt-shorts-03',
       videoId: 'KXwpmCaOMTE',
@@ -55,6 +67,44 @@ const VERIFIED_FALLBACK = {
     },
   ],
 };
+
+function mapYoutubeTitleToIssueId(text = '') {
+  const t = String(text || '').toLowerCase();
+  if (
+    t.includes('self-inflicted') ||
+    t.includes('humiliation') ||
+    t.includes('opium') ||
+    t.includes('issue 04') ||
+    t.includes('issue #04') ||
+    t.includes('issue 4') ||
+    t.includes('issue #4')
+  ) return '04';
+  if (
+    t.includes('war no one') ||
+    t.includes('war on drugs') ||
+    t.includes('prohibition') ||
+    t.includes('issue 03') ||
+    t.includes('issue #03') ||
+    t.includes('issue 3') ||
+    t.includes('issue #3')
+  ) return '03';
+  if (
+    t.includes('meat grinder') ||
+    t.includes('issue 02') ||
+    t.includes('issue #02') ||
+    t.includes('issue 2') ||
+    t.includes('issue #2')
+  ) return '02';
+  if (
+    t.includes('watering grass') ||
+    t.includes('thunderstorm') ||
+    t.includes('issue 01') ||
+    t.includes('issue #01') ||
+    t.includes('issue 1') ||
+    t.includes('issue #1')
+  ) return '01';
+  return null;
+}
 
 function getCredentials() {
   if (
@@ -220,28 +270,76 @@ export default async function handler(req, res) {
         if (accessToken) {
           const headers = { Authorization: `Bearer ${accessToken}` };
 
-          const vRes = await fetch(
-            'https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=KXwpmCaOMTE,XiAPHfIshfY,tp6FqVQUO9w',
-            { headers }
-          );
+          const knownIds = ['KXwpmCaOMTE', 'XiAPHfIshfY', 'tp6FqVQUO9w'];
+          let playlistIds = [];
+          try {
+            const plRes = await fetch(
+              'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=PLXNcetLtk5xU&maxResults=25',
+              { headers }
+            );
+            if (plRes.ok) {
+              const plData = await plRes.json();
+              playlistIds = (plData.items || [])
+                .map((it) => it.contentDetails?.videoId || it.snippet?.resourceId?.videoId)
+                .filter(Boolean);
+            }
+          } catch {}
+
+          const allVideoIds = Array.from(new Set([...playlistIds, ...knownIds]));
+          const [vRes, chRes] = await Promise.all([
+            fetch(
+              `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${encodeURIComponent(allVideoIds.join(','))}`,
+              { headers }
+            ),
+            fetch(
+              'https://www.googleapis.com/youtube/v3/channels?part=statistics&mine=true',
+              { headers }
+            ).catch(() => null),
+          ]);
+
+          let liveSubs = VERIFIED_FALLBACK.channel.subscribers;
+          let liveTotalViews = VERIFIED_FALLBACK.channel.totalViews;
+          let liveVideoCount = VERIFIED_FALLBACK.channel.videoCount;
+          if (chRes && chRes.ok) {
+            try {
+              const chData = await chRes.json();
+              const stats = chData.items?.[0]?.statistics;
+              if (stats) {
+                liveSubs = Number(stats.subscriberCount) || liveSubs;
+                liveTotalViews = Number(stats.viewCount) || liveTotalViews;
+                liveVideoCount = Number(stats.videoCount) || liveVideoCount;
+              }
+            } catch {}
+          }
 
           if (vRes.ok) {
             const vData = await vRes.json();
             const videoMap = {};
+            const issueToLive = {};
             (vData.items || []).forEach((v) => {
-              videoMap[v.id] = {
+              const entry = {
+                videoId: v.id,
                 title: v.snippet?.title || '',
+                description: v.snippet?.description || '',
                 views: Number(v.statistics?.viewCount) || 0,
                 likes: Number(v.statistics?.likeCount) || 0,
                 comments: Number(v.statistics?.commentCount) || 0,
+                url: `https://www.youtube.com/shorts/${v.id}`,
               };
+              videoMap[v.id] = entry;
+              const matchedIssue = mapYoutubeTitleToIssueId(`${entry.title} ${entry.description}`);
+              if (matchedIssue && (!issueToLive[matchedIssue] || entry.views > issueToLive[matchedIssue].views)) {
+                issueToLive[matchedIssue] = entry;
+              }
             });
 
             const videos = VERIFIED_FALLBACK.videos.map((def) => {
-              const live = videoMap[def.videoId];
+              const live = (def.videoId && videoMap[def.videoId]) || issueToLive[def.issueId];
               if (!live) return def;
               return {
                 ...def,
+                videoId: live.videoId || def.videoId,
+                url: live.url || def.url,
                 title: live.title || def.title,
                 views: Math.max(live.views, def.views),
                 likes: Math.max(live.likes, def.likes),
@@ -253,14 +351,17 @@ export default async function handler(req, res) {
               success: true,
               source: 'live-youtube-api',
               timestamp: new Date().toISOString(),
-              channel: VERIFIED_FALLBACK.channel,
+              channel: {
+                ...VERIFIED_FALLBACK.channel,
+                subscribers: liveSubs,
+                totalViews: liveTotalViews,
+                videoCount: liveVideoCount,
+              },
               playlist: VERIFIED_FALLBACK.playlist,
               videos,
             };
 
-            try {
-              fs.writeFileSync(TMP_CACHE_FILE, JSON.stringify(payload));
-            } catch {}
+            await kvSetJson('moth1_youtube_telemetry', payload, TMP_CACHE_FILE);
 
             return res.status(200).json(payload);
           }
@@ -275,15 +376,18 @@ export default async function handler(req, res) {
   try {
     const scrapedPayload = await scrapeLiveYouTube();
     if (scrapedPayload && scrapedPayload.videos?.length > 0) {
-      try {
-        fs.writeFileSync(TMP_CACHE_FILE, JSON.stringify(scrapedPayload));
-      } catch {}
+      await kvSetJson('moth1_youtube_telemetry', scrapedPayload, TMP_CACHE_FILE);
       return res.status(200).json(scrapedPayload);
     }
   } catch {
-    // Fallback to verified baseline
+    // Fallback to cached KV or verified baseline
   }
 
-  // Tier 3: Verified Baseline Fallback
+  // Tier 3: Persistent KV Cache or Verified Baseline Fallback
+  const cached = await kvGetJson('moth1_youtube_telemetry', TMP_CACHE_FILE);
+  if (cached && Array.isArray(cached.videos) && cached.videos.length > 0) {
+    return res.status(200).json({ ...cached, source: 'kv-cached-snapshot' });
+  }
+
   return res.status(200).json(VERIFIED_FALLBACK);
 }

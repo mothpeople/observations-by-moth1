@@ -1658,19 +1658,16 @@ export default async function handler(req, res) {
       liveSubstack,
       apifySubstack,
       apifyInstagram,
-      apifyThreads,
-      apifyFacebook,
-      apifyX,
       vercelAnalytics,
     ] = await Promise.all([
       fetchLiveSubstackArchive(),
       fetchPlatformTelemetry('substack', ACTORS.substack, [], apifyToken),
       fetchPlatformTelemetry('instagram', ACTORS.instagram, ['apify~instagram-scraper', 'apify~instagram-profile-scraper'], apifyToken),
-      fetchPlatformTelemetry('threads', ACTORS.threads, [], apifyToken),
-      fetchPlatformTelemetry('facebook', ACTORS.facebook, ['apify~facebook-posts-scraper', 'apify~facebook-pages-scraper'], apifyToken),
-      fetchPlatformTelemetry('x', ACTORS.x, ['apidojo~twitter-user-scraper', 'apify~tweet-scraper', 'quacker~twitter-scraper'], apifyToken),
       fetchVercelAnalytics(vercelToken, vercelProjectId, vercelTeamId),
     ]);
+    const apifyThreads = { connected: false, runInfo: null, items: [], followers: 0 };
+    const apifyFacebook = { connected: false, runInfo: null, items: [], followers: 0 };
+    const apifyX = { connected: false, runInfo: null, items: [], followers: 0 };
 
     // Merge Substack live + Apify Substack
     const substackMap = new Map();
