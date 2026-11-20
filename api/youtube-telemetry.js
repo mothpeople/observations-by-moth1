@@ -23,13 +23,13 @@ const VERIFIED_FALLBACK = {
   videos: [
     {
       id: 'yt-shorts-04',
-      videoId: '',
+      videoId: 'ZGD1zdRHCy8',
       issueId: '04',
       title: 'Issue 04: The Century of Self-Inflicted Humiliation',
-      views: 0,
+      views: 228,
       likes: 0,
       comments: 0,
-      url: 'https://www.youtube.com/@sivaraj.pragasm/shorts',
+      url: 'https://www.youtube.com/shorts/ZGD1zdRHCy8',
       trackingUrl: 'https://observations.moth1.xyz/century-of-self-inflicted-humiliation?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-04',
     },
     {
@@ -154,12 +154,14 @@ async function scrapeLiveVideo(videoId) {
                        html.match(/"likeCount":\s*"(\d+)"/);
     const commentsMatch = html.match(/"commentsCount":\{"simpleText":"([\d,]+)"/) ||
                           html.match(/"commentCount":\s*"(\d+)"/);
-    const titleMatch = html.match(/"title":\s*"([^"]+)"/);
+    const ogTitleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) ||
+                         html.match(/<title>([^<]+)<\/title>/i);
 
     const views = viewsMatch ? parseInt(viewsMatch[1].replace(/,/g, ''), 10) : 0;
     const likes = likesMatch ? parseInt(likesMatch[1].replace(/,/g, ''), 10) : 0;
     const comments = commentsMatch ? parseInt(commentsMatch[1].replace(/,/g, ''), 10) : 0;
-    const title = titleMatch ? titleMatch[1] : null;
+    const rawTitle = ogTitleMatch ? ogTitleMatch[1].replace(/\s*-\s*YouTube\s*$/i, '').trim() : null;
+    const title = rawTitle && rawTitle !== '0' ? rawTitle : null;
 
     return { videoId, views, likes, comments, title };
   } catch {
@@ -191,18 +193,58 @@ async function scrapeLiveChannel(handle) {
   }
 }
 
+async function scrapePlaylistVideoIds(playlistId) {
+  try {
+    const res = await fetch(`https://www.youtube.com/playlist?list=${playlistId}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    });
+    if (!res.ok) return [];
+    const html = await res.text();
+    const ids = [...html.matchAll(/"videoId":"([a-zA-Z0-9_-]{11})"/g)].map((m) => m[1]);
+    return Array.from(new Set(ids));
+  } catch {
+    return [];
+  }
+}
+
 async function scrapeLiveYouTube() {
-  const [v03, v02, v01, ch] = await Promise.all([
-    scrapeLiveVideo('KXwpmCaOMTE'),
-    scrapeLiveVideo('XiAPHfIshfY'),
-    scrapeLiveVideo('tp6FqVQUO9w'),
+  const knownIds = ['ZGD1zdRHCy8', 'KXwpmCaOMTE', 'XiAPHfIshfY', 'tp6FqVQUO9w'];
+  const discoveredIds = await scrapePlaylistVideoIds('PLXNcetLtk5xU');
+  const allIds = Array.from(new Set([...discoveredIds, ...knownIds]));
+
+  const [scrapedVideos, ch] = await Promise.all([
+    Promise.all(allIds.map((id) => scrapeLiveVideo(id))),
     scrapeLiveChannel('sivaraj.pragasm'),
   ]);
 
-  const v03Views = Math.max(v03?.views || 0, 2);
-  const v02Views = Math.max(v02?.views || 0, 126);
-  const v01Views = Math.max(v01?.views || 0, 62);
-  const subs = Math.max(ch?.subscribers || 0, 6);
+  const byVideoId = {};
+  const byIssueId = {};
+  for (const v of scrapedVideos) {
+    if (!v) continue;
+    byVideoId[v.videoId] = v;
+    const matchedIssue = mapYoutubeTitleToIssueId(v.title || '');
+    if (matchedIssue && (!byIssueId[matchedIssue] || v.views > byIssueId[matchedIssue].views)) {
+      byIssueId[matchedIssue] = v;
+    }
+  }
+
+  const subs = Math.max(ch?.subscribers || 0, VERIFIED_FALLBACK.channel.subscribers);
+  const videos = VERIFIED_FALLBACK.videos.map((def) => {
+    const live = (def.videoId && byVideoId[def.videoId]) || byIssueId[def.issueId];
+    if (!live) return def;
+    return {
+      ...def,
+      videoId: live.videoId || def.videoId,
+      url: live.videoId ? `https://www.youtube.com/shorts/${live.videoId}` : def.url,
+      title: live.title || def.title,
+      views: live.views > 0 ? live.views : def.views,
+      likes: Math.max(live.likes || 0, def.likes),
+      comments: Math.max(live.comments || 0, def.comments),
+    };
+  });
 
   return {
     success: true,
@@ -213,29 +255,7 @@ async function scrapeLiveYouTube() {
       subscribers: subs,
     },
     playlist: VERIFIED_FALLBACK.playlist,
-    videos: [
-      {
-        ...VERIFIED_FALLBACK.videos[0],
-        views: v03Views,
-        likes: Math.max(v03?.likes || 0, 0),
-        comments: Math.max(v03?.comments || 0, 1),
-        title: v03?.title || VERIFIED_FALLBACK.videos[0].title,
-      },
-      {
-        ...VERIFIED_FALLBACK.videos[1],
-        views: v02Views,
-        likes: Math.max(v02?.likes || 0, 0),
-        comments: Math.max(v02?.comments || 0, 1),
-        title: v02?.title || VERIFIED_FALLBACK.videos[1].title,
-      },
-      {
-        ...VERIFIED_FALLBACK.videos[2],
-        views: v01Views,
-        likes: Math.max(v01?.likes || 0, 0),
-        comments: Math.max(v01?.comments || 0, 1),
-        title: v01?.title || VERIFIED_FALLBACK.videos[2].title,
-      },
-    ],
+    videos,
   };
 }
 
@@ -270,7 +290,7 @@ export default async function handler(req, res) {
         if (accessToken) {
           const headers = { Authorization: `Bearer ${accessToken}` };
 
-          const knownIds = ['KXwpmCaOMTE', 'XiAPHfIshfY', 'tp6FqVQUO9w'];
+          const knownIds = ['ZGD1zdRHCy8', 'KXwpmCaOMTE', 'XiAPHfIshfY', 'tp6FqVQUO9w'];
           let playlistIds = [];
           try {
             const plRes = await fetch(

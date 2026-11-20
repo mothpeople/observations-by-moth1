@@ -2098,6 +2098,17 @@ export default function Dashboard() {
     },
     videos: [
       {
+        id: 'yt-shorts-04',
+        videoId: 'ZGD1zdRHCy8',
+        issueId: '04',
+        title: 'Issue 04: The Century of Self-Inflicted Humiliation',
+        views: 0,
+        likes: 0,
+        comments: 0,
+        url: 'https://www.youtube.com/shorts/ZGD1zdRHCy8',
+        trackingUrl: 'https://observations.moth1.xyz/century-of-self-inflicted-humiliation?utm_source=youtube&utm_medium=shorts&utm_campaign=issue-04',
+      },
+      {
         id: 'yt-shorts-03',
         videoId: '',
         issueId: '03',
@@ -3067,28 +3078,31 @@ export default function Dashboard() {
               next.youtube = { ...next.youtube, totalViews: ytTotViews };
               changed = true;
             }
-            if (Array.isArray(data.videos) && Array.isArray(next.youtube?.videos)) {
-              const updatedYtVideos = next.youtube.videos.map((vid) => {
-                const live = data.videos.find((v) => (v.videoId && v.videoId === vid.videoId) || v.issueId === vid.issueId);
-                if (!live) return vid;
-                const existingViews = (vid.issueId === '03' && Number(vid.views) >= 120) ? 0 : (Number(vid.views) || 0);
-                const maxV = Math.max(existingViews, Number(live.views) || 0);
+            if (Array.isArray(data.videos)) {
+              const existingList = Array.isArray(next.youtube?.videos) ? next.youtube.videos : [];
+              const mergedYtVideos = data.videos.map((live) => {
+                const vid = existingList.find((v) => (live.videoId && v.videoId === live.videoId) || v.issueId === live.issueId);
+                if (!vid) {
+                  changed = true;
+                  return live;
+                }
+                const liveViews = Number(live.views) || 0;
+                const maxV = liveViews > 0 ? liveViews : (Number(vid.views) || 0);
                 const maxL = Math.max(Number(vid.likes) || 0, Number(live.likes) || 0);
                 const maxC = Math.max(Number(vid.comments) || 0, Number(live.comments) || 0);
-                if (maxV !== vid.views || maxL !== vid.likes || maxC !== vid.comments || (live.videoId && live.videoId !== vid.videoId)) {
+                if (maxV !== vid.views || maxL !== vid.likes || maxC !== vid.comments || (live.videoId && live.videoId !== vid.videoId) || (live.title && live.title !== vid.title)) {
                   changed = true;
-                  return {
-                    ...vid,
-                    ...live,
-                    views: maxV,
-                    likes: maxL,
-                    comments: maxC,
-                    title: live.title || vid.title,
-                  };
                 }
-                return vid;
+                return {
+                  ...vid,
+                  ...live,
+                  views: maxV,
+                  likes: maxL,
+                  comments: maxC,
+                  title: live.title || vid.title,
+                };
               });
-              next.youtube = { ...next.youtube, videos: updatedYtVideos };
+              next.youtube = { ...next.youtube, videos: mergedYtVideos };
             }
             if (changed) {
               saveChannelLedger(next);
@@ -3099,10 +3113,11 @@ export default function Dashboard() {
 
           setYoutubeSyncSuccess(true);
           setTimeout(() => setYoutubeSyncSuccess(false), 4500);
+          const v04Count = data.videos.find((v) => v.issueId === '04')?.views || 0;
           const v03Count = data.videos.find((v) => v.issueId === '03')?.views || 0;
           const v02Count = data.videos.find((v) => v.issueId === '02')?.views || 0;
           const v01Count = data.videos.find((v) => v.issueId === '01')?.views || 0;
-          setStatusMessage(`✓ YouTube Synced: ${totViews.toLocaleString()} total Shorts views (Issue #03: ${v03Count}, Issue #02: ${v02Count}, Issue #01: ${v01Count})`);
+          setStatusMessage(`✓ YouTube Synced: ${totViews.toLocaleString()} total Shorts views (Issue #04: ${v04Count}, Issue #03: ${v03Count}, Issue #02: ${v02Count}, Issue #01: ${v01Count})`);
           setTimeout(() => setStatusMessage(''), 6000);
         }
       }
